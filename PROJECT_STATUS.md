@@ -42,15 +42,14 @@ document ready for submission to SEFIN.
 
 At this handoff:
 
-- Git is initialized on `main`, but there is no initial commit yet.
-- All project files are therefore untracked.
+- Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
 - 23 tests pass.
 - `npm run test:coverage` reports 100% statements, functions, and lines, with
   91% branch coverage for the current code.
-- ESM and CommonJS subpath imports have been manually exercised.
-- An npm package dry run succeeds using an isolated npm cache.
+- The actual npm tarball is unpacked and exercised in isolated ESM and
+  CommonJS consumer projects by `npm run package:check`.
 
 ## Implemented Functionality
 
@@ -306,11 +305,7 @@ for the small implementation, but conformance coverage is currently shallow.
 
 Missing project infrastructure includes:
 
-- initial Git commit and remote;
-- continuous integration;
-- Node version test matrix;
-- automated package-content checks;
-- dependency and security scanning;
+- remote repository configuration;
 - release automation;
 - npm provenance/signing policy;
 - API reference generation;
@@ -351,13 +346,13 @@ calling an incomplete implementation “complete.”
 
 ### Phase 0: Establish the Repository Baseline
 
-- Review the generated scaffold and create the initial commit.
+- [x] Review the generated scaffold and create the initial commit.
 - Create the GitHub repository and configure the existing package metadata.
-- Add CI for `npm run verify`, coverage, npm pack inspection, ESM imports, and
+- [x] Add CI for `npm run verify`, coverage, npm pack inspection, ESM imports, and
   CommonJS imports.
-- Test the supported Node versions.
-- Add Dependabot/Renovate and a security reporting path.
-- Record the package-size baseline.
+- [x] Test the supported Node versions.
+- [x] Add Dependabot/Renovate and a security reporting path.
+- [x] Record the package-size baseline.
 
 Exit criteria:
 
@@ -538,12 +533,11 @@ definition.
 
 Start with Phase 0 and the first part of Phase 1:
 
-1. review and commit the current baseline;
-2. add CI and packaged-consumer smoke tests;
-3. inventory every type reachable from `TCInfDPS`;
-4. create a tracked matrix mapping each XSD complex type to its TypeScript
+1. create/configure the remote repository;
+2. inventory every type reachable from `TCInfDPS`;
+3. create a tracked matrix mapping each XSD complex type to its TypeScript
    type, serializer, semantic rules, and fixtures;
-5. replace one extension group end-to-end, preferably `comExt`, to establish
+4. replace one extension group end-to-end, preferably `comExt`, to establish
    the repeatable implementation pattern.
 
 Do not begin by adding a convenience API or integrating another application.
