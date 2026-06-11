@@ -1,0 +1,85 @@
+{
+  "name": "nfse-js",
+  "version": "0.1.0",
+  "description": "Spec-first TypeScript toolkit for Brazil's National NFS-e standard.",
+  "keywords": [
+    "brazil",
+    "fiscal",
+    "nfse",
+    "nota-fiscal",
+    "typescript",
+    "xml"
+  ],
+  "author": "David Nelson <davidmichael.nelson@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@10.9.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmnelson/nfse-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dmnelson/nfse-js/issues"
+  },
+  "homepage": "https://github.com/dmnelson/nfse-js#readme",
+  "files": [
+    "dist",
+    "schemas",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./validation": {
+      "types": "./dist/validation/index.d.ts",
+      "import": "./dist/validation/index.js",
+      "require": "./dist/validation/index.cjs"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js",
+      "require": "./dist/schemas/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "check": "tsc --noEmit",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "generate:schemas": "node scripts/generate-schema-module.mjs",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "verify": "npm run generate:schemas && npm run check && npm run lint && npm test && npm run build",
+    "prepublishOnly": "npm run verify"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.8.0",
+    "xmllint-wasm": "^5.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "@types/node": "^22.19.21",
+    "@vitest/coverage-v8": "^4.1.8",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

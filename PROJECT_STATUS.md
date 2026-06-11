@@ -1,0 +1,597 @@
+# Project Status and Completion Roadmap
+
+Last reviewed: 2026-06-11
+
+This document is the engineering handoff for continuing `nfse-js` in a future
+session. It describes what exists, what has actually been verified, what the
+current implementation must not be assumed to do, and the work required before
+the library can reasonably be called fully fledged.
+
+## Objective
+
+`nfse-js` should become a general-purpose Node.js/TypeScript implementation of
+Brazil's **National NFS-e standard**.
+
+The intended boundary is:
+
+- plain JavaScript/TypeScript data in;
+- National NFS-e documents and operations out;
+- no dependency on `notaflow`, `invoices`, YAML, a CLI, or a specific framework;
+- no support for ABRASF or municipality-specific legacy XML layouts;
+- municipal rules and parameters supported through the National standard APIs
+  where they affect National DPS/NFS-e issuance.
+
+The package should eventually cover the complete lifecycle:
+
+1. model a DPS;
+2. validate it locally;
+3. serialize it deterministically;
+4. sign it;
+5. submit it to SEFIN;
+6. parse the resulting NFS-e or rejection;
+7. query documents and parameters;
+8. issue and process lifecycle events;
+9. verify signatures and received documents.
+
+## Current State
+
+The repository is an early `0.1.0` foundation. It is useful for constructing a
+common unsigned DPS and proving that the generated XML satisfies the bundled
+v1.01 XSD. It is **not yet an issuance client** and cannot currently produce a
+document ready for submission to SEFIN.
+
+At this handoff:
+
+- Git is initialized on `main`, but there is no initial commit yet.
+- All project files are therefore untracked.
+- Dependencies are installed locally.
+- `npm run verify` passes.
+- 23 tests pass.
+- `npm run test:coverage` reports 100% statements, functions, and lines, with
+  91% branch coverage for the current code.
+- ESM and CommonJS subpath imports have been manually exercised.
+- An npm package dry run succeeds using an isolated npm cache.
+
+## Implemented Functionality
+
+### Package Structure
+
+One package exposes four entry points:
+
+| Entry point | Current purpose |
+| --- | --- |
+| `nfse-js` | Aggregated public API |
+| `nfse-js/core` | DPS types, creation, IDs, validation, and XML serialization |
+| `nfse-js/validation` | XSD validation through libxml2/WASM |
+| `nfse-js/schemas` | Programmatic access to bundled official schemas |
+
+The build emits ESM, CommonJS, source maps, and declarations. Node.js 20 or
+newer is required.
+
+### DPS Construction
+
+`createDps`:
+
+- accepts plain typed data;
+- defaults the standard version to `1.01`;
+- preserves a caller-supplied `infDPS.Id`;
+- otherwise generates the official 45-character DPS identifier;
+- supports automatic identifier generation for CNPJ and CPF providers.
+
+Automatic DPS ID generation intentionally rejects NIF and `cNaoNIF`, because
+the documented DPS identifier formation requires a Brazilian federal
+registration type and number.
+
+### Typed Common DPS Model
+
+The current model has dedicated types for:
+
+- environment and issuer;
+- CNPJ, CPF, NIF, and no-NIF identities;
+- provider, customer, and intermediary;
+- domestic and foreign addresses;
+- provider tax regime;
+- domestic or foreign service location;
+- service codes and descriptions;
+- service value and discounts;
+- municipal ISSQN fields;
+- suspended enforceability;
+- municipal benefit;
+- PIS/COFINS and federal withholding fields;
+- approximate total tax alternatives;
+- NFS-e substitution;
+- complementary service information.
+
+Official XML element names are retained in the object model. This minimizes
+translation ambiguity and makes comparison with the XSD and manuals easier.
+
+### Decimal Handling
+
+`decimal()` creates a branded decimal string and rejects:
+
+- exponent notation;
+- signs;
+- too many integer digits;
+- too many fractional digits.
+
+Values are serialized as supplied, avoiding JavaScript floating-point changes.
+
+The helper can accept explicit integer and fractional precision, although most
+fields do not yet apply their exact XSD-specific decimal facet automatically.
+
+### Semantic Validation
+
+`validateDps` and `assertValidDps` currently check:
+
+- the basic DPS ID shape;
+- municipality, CNPJ, CPF, CEP, service code, country, series, and DPS number
+  digit lengths;
+- basic date and timestamp string shapes;
+- the main service value decimal shape;
+- customer/intermediary issuer reason requirements;
+- the inverse provider issuer rule;
+- the requirement for `xMotivo` when substitution reason is `99`.
+
+Validation returns structured issues containing `path`, `code`, and `message`.
+
+### XML Serialization
+
+`serializeDps`:
+
+- creates an ID when necessary;
+- runs current semantic validation before serialization;
+- emits the National NFS-e namespace and version;
+- preserves decimal strings;
+- uses deterministic field construction order;
+- supports compact or formatted XML;
+- optionally omits the XML declaration.
+
+The common fixture generated by this serializer validates successfully against
+the bundled official DPS v1.01 XSD.
+
+### XSD Validation
+
+The package embeds the complete official v1.01 schema bundle and exposes:
+
+- `validateDpsXml`;
+- `validateNfseXml`;
+- `validateEventRequestXml`;
+- `validateEventXml`;
+- generic `validateXml`.
+
+Validation uses `xmllint-wasm`, backed by libxml2. It can either throw
+`XsdValidationError` or return all reported violations.
+
+The official schema files under `schemas/1.01/` are unchanged and have recorded
+SHA-256 hashes in `schemas/manifest.json`.
+
+The generated runtime copy applies one documented compatibility adjustment:
+the JavaScript-style `^` and `$` characters are removed from the
+`TSSerieDPS` pattern. XML Schema regular expressions are implicitly anchored,
+and libxml2 otherwise treats those characters literally. The source XSD remains
+unchanged.
+
+## Important Current Limitations
+
+### XSD-valid does not mean SEFIN-valid
+
+The current successful fixture proves that one generated document satisfies
+the XSD. It does not prove that:
+
+- all modeled combinations are accepted;
+- business rules from the manuals and technical notes are satisfied;
+- municipal parameters permit the operation;
+- the test taxpayer and service data are authorized;
+- SEFIN accepts the serialized byte representation;
+- a signed version is correct;
+- production or homologation submission works.
+
+Do not advertise the current version as able to issue NFS-e.
+
+### The DPS type model is incomplete
+
+These schema groups currently use `ExtensionGroup`, which is effectively a raw
+XML-shaped object:
+
+- foreign trade (`comExt`);
+- construction (`obra`);
+- event activity (`atvEvento`);
+- deduction/reduction (`vDedRed`);
+- IBS/CBS (`IBSCBS`).
+
+Consequences:
+
+- callers do not receive field-level TypeScript guidance;
+- invalid element names and values can be supplied;
+- sequence ordering depends on caller insertion order;
+- repeated elements may be represented incorrectly;
+- semantic rules cannot be applied reliably;
+- only subsequent XSD validation can catch structural mistakes.
+
+This escape hatch should be removed from the stable API once every group has a
+dedicated model and serializer.
+
+### Semantic validation is intentionally sparse
+
+The current validator does not implement the complete XSD facets or National
+business rules. Examples of missing validation include:
+
+- CPF and CNPJ check digits;
+- real calendar-date validation rather than shape-only regular expressions;
+- consistency between a supplied DPS `Id` and `cLocEmi`, provider identity,
+  series, and number;
+- exact length, enumeration, decimal, and range constraints for every field;
+- required/forbidden field combinations across tax regimes;
+- ISSQN incidence, immunity, export, withholding, benefit, and suspension
+  dependencies;
+- substitution and rejected-NFS-e rules beyond the one `99` case;
+- foreign service and foreign taxpayer dependencies;
+- deductions, construction, event, foreign trade, and IBS/CBS rules;
+- rules derived from municipal parameters;
+- rules identified by official error/rejection codes.
+
+The current branded `Decimal` is reused across fields with different precision
+requirements. Field-specific constructors or validation metadata are needed.
+
+### No XML parsing or round trip
+
+The library only serializes DPS data. It does not currently:
+
+- parse an existing DPS XML into the typed model;
+- parse an issued NFS-e;
+- parse an event or event response;
+- preserve unknown forward-compatible elements;
+- verify that parse -> serialize retains the intended document semantics.
+
+### No XML signature support
+
+There is no XMLDSig implementation. The package does not:
+
+- load PKCS#12/PFX or PEM credentials;
+- select or validate a certificate;
+- canonicalize XML;
+- create a digest or `SignedInfo`;
+- insert the enveloped signature at the correct schema position;
+- verify a signature or certificate chain;
+- expose a signer abstraction for HSM, cloud KMS, or remote signing.
+
+The exact algorithms and canonicalization profile must be verified against the
+latest official National NFS-e documentation before implementation. Do not
+infer them only from generic XMLDSig examples.
+
+### No SEFIN client
+
+There is no transport layer for:
+
+- production or restricted-production/homologation environments;
+- mutual TLS and certificate configuration;
+- DPS submission and NFS-e generation;
+- document queries;
+- event registration;
+- municipal parameter queries;
+- request/response compression or encoding required by the API;
+- retry, timeout, cancellation, idempotency, and rate-limit behavior;
+- normalized handling of HTTP, TLS, schema, and business-rule errors.
+
+Official endpoints and payload rules are operational data and must be checked
+against current documentation when this work begins.
+
+### Events are only XSD-validated
+
+Event request and response schemas are bundled, but there are no:
+
+- typed event models;
+- event ID builders;
+- event serializers;
+- event signatures;
+- event-specific business rules;
+- event response parsers.
+
+### Municipal parameters are absent
+
+National standard adoption does not eliminate municipality-specific
+configuration. A complete implementation still needs typed clients and models
+for relevant National parameter services, including service availability,
+rates, withholding, benefits, special regimes, and other issuance constraints.
+
+This must remain National-API support, not municipality-specific DPS layouts.
+
+### No conformance evidence from homologation
+
+There are no sanitized real-world fixtures or recorded successful exchanges
+from the official restricted-production environment. Unit coverage is strong
+for the small implementation, but conformance coverage is currently shallow.
+
+### Project operations are not production-ready
+
+Missing project infrastructure includes:
+
+- initial Git commit and remote;
+- continuous integration;
+- Node version test matrix;
+- automated package-content checks;
+- dependency and security scanning;
+- release automation;
+- npm provenance/signing policy;
+- API reference generation;
+- compatibility and deprecation policy;
+- schema-update detection;
+- published package and end-user feedback.
+
+## Architectural Decisions to Preserve
+
+Future work should retain these decisions unless a concrete incompatibility is
+found:
+
+1. **No application coupling.** The library accepts data, not invoice files,
+   YAML, database records, or framework objects.
+2. **National standard only.** Do not add ABRASF or legacy municipal layouts to
+   the core package.
+3. **Exact decimal strings.** Never use JavaScript `number` for fiscal decimal
+   values.
+4. **Pure core.** Construction and serialization should remain independent of
+   filesystem access, networking, certificates, and WASM.
+5. **Optional heavy modules.** Validation, signing, and transport should remain
+   separate entry points so consumers pay only for what they use.
+6. **Official names at the wire boundary.** Avoid a second competing vocabulary
+   unless an ergonomic layer clearly maps to a canonical wire model.
+7. **Official schemas remain immutable.** Compatibility patches belong in the
+   generation process and must be documented and tested.
+8. **Spec and fixture evidence.** Wire changes require a citation to official
+   material and a regression fixture.
+9. **Structured errors.** Preserve machine-readable paths, codes, categories,
+   and underlying causes.
+10. **Adapters over hard dependencies.** Certificate stores, HTTP clients,
+    clocks, logging, and signing backends should be injectable where useful.
+
+## Recommended Roadmap
+
+The phases below are ordered to produce a real issuance vertical slice without
+calling an incomplete implementation “complete.”
+
+### Phase 0: Establish the Repository Baseline
+
+- Review the generated scaffold and create the initial commit.
+- Create the GitHub repository and configure the existing package metadata.
+- Add CI for `npm run verify`, coverage, npm pack inspection, ESM imports, and
+  CommonJS imports.
+- Test the supported Node versions.
+- Add Dependabot/Renovate and a security reporting path.
+- Record the package-size baseline.
+
+Exit criteria:
+
+- every change is reviewed through a normal Git history;
+- the clean checkout passes all checks;
+- the package artifact is tested, not only source imports.
+
+### Phase 1: Complete the DPS Domain and Serializer
+
+- Map every `TCInfDPS` descendant in the current XSD into explicit types.
+- Replace all `ExtensionGroup` fields with discriminated unions and dedicated
+  structures.
+- Encode XSD choices so impossible combinations fail at compile time.
+- Model repeated elements as bounded arrays where appropriate.
+- Implement field-specific decimal types or constructors.
+- Split serialization into explicit functions per schema group.
+- Add fixtures for every optional group and every union branch.
+- Compare generated XML against canonical expected fixtures.
+
+Exit criteria:
+
+- the public stable DPS API contains no raw extension groups;
+- every DPS v1.01 element can be represented and serialized;
+- every generated fixture validates against the XSD;
+- all official choice and sequence structures are covered by tests.
+
+### Phase 2: Build a Validation Rule Engine
+
+- Generate or centralize XSD facet validation metadata.
+- Add CPF/CNPJ validation and complete date/time validation.
+- Check generated/supplied DPS IDs for field consistency.
+- Implement cross-field National business rules from manuals and technical
+  notes.
+- Assign official rule/rejection codes where documented.
+- Distinguish format, schema, business, municipal-parameter, and remote errors.
+- Support collecting all issues and fail-fast operation.
+- Keep validation deterministic and free of network calls.
+- Add a separate validation layer that accepts resolved municipal parameters.
+
+Exit criteria:
+
+- local validation covers all documented rules that can be evaluated before
+  submission;
+- each rule has a source reference and positive/negative tests;
+- failures are stable enough for applications to present to users.
+
+### Phase 3: Add Parsing and Document Models
+
+- Parse unsigned and signed DPS XML safely.
+- Add a complete issued NFS-e read model.
+- Parse SEFIN success and rejection payloads.
+- Parse event requests and responses.
+- Preserve relevant signature material and unknown future fields where
+  possible.
+- Reject unsafe XML constructs and external entity resolution.
+- Add round-trip and official/sanitized fixture tests.
+
+Exit criteria:
+
+- callers can consume every document the library creates or receives;
+- parsing failures are structured and secure;
+- representative real documents round-trip without semantic loss.
+
+### Phase 4: Implement Signing and Verification
+
+- Confirm the exact National NFS-e XMLDSig profile from current official
+  documentation.
+- Define a low-level signer interface based on bytes/digests.
+- Provide Node adapters for PKCS#12/PFX and PEM credentials.
+- Support external/HSM/cloud signers without exporting private keys.
+- Sign the correct element by `Id` and insert `Signature` in schema order.
+- Verify digest, signature, certificate validity, and document reference.
+- Add deterministic cryptographic fixtures where possible.
+- Add tests against independently generated signatures.
+
+Exit criteria:
+
+- signed DPS and event documents validate against XSD;
+- signatures verify independently of this package;
+- supported credentials work without writing private material to disk;
+- certificate and signature failures are clearly categorized.
+
+### Phase 5: Implement the SEFIN Transport Layer
+
+- Re-read the latest official API manuals before fixing the transport contract.
+- Model environments and endpoints explicitly.
+- Support mutual TLS independently from XML signing configuration.
+- Implement DPS submission and parse generated NFS-e/rejections.
+- Add query operations needed for reconciliation.
+- Add timeout, abort signal, retry, and idempotency behavior.
+- Avoid retrying non-idempotent operations without a documented safe strategy.
+- Redact certificates, secrets, taxpayer data, and signed XML from logs by
+  default.
+- Provide a transport interface so tests can use fixtures and applications can
+  supply an HTTP implementation if necessary.
+
+Exit criteria:
+
+- a signed DPS can be submitted in the official test environment;
+- successful and rejected responses are typed;
+- network and remote business failures are actionable;
+- at least one sanitized end-to-end issuance fixture is retained.
+
+### Phase 6: Implement Events and Municipal Parameters
+
+- Model all event request variants in the current schema.
+- Generate event identifiers and XML.
+- Apply event-specific signatures and rules.
+- Submit, query, and parse event processing results.
+- Add typed municipal-parameter clients and caches.
+- Define cache freshness and invalidation behavior.
+- Feed resolved parameters into validation without coupling pure validation to
+  networking.
+
+Exit criteria:
+
+- the complete documented NFS-e lifecycle can be performed;
+- issuance decisions can use current municipal configuration;
+- event and parameter behavior is covered by restricted-production fixtures.
+
+### Phase 7: Schema and Version Lifecycle
+
+- Add an update command that downloads a new official schema bundle to a
+  staging location, verifies provenance, computes hashes, and reports diffs.
+- Never silently replace a supported schema version.
+- Support multiple National schema versions when a transition requires it.
+- Define how callers select a version and how versions affect public types.
+- Track technical notes separately from XSD releases.
+- Add contract tests that prevent accidental output changes.
+
+Exit criteria:
+
+- schema updates are reviewable and reproducible;
+- existing applications can pin a supported standard version;
+- compatibility patches are minimal, explicit, and tested.
+
+### Phase 8: Production Release Quality
+
+- Generate API reference documentation.
+- Add task-oriented guides for issuance, signing, errors, events, and parameter
+  lookup.
+- Publish an explicit support matrix.
+- Audit dependencies and XML/cryptographic attack surfaces.
+- Add benchmarks for schema validation, signing, parsing, and batch issuance.
+- Test package installation in clean ESM and CommonJS consumer projects.
+- Define semantic-versioning rules for types and emitted XML.
+- Publish release candidates before declaring `1.0.0`.
+
+Exit criteria:
+
+- documentation is sufficient without reading source;
+- releases are reproducible and provenance-enabled;
+- package behavior has been exercised by more than one consuming application;
+- security and compatibility policies are explicit.
+
+## Definition of Fully Fledged
+
+The project should not be described as fully fledged until all of these are
+true:
+
+- complete typed coverage of the supported National DPS schema;
+- complete serialization and safe parsing for DPS and issued NFS-e;
+- documented local validation of XSD facets and pre-submission business rules;
+- standards-compliant XML signing and signature verification;
+- typed SEFIN issuance and query clients;
+- typed lifecycle event support;
+- typed municipal-parameter access where required for issuance;
+- multi-version strategy for official schema evolution;
+- independently verifiable signed fixtures;
+- successful restricted-production issuance and event evidence;
+- CI, security controls, release automation, and consumer installation tests;
+- stable documentation and public compatibility policy.
+
+Supporting every legacy municipality format is explicitly **not** part of this
+definition.
+
+## Recommended Next Session
+
+Start with Phase 0 and the first part of Phase 1:
+
+1. review and commit the current baseline;
+2. add CI and packaged-consumer smoke tests;
+3. inventory every type reachable from `TCInfDPS`;
+4. create a tracked matrix mapping each XSD complex type to its TypeScript
+   type, serializer, semantic rules, and fixtures;
+5. replace one extension group end-to-end, preferably `comExt`, to establish
+   the repeatable implementation pattern.
+
+Do not begin by adding a convenience API or integrating another application.
+The highest-value work is completing and proving the canonical National wire
+model.
+
+## Working Commands
+
+```sh
+npm install
+npm run verify
+npm run test:coverage
+```
+
+Regenerate the embedded runtime schemas after an intentional schema change:
+
+```sh
+npm run generate:schemas
+```
+
+Inspect the publish artifact without using a potentially misconfigured global
+npm cache:
+
+```sh
+npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
+```
+
+## Key Files
+
+| File | Responsibility |
+| --- | --- |
+| `src/core/types.ts` | Current DPS wire-domain types |
+| `src/core/create.ts` | DPS creation and automatic ID integration |
+| `src/core/dps-id.ts` | Official DPS identifier formation |
+| `src/core/semantic-validation.ts` | Current local rules |
+| `src/core/serialize.ts` | DPS XML construction and ordering |
+| `src/validation/xsd.ts` | libxml2/WASM XSD validation |
+| `src/schemas/index.ts` | Bundled-schema public API |
+| `scripts/generate-schema-module.mjs` | XSD embedding and compatibility patch |
+| `schemas/manifest.json` | Schema provenance, hashes, and patch record |
+| `test/fixtures.ts` | Current valid common DPS fixture |
+| `test/xsd.test.ts` | XSD and schema-access verification |
+
+## Source of Truth
+
+The XSDs and official National NFS-e manuals/technical notes are the source of
+truth. The schema provenance URL is recorded in `schemas/manifest.json`.
+
+Because endpoints, technical notes, business rules, and schema versions can
+change, a future session must check the current official documentation before
+implementing signing, transport, or a new standard version.
