@@ -7,9 +7,10 @@ application to a CLI, YAML format, framework, storage layer, certificate
 provider, or municipal legacy layout.
 
 > Status: early development. Version 0.1 models and serializes the complete
-> unsigned DPS v1.01 wire structure and validates National NFS-e v1.01 XML
-> against the bundled official XSDs. XML parsing, signing, and SEFIN transport
-> remain future modules.
+> unsigned DPS v1.01 wire structure, applies deterministic local National
+> business rules, and validates National NFS-e v1.01 XML against the bundled
+> official XSDs. XML parsing, signing, and SEFIN transport remain future
+> modules.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -78,12 +79,41 @@ const xml = serializeDps(dps, { pretty: true });
 ```
 
 `createDps` derives the official 45-character `Id` from the municipality,
-provider CNPJ/CPF, series, and DPS number. You can supply `infDPS.Id` when
-importing an existing document.
+selected issuer CNPJ/CPF, series, and DPS number. You can supply `infDPS.Id`
+when importing an existing document.
 
 Fiscal decimal fields have XSD-specific constructors: `decimal15v2`,
 `decimal3v2`, `decimal2v2`, and `decimal1v2`. `decimal()` is the
 `decimal15v2` monetary default.
+
+## Validate local rules
+
+```ts
+import {
+  validateDps,
+  validateDpsWithMunicipalParameters,
+} from "nfse-js/core";
+
+const result = validateDps(dps);
+
+const municipalResult = validateDpsWithMunicipalParameters(dps, {
+  municipality: "3550308",
+  serviceCode: "010101",
+  providerMunicipalRegistrationRequired: false,
+  allowedDeductionModes: ["percentage", "value"],
+  allowedWithholding: ["1", "2"],
+});
+```
+
+Local validation covers centralized XSD facets, CPF/CNPJ check digits, real
+dates, DPS identifier consistency, and deterministic cross-field rules from
+the official v1.01 Annex I. Issues include a stable category, official
+rejection code where documented, and source metadata. Use
+`validateDps(dps, { mode: "fail-fast" })` to stop at the first issue.
+
+Municipal validation accepts already-resolved parameters and performs no
+network calls. Rules that require SEFIN, CNC, municipal parameter, or IBS/CBS
+calculator state are intentionally not guessed by the pure validator.
 
 ## Validate against the XSD
 
@@ -121,9 +151,8 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include complete local business-rule validation, secure XML
-parsing, XMLDSig signing, SEFIN API clients, typed event requests, and municipal
-parameter discovery.
+Planned modules include secure XML parsing, XMLDSig signing, SEFIN API clients,
+typed event requests, and municipal parameter discovery.
 
 ## Schema provenance
 

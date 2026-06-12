@@ -3,7 +3,9 @@ export {
   DpsValidationError,
   InvalidDpsIdError,
   NfseError,
+  type ValidationCategory,
   type ValidationIssue,
+  type ValidationSource,
   XsdValidationError,
   type XsdViolation,
 } from "./errors.js";

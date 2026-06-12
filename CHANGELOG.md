@@ -15,11 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Machine-checked DPS schema coverage manifest and canonical XML snapshots.
 - CI, dependency updates, package-content checks, and isolated ESM/CommonJS
   consumer smoke tests.
+- Centralized DPS XSD facet metadata, CPF/CNPJ check-digit validation, real
+  calendar validation, and DPS identifier consistency checks.
+- Source-linked National business rules with official rejection codes,
+  collect-all/fail-fast modes, and municipal-parameter-aware validation.
 
 ### Changed
 
 - Corrected foreign country validation to use two-letter ISO codes.
 - Added runtime cardinality checks for repeated DPS groups.
+- DPS identifiers are generated from the selected provider, customer, or
+  intermediary issuer rather than always using the provider.
 
 ### Documentation
 

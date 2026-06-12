@@ -15,10 +15,28 @@ export class InvalidDpsIdError extends NfseError {
   }
 }
 
+export type ValidationCategory =
+  | "format"
+  | "schema"
+  | "business"
+  | "municipal-parameter"
+  | "remote";
+
+export interface ValidationSource {
+  readonly document: string;
+  readonly version: string;
+  readonly section?: string;
+  readonly row?: number;
+  readonly url?: string;
+}
+
 export interface ValidationIssue {
   readonly path: string;
   readonly code: string;
+  readonly category: ValidationCategory;
   readonly message: string;
+  readonly officialCode?: string;
+  readonly source?: ValidationSource;
 }
 
 export class DpsValidationError extends NfseError {

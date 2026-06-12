@@ -13,7 +13,6 @@ exports[`DPS documents > matches the canonical 'IBS/CBS property address' XML fi
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -48,7 +47,7 @@ exports[`DPS documents > matches the canonical 'IBS/CBS property address' XML fi
     </valores>
     <IBSCBS>
       <finNFSe>0</finNFSe>
-      <cIndOp>100101</cIndOp>
+      <cIndOp>999999</cIndOp>
       <indDest>0</indDest>
       <imovel>
         <inscImobFisc>PROPERTY-2</inscImobFisc>
@@ -86,7 +85,6 @@ exports[`DPS documents > matches the canonical 'Simples Nacional approximate tax
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -137,7 +135,6 @@ exports[`DPS documents > matches the canonical 'common' XML fixture 1`] = `
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -188,7 +185,6 @@ exports[`DPS documents > matches the canonical 'construction CIB' XML fixture 1`
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -243,7 +239,6 @@ exports[`DPS documents > matches the canonical 'construction foreign address' XM
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -306,7 +301,6 @@ exports[`DPS documents > matches the canonical 'deduction percentage' XML fixtur
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -360,7 +354,6 @@ exports[`DPS documents > matches the canonical 'deduction value' XML fixture 1`]
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -414,7 +407,6 @@ exports[`DPS documents > matches the canonical 'event domestic address' XML fixt
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -476,7 +468,6 @@ exports[`DPS documents > matches the canonical 'monetary approximate taxes' XML 
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -531,7 +522,6 @@ exports[`DPS documents > matches the canonical 'municipal benefit percentage red
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -586,7 +576,6 @@ exports[`DPS documents > matches the canonical 'municipal benefit value reductio
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -641,7 +630,6 @@ exports[`DPS documents > matches the canonical 'municipal benefit without reduct
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -695,7 +683,6 @@ exports[`DPS documents > matches the canonical 'percentage approximate taxes' XM
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>
@@ -757,7 +744,6 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
       <CNPJ>12345678000195</CNPJ>
       <CAEPF>11111111111111</CAEPF>
       <IM>12345</IM>
-      <xNome>Example Services Ltda</xNome>
       <end>
         <endNac>
           <cMun>3550308</cMun>
@@ -779,6 +765,15 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
     <toma>
       <CPF>12345678909</CPF>
       <xNome>Example Customer</xNome>
+      <end>
+        <endNac>
+          <cMun>3550308</cMun>
+          <CEP>01001000</CEP>
+        </endNac>
+        <xLgr>Praca da Se</xLgr>
+        <nro>1</nro>
+        <xBairro>Se</xBairro>
+      </end>
     </toma>
     <interm>
       <cNaoNIF>2</cNaoNIF>
@@ -865,6 +860,10 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
             <dtEmiDoc>2026-06-01</dtEmiDoc>
             <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
             <vDeducaoReducao>5.00</vDeducaoReducao>
+            <fornec>
+              <CNPJ>12345678000195</CNPJ>
+              <xNome>Brazilian supplier</xNome>
+            </fornec>
           </docDedRed>
           <docDedRed>
             <NFNFS>
@@ -876,6 +875,10 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
             <dtEmiDoc>2026-06-01</dtEmiDoc>
             <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
             <vDeducaoReducao>5.00</vDeducaoReducao>
+            <fornec>
+              <CPF>12345678909</CPF>
+              <xNome>Individual supplier</xNome>
+            </fornec>
           </docDedRed>
           <docDedRed>
             <nDocFisc>FISCAL-1</nDocFisc>
@@ -883,6 +886,10 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
             <dtEmiDoc>2026-06-01</dtEmiDoc>
             <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
             <vDeducaoReducao>5.00</vDeducaoReducao>
+            <fornec>
+              <CNPJ>12345678000195</CNPJ>
+              <xNome>Brazilian supplier</xNome>
+            </fornec>
           </docDedRed>
           <docDedRed>
             <nDoc>NON-FISCAL-1</nDoc>
@@ -900,8 +907,7 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
       </vDedRed>
       <trib>
         <tribMun>
-          <tribISSQN>3</tribISSQN>
-          <cPaisResult>US</cPaisResult>
+          <tribISSQN>1</tribISSQN>
           <tpRetISSQN>1</tpRetISSQN>
         </tribMun>
         <tribFed>
@@ -912,14 +918,14 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
             <pAliqCofins>2.00</pAliqCofins>
             <vPis>1.00</vPis>
             <vCofins>2.00</vCofins>
-            <tpRetPisCofins>0</tpRetPisCofins>
+            <tpRetPisCofins>1</tpRetPisCofins>
           </piscofins>
           <vRetCP>1.00</vRetCP>
           <vRetIRRF>1.00</vRetIRRF>
           <vRetCSLL>1.00</vRetCSLL>
         </tribFed>
         <totTrib>
-          <indTotTrib>0</indTotTrib>
+          <pTotTribSN>6.00</pTotTribSN>
         </totTrib>
       </trib>
     </valores>
@@ -981,7 +987,7 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
               <xNome>Brazilian supplier</xNome>
             </fornec>
             <dtEmiDoc>2026-06-01</dtEmiDoc>
-            <dtCompDoc>2026-06-01</dtCompDoc>
+            <dtCompDoc>2025-12-31</dtCompDoc>
             <tpReeRepRes>01</tpReeRepRes>
             <vlrReeRepRes>5.00</vlrReeRepRes>
           </documentos>
@@ -1036,7 +1042,6 @@ exports[`DPS documents > matches the canonical 'suspended enforceability' XML fi
     <cLocEmi>3550308</cLocEmi>
     <prest>
       <CNPJ>12345678000195</CNPJ>
-      <xNome>Example Services Ltda</xNome>
       <regTrib>
         <opSimpNac>1</opSimpNac>
         <regEspTrib>0</regEspTrib>

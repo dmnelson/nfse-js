@@ -60,8 +60,8 @@ describe("XSD validation", () => {
 
   it("formats aggregate validation errors", () => {
     const dpsError = new DpsValidationError([
-      { path: "a", code: "bad", message: "first" },
-      { path: "b", code: "bad", message: "second" },
+      { path: "a", code: "bad", category: "business", message: "first" },
+      { path: "b", code: "bad", category: "business", message: "second" },
     ]);
     const xsdError = new XsdValidationError([{ message: "first" }, { message: "second", line: 2 }]);
 

@@ -37,11 +37,11 @@ describe("DPS documents", () => {
     expect(validateDps(invalid)).toEqual({
       valid: false,
       issues: [
-        {
+        expect.objectContaining({
           path: "infDPS.dCompet",
-          code: "format",
-          message: "must use YYYY-MM-DD",
-        },
+          code: "facet",
+          category: "schema",
+        }),
       ],
     });
   });
@@ -130,7 +130,7 @@ describe("DPS documents", () => {
     };
 
     expect(validateDps(invalid).issues).toContainEqual(
-      expect.objectContaining({ path: "infDPS.cMotivoEmisTI", code: "unexpected" }),
+      expect.objectContaining({ path: "infDPS.cMotivoEmisTI", code: "E0029" }),
     );
   });
 

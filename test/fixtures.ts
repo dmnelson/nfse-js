@@ -24,7 +24,6 @@ export function validDpsInput(): DpsInput {
       cLocEmi: "3550308",
       prest: {
         CNPJ: "12345678000195",
-        xNome: "Example Services Ltda",
         regTrib: {
           opSimpNac: "1",
           regEspTrib: "0",
@@ -189,7 +188,7 @@ export function schemaCoverageDpsInputs(): readonly NamedDpsFixture[] {
       name: "IBS/CBS property address",
       input: withIbsCbs(base, {
         finNFSe: "0",
-        cIndOp: "100101",
+        cIndOp: "999999",
         indDest: "0",
         imovel: {
           inscImobFisc: "PROPERTY-2",
@@ -238,6 +237,19 @@ function specializedGroupsInput(base: DpsInput): DpsInput {
           opSimpNac: "3",
           regApTribSN: "1",
           regEspTrib: "0",
+        },
+      },
+      toma: {
+        CPF: "12345678909",
+        xNome: "Example Customer",
+        end: {
+          endNac: {
+            cMun: "3550308",
+            CEP: "01001000",
+          },
+          xLgr: "Praca da Se",
+          nro: "1",
+          xBairro: "Se",
         },
       },
       interm: {
@@ -304,8 +316,7 @@ function specializedGroupsInput(base: DpsInput): DpsInput {
         },
         trib: {
           tribMun: {
-            tribISSQN: "3",
-            cPaisResult: "US",
+            tribISSQN: "1",
             tpRetISSQN: "1",
           },
           tribFed: {
@@ -316,14 +327,14 @@ function specializedGroupsInput(base: DpsInput): DpsInput {
               pAliqCofins: decimal2v2("2.00"),
               vPis: decimal15v2("1.00"),
               vCofins: decimal15v2("2.00"),
-              tpRetPisCofins: "0",
+              tpRetPisCofins: "1",
             },
             vRetCP: decimal15v2("1.00"),
             vRetIRRF: decimal15v2("1.00"),
             vRetCSLL: decimal15v2("1.00"),
           },
           totTrib: {
-            indTotTrib: "0",
+            pTotTribSN: decimal2v2("6.00"),
           },
         },
       },
@@ -399,6 +410,10 @@ function deductionDocuments(): readonly DeductionDocument[] {
         nNFSeMun: "1".repeat(15),
         cVerifNFSeMun: "ABC123",
       },
+      fornec: {
+        CNPJ: "12345678000195",
+        xNome: "Brazilian supplier",
+      },
     },
     {
       ...common,
@@ -407,8 +422,19 @@ function deductionDocuments(): readonly DeductionDocument[] {
         modNFS: "2".repeat(15),
         serieNFS: "SERIE1",
       },
+      fornec: {
+        CPF: "12345678909",
+        xNome: "Individual supplier",
+      },
     },
-    { ...common, nDocFisc: "FISCAL-1" },
+    {
+      ...common,
+      nDocFisc: "FISCAL-1",
+      fornec: {
+        CNPJ: "12345678000195",
+        xNome: "Brazilian supplier",
+      },
+    },
     {
       ...common,
       nDoc: "NON-FISCAL-1",
@@ -446,6 +472,7 @@ function reimbursementDocuments(): readonly ReimbursementDocument[] {
     },
     {
       ...common,
+      dtCompDoc: "2025-12-31",
       docFiscalOutro: {
         cMunDocFiscal: "3550308",
         nDocFiscal: "FISCAL-2",

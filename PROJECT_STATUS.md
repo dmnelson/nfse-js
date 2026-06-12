@@ -45,13 +45,13 @@ At this handoff:
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 62 tests pass, including 15 canonical XML snapshots and XSD validation for
+- 75 tests pass, including 15 canonical XML snapshots and XSD validation for
   every named schema-coverage fixture.
-- `npm run test:coverage` reports 100% statements, functions, and lines, with
-  94.06% branch coverage for the current code.
+- `npm run test:coverage` reports 88.71% statements, 100% functions, 88.65%
+  lines, and 83.08% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 497,382 bytes packed across 43 files.
+- The current package-size baseline is 617,855 bytes packed across 43 files.
 
 ## Implemented Functionality
 
@@ -77,7 +77,8 @@ newer is required.
 - defaults the standard version to `1.01`;
 - preserves a caller-supplied `infDPS.Id`;
 - otherwise generates the official 45-character DPS identifier;
-- supports automatic identifier generation for CNPJ and CPF providers.
+- supports automatic identifier generation for CNPJ and CPF providers,
+  customers, and intermediaries according to `tpEmit`.
 
 Automatic DPS ID generation intentionally rejects NIF and `cNaoNIF`, because
 the documented DPS identifier formation requires a Brazilian federal
@@ -137,20 +138,27 @@ serialized as supplied, avoiding JavaScript floating-point changes.
 
 ### Semantic Validation
 
-`validateDps` and `assertValidDps` currently check:
+`validateDps` and `assertValidDps` use centralized v1.01 simple-type facets and
+check:
 
-- the basic DPS ID shape;
-- municipality, CNPJ, CPF, CEP, service code, ISO country, series, and DPS
-  number formats;
-- basic date and timestamp string shapes;
-- the main service value decimal shape;
-- cardinality for order items, deduction documents, referenced NFS-e, and
-  IBS/CBS reimbursement documents;
-- customer/intermediary issuer reason requirements;
-- the inverse provider issuer rule;
-- the requirement for `xMotivo` when substitution reason is `99`.
+- DPS identifier shape and consistency with the selected issuer fields;
+- CPF and CNPJ check digits;
+- real Gregorian dates and the official timestamp offset profile;
+- municipality, CEP, country, service, series, DPS number, key, text-length,
+  and decimal facets used by the modeled DPS tree;
+- cardinality for every repeated DPS group;
+- issuer, substitution, rejected-NFS-e, tax-regime, foreign-trade,
+  construction, event, deduction, ISSQN, federal-tax, total-tax, and IBS/CBS
+  dependencies that can be decided from the document alone;
+- exact decimal arithmetic for PIS/COFINS and monetary comparison rules.
 
-Validation returns structured issues containing `path`, `code`, and `message`.
+Validation can collect all issues or stop at the first issue. Structured
+issues include `path`, `code`, `category`, `message`, optional
+`officialCode`, and source metadata. `NATIONAL_DPS_RULES` records the Annex I
+sheet row and official URL for implemented rejection rules.
+
+`validateDpsWithMunicipalParameters` adds deterministic checks against
+already-resolved municipal parameters without coupling the core to networking.
 
 ### XML Serialization
 
@@ -207,25 +215,22 @@ the XSD. It does not prove that:
 
 Do not advertise the current version as able to issue NFS-e.
 
-### Semantic validation is intentionally sparse
+### Some validation requires resolved or remote state
 
-The current validator does not implement the complete XSD facets or National
-business rules. Examples of missing validation include:
+The pure validator intentionally does not decide rules that depend on:
 
-- CPF and CNPJ check digits;
-- real calendar-date validation rather than shape-only regular expressions;
-- consistency between a supplied DPS `Id` and `cLocEmi`, provider identity,
-  series, and number;
-- exact length, pattern, and range constraints for every non-decimal field;
-- required/forbidden field combinations across tax regimes;
-- ISSQN incidence, immunity, export, withholding, benefit, and suspension
-  dependencies;
-- substitution and rejected-NFS-e rules beyond the one `99` case;
-- foreign service and foreign taxpayer dependencies;
-- cross-field deductions, construction, event, foreign trade, and IBS/CBS
-  rules;
-- rules derived from municipal parameters;
-- rules identified by official error/rejection codes.
+- SEFIN processing time, receiving environment, taxpayer authorization, CNC,
+  or document existence;
+- municipal service, rate, withholding, benefit, or deduction configuration
+  that has not been supplied to `validateDpsWithMunicipalParameters`;
+- current IBS/CBS calculator tables and classification indicators;
+- authoritative IBGE, ISO, BACEN, NBS, and operation-code table membership
+  beyond the XSD shape;
+- NFS-e access-key check digits where the official algorithm is not present in
+  the bundled XSD or current contributor API manual.
+
+These failures belong to municipal-parameter or remote validation rather than
+being guessed by local code.
 
 ### No XML parsing or round trip
 
@@ -376,16 +381,18 @@ Exit criteria:
 
 ### Phase 2: Build a Validation Rule Engine
 
-- Generate or centralize XSD facet validation metadata.
-- Add CPF/CNPJ validation and complete date/time validation.
-- Check generated/supplied DPS IDs for field consistency.
-- Implement cross-field National business rules from manuals and technical
+- [x] Generate or centralize XSD facet validation metadata.
+- [x] Add CPF/CNPJ validation and complete date/time validation.
+- [x] Check generated/supplied DPS IDs for field consistency.
+- [x] Implement cross-field National business rules from manuals and technical
   notes.
-- Assign official rule/rejection codes where documented.
-- Distinguish format, schema, business, municipal-parameter, and remote errors.
-- Support collecting all issues and fail-fast operation.
-- Keep validation deterministic and free of network calls.
-- Add a separate validation layer that accepts resolved municipal parameters.
+- [x] Assign official rule/rejection codes where documented.
+- [x] Distinguish format, schema, business, municipal-parameter, and remote
+  errors.
+- [x] Support collecting all issues and fail-fast operation.
+- [x] Keep validation deterministic and free of network calls.
+- [x] Add a separate validation layer that accepts resolved municipal
+  parameters.
 
 Exit criteria:
 
@@ -526,16 +533,14 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 2 while keeping the missing remote repository as a separate
+Proceed with Phase 3 while keeping the missing remote repository as a separate
 operational task:
 
-1. centralize the simple-type facets used by DPS fields;
-2. implement CPF/CNPJ check digits and real date/time validation;
-3. verify supplied DPS IDs against their source fields;
-4. add documented cross-field rules with stable categories and source
-   references;
-5. introduce municipal-parameter-aware validation without adding network calls
-   to the pure validator.
+1. add a hardened XML parser that rejects DTD/entity input;
+2. parse unsigned and signed DPS into the canonical model;
+3. add issued NFS-e, SEFIN response, and event read models;
+4. preserve signature XML and unknown forward-compatible elements;
+5. add round-trip and sanitized response fixtures.
 
 ## Working Commands
 
@@ -565,7 +570,10 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/core/types.ts` | Current DPS wire-domain types |
 | `src/core/create.ts` | DPS creation and automatic ID integration |
 | `src/core/dps-id.ts` | Official DPS identifier formation |
+| `src/core/facets.ts` | Centralized v1.01 simple-type facets |
+| `src/core/rules.ts` | Source-linked National rejection-rule metadata |
 | `src/core/semantic-validation.ts` | Current local rules |
+| `src/core/tax-id.ts` | CPF and CNPJ check-digit validation |
 | `src/core/serialize.ts` | DPS XML construction and ordering |
 | `schemas/1.01/dps-coverage.json` | Machine-checked `TCInfDPS` coverage matrix |
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
