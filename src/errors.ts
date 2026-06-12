@@ -47,6 +47,18 @@ export class DpsValidationError extends NfseError {
   }
 }
 
+export class EventValidationError extends NfseError {
+  constructor(readonly issues: readonly ValidationIssue[]) {
+    const first = issues[0]?.message ?? "Unknown validation failure";
+    const remaining = Math.max(issues.length - 1, 0);
+    super(
+      remaining > 0
+        ? `Invalid event request: ${first} (+${remaining} more)`
+        : `Invalid event request: ${first}`,
+    );
+  }
+}
+
 export type XmlParseErrorCode =
   | "document-too-large"
   | "unsafe-xml"

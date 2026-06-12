@@ -249,12 +249,71 @@ active environment requires gzip/base64 JSON, use
 `gzipBase64XmlJsonPayload(xml, propertyName)` with the property name from that
 environment's Swagger instead of relying on a guessed field.
 
+## Build event requests
+
+```ts
+import { createEventRequest, serializeEventRequest } from "nfse-js/events";
+import { signEventRequestXml } from "nfse-js/signing";
+
+const request = createEventRequest({
+  infPedReg: {
+    tpAmb: "2",
+    verAplic: "my-application",
+    dhEvento: "2026-06-12T10:00:00-03:00",
+    autor: { CNPJAutor: "12345678000195" },
+    chNFSe: accessKey,
+    evento: {
+      code: "e101101",
+      cMotivo: "1",
+      xMotivo: "Documento emitido incorretamente",
+    },
+  },
+});
+
+const eventXml = serializeEventRequest(request);
+const signedEventXml = await signEventRequestXml(eventXml, signer);
+```
+
+All 16 request variants in the v1.01 event schema are discriminated TypeScript
+unions. The library generates the official fixed descriptions and `PRE`
+identifier, validates local facets and references, serializes in XSD order,
+and reuses the signing and transport modules for registration.
+
+## Resolve municipal parameters
+
+```ts
+import { createMunicipalParameterResolver } from "nfse-js/parameters";
+
+const parameters = createMunicipalParameterResolver({
+  client: sefin,
+  ttlMs: 5 * 60_000,
+  map(snapshot) {
+    return mapCurrentSwaggerResponses(snapshot);
+  },
+});
+
+const resolved = await parameters.resolve({
+  municipality: "3550308",
+  serviceCode: "010101",
+  contributorTaxId: "12345678000195",
+});
+```
+
+The resolver fetches convention, service, and optional contributor parameters,
+deduplicates concurrent requests, applies bounded TTL caching, and returns the
+same `ResolvedMunicipalParameters` contract consumed by
+`validateDpsWithMunicipalParameters`. The current public manuals do not define
+stable response fields, so raw responses remain lossless and applications
+provide an explicit mapper for the active Swagger version.
+
 ## Entry points
 
 | Import | Purpose |
 | --- | --- |
 | `nfse-js` | Full public API |
 | `nfse-js/core` | Types, DPS IDs, semantic validation, XML generation |
+| `nfse-js/events` | Event IDs, typed request construction, validation, XML |
+| `nfse-js/parameters` | Municipal parameter resolution and bounded caching |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
 | `nfse-js/signing` | XML signing, credentials, and signature verification |
 | `nfse-js/transport` | SEFIN/ADN clients, retries, timeouts, and mutual TLS |
@@ -267,8 +326,8 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include event construction/serialization and municipal
-parameter discovery.
+Planned work focuses on schema/version lifecycle, live conformance evidence,
+and production release quality.
 
 ## Schema provenance
 

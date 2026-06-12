@@ -25,6 +25,10 @@ try {
     "dist/index.d.ts",
     "dist/core/index.js",
     "dist/core/index.cjs",
+    "dist/events/index.js",
+    "dist/events/index.cjs",
+    "dist/parameters/index.js",
+    "dist/parameters/index.cjs",
     "dist/parsing/index.js",
     "dist/parsing/index.cjs",
     "dist/signing/index.js",
@@ -76,6 +80,8 @@ try {
     join(consumerDirectory, "esm.mjs"),
     `import assert from "node:assert/strict";
 import { createDps, decimal, serializeDps } from "nfse-js/core";
+import { buildEventRequestId } from "nfse-js/events";
+import { createMunicipalParameterResolver } from "nfse-js/parameters";
 import { parseDpsXml, parseSefinDocumentResponse } from "nfse-js/parsing";
 import { NATIONAL_NFSE_XMLDSIG_PROFILE } from "nfse-js/signing";
 import { getNationalNfseSchemas } from "nfse-js/schemas";
@@ -112,6 +118,8 @@ const dps = createDps({
 
 const xml = serializeDps(dps);
 assert.deepEqual(parseDpsXml(xml).document, dps);
+assert.match(buildEventRequestId("1".repeat(50), "e101101"), /^PRE\\d{56}$/);
+assert.equal(typeof createMunicipalParameterResolver, "function");
 assert.equal(parseSefinDocumentResponse('{"errors":["rejected"]}', { status: 422 }).kind, "rejection");
 assert.match(NATIONAL_NFSE_XMLDSIG_PROFILE.signatureAlgorithm, /rsa-sha256$/);
 assert.match(NATIONAL_SEFIN_ENDPOINTS.production.sefin, /^https:/);
@@ -124,6 +132,8 @@ assert.equal((await validateDpsXml(xml, { throwOnInvalid: false })).valid, true)
     join(consumerDirectory, "commonjs.cjs"),
     `const assert = require("node:assert/strict");
 const core = require("nfse-js/core");
+const events = require("nfse-js/events");
+const parameters = require("nfse-js/parameters");
 const parsing = require("nfse-js/parsing");
 const schemas = require("nfse-js/schemas");
 const signing = require("nfse-js/signing");
@@ -131,6 +141,8 @@ const transport = require("nfse-js/transport");
 const validation = require("nfse-js/validation");
 
 assert.equal(typeof core.serializeDps, "function");
+assert.equal(typeof events.serializeEventRequest, "function");
+assert.equal(typeof parameters.createMunicipalParameterResolver, "function");
 assert.equal(typeof parsing.parseDpsXml, "function");
 assert.equal(typeof parsing.parseNfseXml, "function");
 assert.equal(typeof parsing.parseRegisteredEventXml, "function");

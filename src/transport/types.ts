@@ -19,6 +19,9 @@ export type SefinOperation =
   | "get-event"
   | "get-adn-document"
   | "get-adn-events"
+  | "get-municipal-convention"
+  | "get-municipal-service"
+  | "get-municipal-contributor"
   | "custom";
 
 export type SefinHttpMethod = "GET" | "HEAD" | "POST";

@@ -50,6 +50,20 @@ export interface SefinClient {
   ): Promise<SefinDocumentResponse>;
   getAdnDocument(nsu: string, options?: SefinCallOptions): Promise<SefinDocumentResponse>;
   getAdnEvents(accessKey: string, options?: SefinCallOptions): Promise<SefinDocumentResponse>;
+  getMunicipalConvention(
+    municipality: string,
+    options?: SefinCallOptions,
+  ): Promise<SefinValueResponse>;
+  getMunicipalServiceParameters(
+    municipality: string,
+    serviceCode: string,
+    options?: SefinCallOptions,
+  ): Promise<SefinValueResponse>;
+  getMunicipalContributorParameters(
+    municipality: string,
+    taxId: string,
+    options?: SefinCallOptions,
+  ): Promise<SefinValueResponse>;
   request(request: SefinHttpRequest): Promise<SefinHttpResponse>;
 }
 
@@ -93,12 +107,12 @@ export function createSefinClient(options: SefinClientOptions): SefinClient {
     getDpsAccessKey(dpsId, callOptions) {
       return valueRequest(
         execute,
-        endpoints,
         "get-dps-access-key",
         "GET",
         `dps/${pathSegment(dpsId, "dpsId")}`,
         callOptions,
         timeoutMs,
+        endpoints.sefin,
       );
     },
     async hasNfseForDps(dpsId, callOptions) {
@@ -198,6 +212,39 @@ export function createSefinClient(options: SefinClientOptions): SefinClient {
         callOptions,
         timeoutMs,
         endpoints.adnContributor,
+      );
+    },
+    getMunicipalConvention(municipality, callOptions) {
+      return valueRequest(
+        execute,
+        "get-municipal-convention",
+        "GET",
+        `parametros_municipais/${pathSegment(municipality, "municipality")}/convenio`,
+        callOptions,
+        timeoutMs,
+        endpoints.municipalParameters,
+      );
+    },
+    getMunicipalServiceParameters(municipality, serviceCode, callOptions) {
+      return valueRequest(
+        execute,
+        "get-municipal-service",
+        "GET",
+        `parametros_municipais/${pathSegment(municipality, "municipality")}/${pathSegment(serviceCode, "serviceCode")}`,
+        callOptions,
+        timeoutMs,
+        endpoints.municipalParameters,
+      );
+    },
+    getMunicipalContributorParameters(municipality, taxId, callOptions) {
+      return valueRequest(
+        execute,
+        "get-municipal-contributor",
+        "GET",
+        `parametros_municipais/${pathSegment(municipality, "municipality")}/${pathSegment(taxId, "taxId")}`,
+        callOptions,
+        timeoutMs,
+        endpoints.municipalParameters,
       );
     },
     request: execute,
@@ -321,15 +368,15 @@ async function documentRequest(
 
 async function valueRequest(
   execute: (request: SefinHttpRequest) => Promise<SefinHttpResponse>,
-  endpoints: SefinEndpoints,
   operation: SefinOperation,
   method: SefinHttpMethod,
   path: string,
   options: SefinCallOptions | undefined,
   defaultTimeoutMs: number,
+  baseUrl: string,
 ): Promise<SefinValueResponse> {
   const response = await execute(
-    createRequest(endpoints.sefin, operation, method, path, undefined, options, defaultTimeoutMs),
+    createRequest(baseUrl, operation, method, path, undefined, options, defaultTimeoutMs),
   );
   return {
     ...metadata(operation, response),

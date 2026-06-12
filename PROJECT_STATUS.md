@@ -48,25 +48,27 @@ At this handoff:
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 127 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
+- 151 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
   received-document fixtures, and XSD validation for every named
   schema-coverage fixture.
-- `npm run test:coverage` reports 89.75% statements, 100% functions, 89.64%
-  lines, and 82.64% branch coverage for the current code.
+- `npm run test:coverage` reports 90.56% statements, 100% functions, 90.47%
+  lines, and 83.63% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 1,052,666 bytes packed across 65 files.
+- The current package-size baseline is 1,113,264 bytes packed across 81 files.
 
 ## Implemented Functionality
 
 ### Package Structure
 
-One package exposes seven entry points:
+One package exposes nine entry points:
 
 | Entry point | Current purpose |
 | --- | --- |
 | `nfse-js` | Aggregated public API |
 | `nfse-js/core` | DPS types, creation, IDs, validation, and XML serialization |
+| `nfse-js/events` | Event IDs, typed request construction, validation, and XML |
+| `nfse-js/parameters` | Municipal parameter resolution and bounded caching |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
 | `nfse-js/signing` | XML signing, credential adapters, and signature verification |
 | `nfse-js/transport` | SEFIN/ADN operations and Node HTTP/mTLS transport |
@@ -276,6 +278,43 @@ gzip/base64 JSON helper whose property name must come from the current
 environment Swagger. It does not hard-code a wrapper property that is absent
 from the accessible manuals.
 
+### Event Construction
+
+The events entry point:
+
+- models all 16 request variants in `tiposEventos_v1.01.xsd` as discriminated
+  unions;
+- generates the official `PRE` request identifier from access key and event
+  code;
+- generates registered-event `EVT` identifiers from request identifiers and
+  three-digit sequences;
+- supplies the fixed official event descriptions instead of accepting mutable
+  caller text;
+- validates timestamps, access keys, CPF/CNPJ values, reasons, process numbers,
+  referenced event identifiers, and supplied identifier consistency;
+- serializes every request variant in exact XSD order;
+- produces unsigned event requests that validate against the official schema;
+- composes with the signing module and transport event operations.
+
+All 16 variants have XSD and parser round-trip tests. Rules depending on an
+existing NFS-e, prior event state, author role, or receiving environment remain
+remote rules and are not guessed locally.
+
+### Municipal Parameter Resolution
+
+The parameters entry point:
+
+- fetches convention, service, and optional contributor parameter responses;
+- preserves the complete raw JSON/string responses and HTTP metadata;
+- requires an explicit mapper into `ResolvedMunicipalParameters` because the
+  accessible manuals do not define stable response property schemas;
+- deduplicates concurrent lookups;
+- uses a bounded time-to-live cache with explicit bypass, invalidation, and
+  clear operations;
+- passes abort, timeout, and correlation headers to the transport client;
+- returns the exact parameter contract consumed by
+  `validateDpsWithMunicipalParameters`.
+
 ## Important Current Limitations
 
 ### XSD-valid does not mean SEFIN-valid
@@ -345,23 +384,17 @@ does not yet contain:
 The client deliberately avoids automatic POST retries and accepts explicit
 payload encoders rather than guessing undocumented wrapper names.
 
-### Events are read-only
+### Remote event rules and parameter response schemas remain operational
 
-Event request and registered-event documents can be parsed, but there are no:
+Event construction covers all schema-local fields, but acceptance still
+depends on remote NFS-e existence, author roles, prior event state, municipal
+permissions, and receiving-environment rules.
 
-- event ID builders;
-- event serializers;
-- event signatures;
-- event-specific business rules;
-
-### Municipal parameters are absent
-
-National standard adoption does not eliminate municipality-specific
-configuration. A complete implementation still needs typed clients and models
-for relevant National parameter services, including service availability,
-rates, withholding, benefits, special regimes, and other issuance constraints.
-
-This must remain National-API support, not municipality-specific DPS layouts.
+Municipal parameter routes and caching are implemented, but the public manuals
+do not publish stable response field names. An application must provide a
+version-specific mapper from lossless responses into
+`ResolvedMunicipalParameters` until current Swagger contracts can be recorded
+as sanitized fixtures.
 
 ### No conformance evidence from homologation
 
@@ -530,20 +563,20 @@ Exit criteria:
 
 ### Phase 6: Implement Events and Municipal Parameters
 
-- Model all event request variants in the current schema.
-- Generate event identifiers and XML.
-- Apply event-specific signatures and rules.
-- Submit, query, and parse event processing results.
-- Add typed municipal-parameter clients and caches.
-- Define cache freshness and invalidation behavior.
-- Feed resolved parameters into validation without coupling pure validation to
+- [x] Model all event request variants in the current schema.
+- [x] Generate event identifiers and XML.
+- [x] Apply event-specific signatures and deterministic local rules.
+- [x] Submit, query, and parse event processing results.
+- [x] Add typed municipal-parameter clients and caches.
+- [x] Define cache freshness and invalidation behavior.
+- [x] Feed resolved parameters into validation without coupling pure validation to
   networking.
 
 Exit criteria:
 
-- the complete documented NFS-e lifecycle can be performed;
-- issuance decisions can use current municipal configuration;
-- event and parameter behavior is covered by restricted-production fixtures.
+- [x] the complete documented NFS-e lifecycle has implementation-level APIs;
+- [x] issuance decisions can use mapped current municipal configuration;
+- [ ] event and parameter behavior is covered by restricted-production fixtures.
 
 ### Phase 7: Schema and Version Lifecycle
 
@@ -603,15 +636,14 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 6 while retaining the live Phase 4/5 conformance tasks:
+Proceed with Phase 7 while retaining the live Phase 4-6 conformance tasks:
 
-1. model current event request variants and deterministic event identifiers;
-2. serialize event requests in schema order and reuse the signing module;
-3. model municipal parameter responses and add bounded caching;
-4. feed fetched parameters into pure validation without adding network access
-   to the core;
-5. capture signed and transport conformance evidence when restricted-production
-   credentials are available.
+1. add a reproducible schema-download and diff command;
+2. model explicit standard-version selection and compatibility policy;
+3. add contract tests preventing accidental wire changes;
+4. track technical notes separately from XSD releases;
+5. capture signed, issuance, event, and parameter evidence when
+   restricted-production credentials are available.
 
 ## Working Commands
 
@@ -646,6 +678,11 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/core/semantic-validation.ts` | Current local rules |
 | `src/core/tax-id.ts` | CPF and CNPJ check-digit validation |
 | `src/core/serialize.ts` | DPS XML construction and ordering |
+| `src/events/types.ts` | All current event request variants |
+| `src/events/ids.ts` | Official request and registered-event identifiers |
+| `src/events/serialize.ts` | Schema-ordered event request XML |
+| `src/events/validation.ts` | Deterministic event request checks |
+| `src/parameters/resolver.ts` | Municipal response mapping and TTL cache |
 | `src/parsing/xml.ts` | Hardened bounded XML front end |
 | `src/parsing/dps.ts` | Complete DPS XML parser |
 | `src/parsing/nfse.ts` | Issued NFS-e read model and parser |

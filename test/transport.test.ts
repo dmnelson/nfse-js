@@ -23,6 +23,7 @@ const DPS_ID = `DPS${"2".repeat(42)}`;
 const DPS_XML = serializeDps(validDpsInput());
 const SEFIN_BASE = "http://sefin.test/api";
 const ADN_BASE = "http://adn.test/contribuintes";
+const PARAMETERS_BASE = "http://parameters.test/api";
 
 describe("SEFIN client", () => {
   it("submits raw DPS XML and parses a generated document response", async () => {
@@ -62,6 +63,9 @@ describe("SEFIN client", () => {
       response(200, DPS_XML, "application/xml"),
       response(200, DPS_XML, "application/xml"),
       response(200, DPS_XML, "application/xml"),
+      response(200, JSON.stringify({ convenio: true }), "application/json"),
+      response(200, JSON.stringify({ aliquota: "5.00" }), "application/json"),
+      response(200, JSON.stringify({ retencao: true }), "application/json"),
     ]);
     const client = testClient(transport);
 
@@ -74,6 +78,9 @@ describe("SEFIN client", () => {
     await client.getEvent(ACCESS_KEY, "101101", 1);
     await client.getAdnDocument("000000000000001");
     await client.getAdnEvents(ACCESS_KEY);
+    await client.getMunicipalConvention("3550308");
+    await client.getMunicipalServiceParameters("3550308", "010101");
+    await client.getMunicipalContributorParameters("3550308", "12345678000195");
 
     expect(transport.requests.map((request) => `${request.method} ${request.url}`)).toEqual([
       `GET ${SEFIN_BASE}/nfse/${ACCESS_KEY}`,
@@ -85,6 +92,9 @@ describe("SEFIN client", () => {
       `GET ${SEFIN_BASE}/nfse/${ACCESS_KEY}/eventos/101101/1`,
       `GET ${ADN_BASE}/DFe/000000000000001`,
       `GET ${ADN_BASE}/NFSe/${ACCESS_KEY}/Eventos`,
+      `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/convenio`,
+      `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/010101`,
+      `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/12345678000195`,
     ]);
   });
 
@@ -430,7 +440,7 @@ function testClient(
     endpoints: {
       sefin: SEFIN_BASE,
       adnContributor: ADN_BASE,
-      municipalParameters: "http://parameters.test/api",
+      municipalParameters: PARAMETERS_BASE,
     },
     ...options,
   });

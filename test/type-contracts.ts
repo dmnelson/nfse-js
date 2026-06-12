@@ -12,6 +12,7 @@ import {
   type SimpleAddress,
   type TotalTax,
 } from "../src/core/index.js";
+import type { EventRequestPayload } from "../src/events/index.js";
 
 function assertTypeContracts(): void {
   const money = "" as Decimal15V2;
@@ -33,6 +34,11 @@ function assertTypeContracts(): void {
     xBairro: "Centre",
   };
   const validTotal: TotalTax = { pTotTribSN: simplePercentage };
+  const validEvent: EventRequestPayload = {
+    code: "e101101",
+    cMotivo: "1",
+    xMotivo: "Documento emitido incorretamente",
+  };
 
   // @ts-expect-error XSD choice permits only one municipal benefit reduction.
   const invalidBenefit: MunicipalBenefit = {
@@ -73,6 +79,11 @@ function assertTypeContracts(): void {
     integerDigits: 1,
     fractionDigits: 0,
   });
+  const invalidEvent: EventRequestPayload = {
+    code: "e202201",
+    // @ts-expect-error Event payload fields are selected by the event code.
+    cMotivo: "1",
+  };
 
   void [
     validBenefit,
@@ -83,6 +94,7 @@ function assertTypeContracts(): void {
     validReference,
     validSimpleAddress,
     validTotal,
+    validEvent,
     invalidBenefit,
     invalidConstruction,
     invalidDeduction,
@@ -93,6 +105,7 @@ function assertTypeContracts(): void {
     invalidTotal,
     invalidDecimal,
     invalidCustomDecimal,
+    invalidEvent,
   ];
 }
 

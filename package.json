@@ -46,6 +46,16 @@
       "import": "./dist/core/index.js",
       "require": "./dist/core/index.cjs"
     },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "import": "./dist/events/index.js",
+      "require": "./dist/events/index.cjs"
+    },
+    "./parameters": {
+      "types": "./dist/parameters/index.d.ts",
+      "import": "./dist/parameters/index.js",
+      "require": "./dist/parameters/index.cjs"
+    },
     "./parsing": {
       "types": "./dist/parsing/index.d.ts",
       "import": "./dist/parsing/index.js",
