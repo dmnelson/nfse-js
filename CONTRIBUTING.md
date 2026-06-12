@@ -22,3 +22,13 @@ bundle:
 ```sh
 npm run generate:schemas
 ```
+
+Stage a candidate official bundle before making any intentional schema change:
+
+```sh
+npm run schema:stage -- --source /path/to/schemas.zip --version 1.01
+```
+
+Review the generated hash report under `.schema-staging/`. Never replace an
+existing version in place; add a new version directory and update the
+version-selection API when the National standard publishes a transition.

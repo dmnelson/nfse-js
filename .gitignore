@@ -2,5 +2,6 @@ node_modules/
 dist/
 coverage/
 reference-docs/
+.schema-staging/
 *.log
 .DS_Store

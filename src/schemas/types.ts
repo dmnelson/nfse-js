@@ -3,6 +3,13 @@ export interface SchemaFile {
   readonly contents: string;
 }
 
+export type NationalNfseVersion = "1.01";
+
+export interface NationalNfseSchemaSet {
+  readonly version: NationalNfseVersion;
+  readonly files: readonly SchemaFile[];
+}
+
 export type NationalNfseSchema =
   | "CNC_v1.00.xsd"
   | "DPS_v1.01.xsd"

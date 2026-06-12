@@ -38,6 +38,7 @@ try {
     "dist/validation/index.js",
     "dist/schemas/index.js",
     "schemas/manifest.json",
+    "schemas/technical-notes.json",
     "README.md",
     "LICENSE",
   ]) {
@@ -84,7 +85,10 @@ import { buildEventRequestId } from "nfse-js/events";
 import { createMunicipalParameterResolver } from "nfse-js/parameters";
 import { parseDpsXml, parseSefinDocumentResponse } from "nfse-js/parsing";
 import { NATIONAL_NFSE_XMLDSIG_PROFILE } from "nfse-js/signing";
-import { getNationalNfseSchemas } from "nfse-js/schemas";
+import {
+  getNationalNfseSchemas,
+  SUPPORTED_NATIONAL_NFSE_VERSIONS,
+} from "nfse-js/schemas";
 import { NATIONAL_SEFIN_ENDPOINTS } from "nfse-js/transport";
 import { validateDpsXml } from "nfse-js/validation";
 
@@ -123,6 +127,7 @@ assert.equal(typeof createMunicipalParameterResolver, "function");
 assert.equal(parseSefinDocumentResponse('{"errors":["rejected"]}', { status: 422 }).kind, "rejection");
 assert.match(NATIONAL_NFSE_XMLDSIG_PROFILE.signatureAlgorithm, /rsa-sha256$/);
 assert.match(NATIONAL_SEFIN_ENDPOINTS.production.sefin, /^https:/);
+assert.deepEqual(SUPPORTED_NATIONAL_NFSE_VERSIONS, ["1.01"]);
 assert.equal(getNationalNfseSchemas().length, 10);
 assert.equal((await validateDpsXml(xml, { throwOnInvalid: false })).valid, true);
 `,
@@ -153,6 +158,7 @@ assert.equal(typeof signing.verifyNationalXmlSignature, "function");
 assert.equal(typeof transport.createSefinClient, "function");
 assert.equal(typeof transport.createNodeHttpTransport, "function");
 assert.equal(typeof validation.validateDpsXml, "function");
+assert.deepEqual(schemas.SUPPORTED_NATIONAL_NFSE_VERSIONS, ["1.01"]);
 assert.equal(schemas.getNationalNfseSchemas().length, 10);
 `,
   );

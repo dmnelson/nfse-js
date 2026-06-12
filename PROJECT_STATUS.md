@@ -48,14 +48,14 @@ At this handoff:
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 151 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
+- 155 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
   received-document fixtures, and XSD validation for every named
   schema-coverage fixture.
-- `npm run test:coverage` reports 90.56% statements, 100% functions, 90.47%
-  lines, and 83.63% branch coverage for the current code.
+- `npm run test:coverage` reports 90.53% statements, 100% functions, 90.45%
+  lines, and 83.62% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 1,113,264 bytes packed across 81 files.
+- The current package-size baseline is 1,116,958 bytes packed across 82 files.
 
 ## Implemented Functionality
 
@@ -580,19 +580,20 @@ Exit criteria:
 
 ### Phase 7: Schema and Version Lifecycle
 
-- Add an update command that downloads a new official schema bundle to a
+- [x] Add an update command that downloads a new official schema bundle to a
   staging location, verifies provenance, computes hashes, and reports diffs.
-- Never silently replace a supported schema version.
-- Support multiple National schema versions when a transition requires it.
-- Define how callers select a version and how versions affect public types.
-- Track technical notes separately from XSD releases.
-- Add contract tests that prevent accidental output changes.
+- [x] Never silently replace a supported schema version.
+- [x] Prepare version-aware schema APIs for multiple National versions; only
+  v1.01 is currently published and supported by this package.
+- [x] Define how callers select a version and how versions affect public types.
+- [x] Track technical notes separately from XSD releases.
+- [x] Add contract tests that prevent accidental output changes.
 
 Exit criteria:
 
-- schema updates are reviewable and reproducible;
-- existing applications can pin a supported standard version;
-- compatibility patches are minimal, explicit, and tested.
+- [x] schema updates are reviewable and reproducible;
+- [x] existing applications can pin a supported standard version;
+- [x] compatibility patches are minimal, explicit, and tested.
 
 ### Phase 8: Production Release Quality
 
@@ -636,12 +637,12 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 7 while retaining the live Phase 4-6 conformance tasks:
+Proceed with Phase 8 while retaining the live Phase 4-6 conformance tasks:
 
-1. add a reproducible schema-download and diff command;
-2. model explicit standard-version selection and compatibility policy;
-3. add contract tests preventing accidental wire changes;
-4. track technical notes separately from XSD releases;
+1. finish task-oriented and generated API documentation;
+2. define compatibility, support, and release policies;
+3. add reproducible benchmarks and release automation;
+4. audit dependency and XML/cryptographic attack surfaces;
 5. capture signed, issuance, event, and parameter evidence when
    restricted-production credentials are available.
 
@@ -657,6 +658,13 @@ Regenerate the embedded runtime schemas after an intentional schema change:
 
 ```sh
 npm run generate:schemas
+```
+
+Stage and inspect a candidate official schema bundle without modifying the
+supported files:
+
+```sh
+npm run schema:stage -- --source /path/to/schemas.zip --version 1.01
 ```
 
 Inspect the publish artifact without using a potentially misconfigured global
@@ -699,7 +707,9 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
 | `src/schemas/index.ts` | Bundled-schema public API |
 | `scripts/generate-schema-module.mjs` | XSD embedding and compatibility patch |
+| `scripts/stage-schema-update.mjs` | Candidate schema staging and hash diff |
 | `schemas/manifest.json` | Schema provenance, hashes, and patch record |
+| `schemas/technical-notes.json` | Technical-note review state |
 | `test/fixtures.ts` | Named fixtures covering every DPS choice branch |
 | `test/__snapshots__/serialize.test.ts.snap` | Canonical deterministic XML output |
 | `test/schema-coverage.test.ts` | Coverage-manifest/XSD graph contract |

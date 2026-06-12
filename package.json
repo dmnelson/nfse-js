@@ -91,6 +91,7 @@
     "generate:schemas": "node scripts/generate-schema-module.mjs",
     "lint": "biome check .",
     "package:check": "node scripts/verify-package.mjs",
+    "schema:stage": "node scripts/stage-schema-update.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "verify": "npm run generate:schemas && npm run check && npm run lint && npm test && npm run build && npm run package:check",

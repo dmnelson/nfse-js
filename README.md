@@ -336,6 +336,34 @@ February 9, 2026. See [`schemas/manifest.json`](schemas/manifest.json) for the
 official source URL, retrieval date, hashes, and a documented libxml2
 compatibility adjustment applied only to the generated runtime copy.
 
+Applications can pin a supported standard version explicitly:
+
+```ts
+import {
+  getNationalNfseSchemaSet,
+  SUPPORTED_NATIONAL_NFSE_VERSIONS,
+} from "nfse-js/schemas";
+
+const schemas = getNationalNfseSchemaSet("1.01");
+```
+
+`SUPPORTED_NATIONAL_NFSE_VERSIONS` is the authoritative list. Supporting a new
+version requires adding a separate immutable schema directory and public type
+support; an existing version is never replaced in place.
+
+Maintainers can stage an official directory or ZIP bundle for review:
+
+```sh
+npm run schema:stage -- \
+  --source ./reference-docs/nfse/anexos \
+  --version 1.01
+```
+
+The command writes schemas and a hash-based diff report under the ignored
+`.schema-staging/` directory. It never edits the supported bundle. ZIP inputs
+require the `unzip` command. Technical-note review state is tracked separately
+in [`schemas/technical-notes.json`](schemas/technical-notes.json).
+
 ## License
 
 MIT
