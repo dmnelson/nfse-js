@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Complete typed coverage and deterministic serialization for all 51 complex
+  types reachable from `TCInfDPS` v1.01.
+- Field-specific XSD decimal brands and constructors.
+- Machine-checked DPS schema coverage manifest and canonical XML snapshots.
+- CI, dependency updates, package-content checks, and isolated ESM/CommonJS
+  consumer smoke tests.
+
+### Changed
+
+- Corrected foreign country validation to use two-letter ISO codes.
+- Added runtime cardinality checks for repeated DPS groups.
+
 ### Documentation
 
 - Added a detailed project status, limitations, and completion roadmap for

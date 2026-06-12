@@ -8,11 +8,19 @@ import {
   validateEventXml,
   validateNfseXml,
 } from "../src/validation/index.js";
-import { validDps } from "./fixtures.js";
+import { schemaCoverageDpsInputs, validDps } from "./fixtures.js";
 
 describe("XSD validation", () => {
   it("validates generated DPS XML against the bundled official schema", async () => {
     const result = await validateDpsXml(serializeDps(validDps()), {
+      throwOnInvalid: false,
+    });
+
+    expect(result).toEqual({ valid: true, violations: [] });
+  });
+
+  it.each(schemaCoverageDpsInputs())("validates the $name DPS fixture", async ({ input }) => {
+    const result = await validateDpsXml(serializeDps(input), {
       throwOnInvalid: false,
     });
 

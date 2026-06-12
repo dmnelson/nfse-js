@@ -11,8 +11,8 @@ const patterns = {
   date: /^\d{4}-\d{2}-\d{2}$/,
   dateTime: /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d[+-](?:0\d|1[0-2]):00$/,
   serviceCode: /^\d{6}$/,
-  country: /^\d{3}$/,
-  decimal: /^\d{1,13}(?:\.\d{1,2})?$/,
+  country: /^[A-Z]{2}$/,
+  decimal15v2: /^(?:0|0\.\d{2}|[1-9]\d{0,14}(?:\.\d{2})?)$/,
 };
 
 export interface ValidationResult {
@@ -112,18 +112,49 @@ export function validateDps(dps: DpsDocument): ValidationResult {
       patterns.country,
       "infDPS.serv.locPrest.cPaisPrestacao",
       "format",
-      "must contain exactly 3 digits",
+      "must contain exactly 2 uppercase ISO country letters",
     );
   }
 
   check(
     issues,
     info.valores.vServPrest.vServ,
-    patterns.decimal,
+    patterns.decimal15v2,
     "infDPS.valores.vServPrest.vServ",
     "format",
-    "must be a non-negative decimal with up to 13 integer and 2 fractional digits",
+    "must be a non-negative decimal with up to 15 integer digits and exactly 2 fractional digits when present",
   );
+
+  if (info.serv.infoCompl?.gItemPed) {
+    checkArrayLength(
+      issues,
+      info.serv.infoCompl.gItemPed.xItemPed,
+      1,
+      99,
+      "infDPS.serv.infoCompl.gItemPed.xItemPed",
+    );
+  }
+  if (info.valores.vDedRed && "documentos" in info.valores.vDedRed) {
+    checkArrayLength(
+      issues,
+      info.valores.vDedRed.documentos.docDedRed,
+      1,
+      1000,
+      "infDPS.valores.vDedRed.documentos.docDedRed",
+    );
+  }
+  if (info.IBSCBS?.gRefNFSe) {
+    checkArrayLength(issues, info.IBSCBS.gRefNFSe.refNFSe, 1, 99, "infDPS.IBSCBS.gRefNFSe.refNFSe");
+  }
+  if (info.IBSCBS?.valores.gReeRepRes) {
+    checkArrayLength(
+      issues,
+      info.IBSCBS.valores.gReeRepRes.documentos,
+      1,
+      1000,
+      "infDPS.IBSCBS.valores.gReeRepRes.documentos",
+    );
+  }
 
   if (info.tpEmit === "1" && info.cMotivoEmisTI !== undefined) {
     issues.push({
@@ -179,5 +210,21 @@ function check(
 ): void {
   if (!pattern.test(value)) {
     issues.push({ path, code, message });
+  }
+}
+
+function checkArrayLength(
+  issues: ValidationIssue[],
+  values: readonly unknown[],
+  minimum: number,
+  maximum: number,
+  path: string,
+): void {
+  if (values.length < minimum || values.length > maximum) {
+    issues.push({
+      path,
+      code: "length",
+      message: `must contain between ${minimum} and ${maximum} items`,
+    });
   }
 }

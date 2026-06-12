@@ -1,6 +1,6 @@
 # Project Status and Completion Roadmap
 
-Last reviewed: 2026-06-11
+Last reviewed: 2026-06-12
 
 This document is the engineering handoff for continuing `nfse-js` in a future
 session. It describes what exists, what has actually been verified, what the
@@ -35,21 +35,23 @@ The package should eventually cover the complete lifecycle:
 
 ## Current State
 
-The repository is an early `0.1.0` foundation. It is useful for constructing a
-common unsigned DPS and proving that the generated XML satisfies the bundled
-v1.01 XSD. It is **not yet an issuance client** and cannot currently produce a
-document ready for submission to SEFIN.
+The repository is an early `0.1.0` foundation. It can represent and
+deterministically serialize every complex type reachable from `TCInfDPS` in the
+National v1.01 XSD. It is **not yet an issuance client** and cannot currently
+produce a document ready for submission to SEFIN.
 
 At this handoff:
 
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 23 tests pass.
+- 62 tests pass, including 15 canonical XML snapshots and XSD validation for
+  every named schema-coverage fixture.
 - `npm run test:coverage` reports 100% statements, functions, and lines, with
-  91% branch coverage for the current code.
+  94.06% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
+- The current package-size baseline is 497,382 bytes packed across 43 files.
 
 ## Implemented Functionality
 
@@ -81,9 +83,10 @@ Automatic DPS ID generation intentionally rejects NIF and `cNaoNIF`, because
 the documented DPS identifier formation requires a Brazilian federal
 registration type and number.
 
-### Typed Common DPS Model
+### Complete Typed DPS Wire Model
 
-The current model has dedicated types for:
+The current model has dedicated types for all 51 complex types reachable from
+`TCInfDPS`, including:
 
 - environment and issuer;
 - CNPJ, CPF, NIF, and no-NIF identities;
@@ -99,34 +102,50 @@ The current model has dedicated types for:
 - PIS/COFINS and federal withholding fields;
 - approximate total tax alternatives;
 - NFS-e substitution;
-- complementary service information.
+- complementary service information;
+- foreign trade;
+- construction and event activities;
+- document-based deduction/reduction;
+- the complete declarant-side IBS/CBS subtree.
+
+All XSD choices are represented by discriminated unions, repeated groups use
+readonly arrays with runtime cardinality checks, and no raw XML-shaped
+extension group remains in the public DPS API.
+
+`schemas/1.01/dps-coverage.json` maps every reachable XSD complex type to its
+TypeScript symbol, serializer, current validation status, and fixtures. A test
+derives the graph from the official XSD and fails if this manifest becomes
+incomplete.
 
 Official XML element names are retained in the object model. This minimizes
 translation ambiguity and makes comparison with the XSD and manuals easier.
 
 ### Decimal Handling
 
-`decimal()` creates a branded decimal string and rejects:
+Fiscal fields use distinct branded types and exact constructors for:
 
-- exponent notation;
-- signs;
-- too many integer digits;
-- too many fractional digits.
+- `TSDec15V2` through `decimal15v2`;
+- `TSDec3V2` through `decimal3v2`;
+- `TSDec2V2` through `decimal2v2`;
+- `TSDec1V2` through `decimal1v2`.
 
-Values are serialized as supplied, avoiding JavaScript floating-point changes.
-
-The helper can accept explicit integer and fractional precision, although most
-fields do not yet apply their exact XSD-specific decimal facet automatically.
+`decimal()` remains the monetary `TSDec15V2` default. Supplying custom precision
+returns a separate custom brand that cannot be assigned to an XSD fiscal field.
+All constructors reject signs, exponent notation, leading zeroes, excess
+integer digits, and fractional values other than exactly two digits. Values are
+serialized as supplied, avoiding JavaScript floating-point changes.
 
 ### Semantic Validation
 
 `validateDps` and `assertValidDps` currently check:
 
 - the basic DPS ID shape;
-- municipality, CNPJ, CPF, CEP, service code, country, series, and DPS number
-  digit lengths;
+- municipality, CNPJ, CPF, CEP, service code, ISO country, series, and DPS
+  number formats;
 - basic date and timestamp string shapes;
 - the main service value decimal shape;
+- cardinality for order items, deduction documents, referenced NFS-e, and
+  IBS/CBS reimbursement documents;
 - customer/intermediary issuer reason requirements;
 - the inverse provider issuer rule;
 - the requirement for `xMotivo` when substitution reason is `99`.
@@ -145,8 +164,9 @@ Validation returns structured issues containing `path`, `code`, and `message`.
 - supports compact or formatted XML;
 - optionally omits the XML declaration.
 
-The common fixture generated by this serializer validates successfully against
-the bundled official DPS v1.01 XSD.
+Serialization is split into explicit functions for each schema group. Fifteen
+canonical output snapshots cover every XSD choice branch, and every named
+fixture validates against the bundled official DPS v1.01 XSD.
 
 ### XSD Validation
 
@@ -187,29 +207,6 @@ the XSD. It does not prove that:
 
 Do not advertise the current version as able to issue NFS-e.
 
-### The DPS type model is incomplete
-
-These schema groups currently use `ExtensionGroup`, which is effectively a raw
-XML-shaped object:
-
-- foreign trade (`comExt`);
-- construction (`obra`);
-- event activity (`atvEvento`);
-- deduction/reduction (`vDedRed`);
-- IBS/CBS (`IBSCBS`).
-
-Consequences:
-
-- callers do not receive field-level TypeScript guidance;
-- invalid element names and values can be supplied;
-- sequence ordering depends on caller insertion order;
-- repeated elements may be represented incorrectly;
-- semantic rules cannot be applied reliably;
-- only subsequent XSD validation can catch structural mistakes.
-
-This escape hatch should be removed from the stable API once every group has a
-dedicated model and serializer.
-
 ### Semantic validation is intentionally sparse
 
 The current validator does not implement the complete XSD facets or National
@@ -219,18 +216,16 @@ business rules. Examples of missing validation include:
 - real calendar-date validation rather than shape-only regular expressions;
 - consistency between a supplied DPS `Id` and `cLocEmi`, provider identity,
   series, and number;
-- exact length, enumeration, decimal, and range constraints for every field;
+- exact length, pattern, and range constraints for every non-decimal field;
 - required/forbidden field combinations across tax regimes;
 - ISSQN incidence, immunity, export, withholding, benefit, and suspension
   dependencies;
 - substitution and rejected-NFS-e rules beyond the one `99` case;
 - foreign service and foreign taxpayer dependencies;
-- deductions, construction, event, foreign trade, and IBS/CBS rules;
+- cross-field deductions, construction, event, foreign trade, and IBS/CBS
+  rules;
 - rules derived from municipal parameters;
 - rules identified by official error/rejection codes.
-
-The current branded `Decimal` is reused across fields with different precision
-requirements. Field-specific constructors or validation metadata are needed.
 
 ### No XML parsing or round trip
 
@@ -362,15 +357,15 @@ Exit criteria:
 
 ### Phase 1: Complete the DPS Domain and Serializer
 
-- Map every `TCInfDPS` descendant in the current XSD into explicit types.
-- Replace all `ExtensionGroup` fields with discriminated unions and dedicated
+- [x] Map every `TCInfDPS` descendant in the current XSD into explicit types.
+- [x] Replace all `ExtensionGroup` fields with discriminated unions and dedicated
   structures.
-- Encode XSD choices so impossible combinations fail at compile time.
-- Model repeated elements as bounded arrays where appropriate.
-- Implement field-specific decimal types or constructors.
-- Split serialization into explicit functions per schema group.
-- Add fixtures for every optional group and every union branch.
-- Compare generated XML against canonical expected fixtures.
+- [x] Encode XSD choices so impossible combinations fail at compile time.
+- [x] Model repeated elements as bounded arrays where appropriate.
+- [x] Implement field-specific decimal types or constructors.
+- [x] Split serialization into explicit functions per schema group.
+- [x] Add fixtures for every optional group and every union branch.
+- [x] Compare generated XML against canonical expected fixtures.
 
 Exit criteria:
 
@@ -531,18 +526,16 @@ definition.
 
 ## Recommended Next Session
 
-Start with Phase 0 and the first part of Phase 1:
+Proceed with Phase 2 while keeping the missing remote repository as a separate
+operational task:
 
-1. create/configure the remote repository;
-2. inventory every type reachable from `TCInfDPS`;
-3. create a tracked matrix mapping each XSD complex type to its TypeScript
-   type, serializer, semantic rules, and fixtures;
-4. replace one extension group end-to-end, preferably `comExt`, to establish
-   the repeatable implementation pattern.
-
-Do not begin by adding a convenience API or integrating another application.
-The highest-value work is completing and proving the canonical National wire
-model.
+1. centralize the simple-type facets used by DPS fields;
+2. implement CPF/CNPJ check digits and real date/time validation;
+3. verify supplied DPS IDs against their source fields;
+4. add documented cross-field rules with stable categories and source
+   references;
+5. introduce municipal-parameter-aware validation without adding network calls
+   to the pure validator.
 
 ## Working Commands
 
@@ -574,11 +567,14 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/core/dps-id.ts` | Official DPS identifier formation |
 | `src/core/semantic-validation.ts` | Current local rules |
 | `src/core/serialize.ts` | DPS XML construction and ordering |
+| `schemas/1.01/dps-coverage.json` | Machine-checked `TCInfDPS` coverage matrix |
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
 | `src/schemas/index.ts` | Bundled-schema public API |
 | `scripts/generate-schema-module.mjs` | XSD embedding and compatibility patch |
 | `schemas/manifest.json` | Schema provenance, hashes, and patch record |
-| `test/fixtures.ts` | Current valid common DPS fixture |
+| `test/fixtures.ts` | Named fixtures covering every DPS choice branch |
+| `test/__snapshots__/serialize.test.ts.snap` | Canonical deterministic XML output |
+| `test/schema-coverage.test.ts` | Coverage-manifest/XSD graph contract |
 | `test/xsd.test.ts` | XSD and schema-access verification |
 
 ## Source of Truth

@@ -6,10 +6,10 @@ Spec-first TypeScript tools for Brazil's **National NFS-e standard**.
 application to a CLI, YAML format, framework, storage layer, certificate
 provider, or municipal legacy layout.
 
-> Status: early development. Version 0.1 models the common unsigned DPS v1.01
-> path and validates any National NFS-e v1.01 XML against the bundled official
-> XSDs. XML signing and SEFIN transport are intentionally separate future
-> modules.
+> Status: early development. Version 0.1 models and serializes the complete
+> unsigned DPS v1.01 wire structure and validates National NFS-e v1.01 XML
+> against the bundled official XSDs. XML parsing, signing, and SEFIN transport
+> remain future modules.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -23,7 +23,8 @@ decisions, and the completion roadmap, see
 - Core XML generation is deterministic and synchronous.
 - XSD validation is optional and isolated behind a subpath import.
 - Official schemas are committed unchanged with hashes and provenance.
-- Rare schema groups have extension nodes while dedicated types mature.
+- Every `TCInfDPS` descendant has an explicit type and serializer.
+- XSD choices are represented by TypeScript unions.
 
 ## Install
 
@@ -80,6 +81,10 @@ const xml = serializeDps(dps, { pretty: true });
 provider CNPJ/CPF, series, and DPS number. You can supply `infDPS.Id` when
 importing an existing document.
 
+Fiscal decimal fields have XSD-specific constructors: `decimal15v2`,
+`decimal3v2`, `decimal2v2`, and `decimal1v2`. `decimal()` is the
+`decimal15v2` monetary default.
+
 ## Validate against the XSD
 
 ```ts
@@ -116,9 +121,9 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include XMLDSig signing, SEFIN API clients, typed event
-requests, municipal parameter discovery, and dedicated types for the complete
-IBS/CBS and specialized service groups.
+Planned modules include complete local business-rule validation, secure XML
+parsing, XMLDSig signing, SEFIN API clients, typed event requests, and municipal
+parameter discovery.
 
 ## Schema provenance
 

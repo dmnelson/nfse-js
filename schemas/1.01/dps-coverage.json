@@ -1,0 +1,368 @@
+[
+  {
+    "xsdType": "TCAtvEvento",
+    "typescript": "EventActivity",
+    "serializer": "serializeEventActivity",
+    "validation": "array choices encoded; dates pending full facet validation",
+    "fixtures": ["specialized groups", "event domestic address"]
+  },
+  {
+    "xsdType": "TCBeneficioMunicipal",
+    "typescript": "MunicipalBenefit",
+    "serializer": "serializeMunicipalTax",
+    "validation": "choice encoded; field facets pending",
+    "fixtures": [
+      "municipal benefit without reduction",
+      "municipal benefit value reduction",
+      "municipal benefit percentage reduction"
+    ]
+  },
+  {
+    "xsdType": "TCCServ",
+    "typescript": "ServiceCode",
+    "serializer": "serializeService",
+    "validation": "cTribNac format only",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCComExterior",
+    "typescript": "ForeignTrade",
+    "serializer": "serializeForeignTrade",
+    "validation": "enumerations encoded; remaining facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCDocDedRed",
+    "typescript": "DeductionDocument",
+    "serializer": "serializeDeductionDocument",
+    "validation": "reference choice encoded; field rules pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCDocNFNFS",
+    "typescript": "PaperInvoiceReference",
+    "serializer": "serializeDeductionDocument",
+    "validation": "field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCDocOutNFSe",
+    "typescript": "MunicipalNfseReference",
+    "serializer": "serializeDeductionDocument",
+    "validation": "field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCEnderExt",
+    "typescript": "ForeignAddressDetails",
+    "serializer": "serializeAddress",
+    "validation": "field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCEnderExtSimples",
+    "typescript": "ForeignSimpleAddress",
+    "serializer": "serializeSimpleAddress",
+    "validation": "field facets pending",
+    "fixtures": ["construction foreign address"]
+  },
+  {
+    "xsdType": "TCEnderNac",
+    "typescript": "DomesticAddressDetails",
+    "serializer": "serializeAddress",
+    "validation": "provider municipality and CEP formats only",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCEnderObraEvento",
+    "typescript": "ConstructionEventAddress",
+    "serializer": "serializeSimpleAddress",
+    "validation": "address choice encoded; field facets pending",
+    "fixtures": ["construction foreign address", "IBS/CBS property address"]
+  },
+  {
+    "xsdType": "TCEndereco",
+    "typescript": "Address",
+    "serializer": "serializeAddress",
+    "validation": "address choice encoded; provider domestic fields partially validated",
+    "fixtures": ["common", "specialized groups"]
+  },
+  {
+    "xsdType": "TCEnderecoSimples",
+    "typescript": "SimpleAddress",
+    "serializer": "serializeSimpleAddress",
+    "validation": "address choice encoded; field facets pending",
+    "fixtures": ["event domestic address"]
+  },
+  {
+    "xsdType": "TCExigSuspensa",
+    "typescript": "SuspendedEnforceability",
+    "serializer": "serializeMunicipalTax",
+    "validation": "enumeration encoded; process facets pending",
+    "fixtures": ["suspended enforceability"]
+  },
+  {
+    "xsdType": "TCInfDPS",
+    "typescript": "DpsInfo",
+    "serializer": "serializeDpsInfo",
+    "validation": "partial semantic validation",
+    "fixtures": ["all schema coverage fixtures"]
+  },
+  {
+    "xsdType": "TCInfoCompl",
+    "typescript": "ComplementaryServiceInformation",
+    "serializer": "serializeService",
+    "validation": "item count validated; field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoDedRed",
+    "typescript": "DeductionReduction",
+    "serializer": "serializeDeductionReduction",
+    "validation": "choice encoded; document count validated",
+    "fixtures": ["specialized groups", "deduction percentage", "deduction value"]
+  },
+  {
+    "xsdType": "TCInfoItemPed",
+    "typescript": "OrderItemList",
+    "serializer": "serializeService",
+    "validation": "1..99 item count validated",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoObra",
+    "typescript": "Construction",
+    "serializer": "serializeConstruction",
+    "validation": "choice encoded; field facets pending",
+    "fixtures": ["specialized groups", "construction CIB", "construction foreign address"]
+  },
+  {
+    "xsdType": "TCInfoPessoa",
+    "typescript": "Person",
+    "serializer": "serializePerson",
+    "validation": "identity choice encoded; top-level CPF/CNPJ formats only",
+    "fixtures": ["common", "specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoPrestador",
+    "typescript": "Provider",
+    "serializer": "serializeProvider",
+    "validation": "identity choice and CPF/CNPJ formats",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoRefNFSe",
+    "typescript": "ReferencedNfseList",
+    "serializer": "serializeIbsCbs",
+    "validation": "1..99 reference count validated; key facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoTributacao",
+    "typescript": "Taxes",
+    "serializer": "serializeTaxes",
+    "validation": "structure typed; cross-field rules pending",
+    "fixtures": ["common", "specialized groups"]
+  },
+  {
+    "xsdType": "TCInfoValores",
+    "typescript": "Values",
+    "serializer": "serializeValues",
+    "validation": "service value format only",
+    "fixtures": ["all schema coverage fixtures"]
+  },
+  {
+    "xsdType": "TCListaDocDedRed",
+    "typescript": "DeductionDocumentList",
+    "serializer": "serializeDeductionReduction",
+    "validation": "1..1000 document count validated",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCLocPrest",
+    "typescript": "ServiceLocation",
+    "serializer": "serializeService",
+    "validation": "choice encoded; municipality/country format validated",
+    "fixtures": ["common", "specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoDest",
+    "typescript": "IbsCbsDestination",
+    "serializer": "serializeIbsCbsDestination",
+    "validation": "identity choice encoded; field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoIBSCBS",
+    "typescript": "IbsCbs",
+    "serializer": "serializeIbsCbs",
+    "validation": "enumerations and nested choices encoded; business rules pending",
+    "fixtures": ["specialized groups", "IBS/CBS property address"]
+  },
+  {
+    "xsdType": "TCRTCInfoImovel",
+    "typescript": "IbsCbsProperty",
+    "serializer": "serializeIbsCbsProperty",
+    "validation": "choice encoded; field facets pending",
+    "fixtures": ["specialized groups", "IBS/CBS property address"]
+  },
+  {
+    "xsdType": "TCRTCInfoReeRepRes",
+    "typescript": "IbsCbsReimbursementList",
+    "serializer": "serializeIbsCbs",
+    "validation": "1..1000 document count validated",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoTributosDif",
+    "typescript": "IbsCbsDeferral",
+    "serializer": "serializeIbsCbs",
+    "validation": "decimal facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoTributosIBSCBS",
+    "typescript": "IbsCbsTax",
+    "serializer": "serializeIbsCbs",
+    "validation": "structure typed; business rules pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoTributosSitClas",
+    "typescript": "IbsCbsTaxClassification",
+    "serializer": "serializeIbsCbs",
+    "validation": "nested structure typed; code facets pending",
+    "fixtures": ["specialized groups", "IBS/CBS property address"]
+  },
+  {
+    "xsdType": "TCRTCInfoTributosTribRegular",
+    "typescript": "IbsCbsRegularTaxation",
+    "serializer": "serializeIbsCbs",
+    "validation": "code facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCInfoValoresIBSCBS",
+    "typescript": "IbsCbsValues",
+    "serializer": "serializeIbsCbs",
+    "validation": "structure typed; business rules pending",
+    "fixtures": ["specialized groups", "IBS/CBS property address"]
+  },
+  {
+    "xsdType": "TCRTCListaDoc",
+    "typescript": "ReimbursementDocument",
+    "serializer": "serializeReimbursementDocument",
+    "validation": "reference choice encoded; field rules pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCListaDocDFe",
+    "typescript": "NationalFiscalDocumentReference",
+    "serializer": "serializeReimbursementDocument",
+    "validation": "enumeration encoded; key rules pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCListaDocFiscalOutro",
+    "typescript": "OtherFiscalDocumentReference",
+    "serializer": "serializeReimbursementDocument",
+    "validation": "field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCListaDocFornec",
+    "typescript": "IbsCbsSupplier",
+    "serializer": "serializeIbsCbsSupplier",
+    "validation": "identity choice encoded; field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRTCListaDocOutro",
+    "typescript": "NonFiscalDocumentReference",
+    "serializer": "serializeReimbursementDocument",
+    "validation": "field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCRegTrib",
+    "typescript": "TaxRegime",
+    "serializer": "serializeProvider",
+    "validation": "enumerations encoded; cross-field rules pending",
+    "fixtures": ["common"]
+  },
+  {
+    "xsdType": "TCServ",
+    "typescript": "Service",
+    "serializer": "serializeService",
+    "validation": "structure typed; group business rules pending",
+    "fixtures": ["all schema coverage fixtures"]
+  },
+  {
+    "xsdType": "TCSubstituicao",
+    "typescript": "Substitution",
+    "serializer": "serializeDpsInfo",
+    "validation": "reason 99 description requirement only",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCTribFederal",
+    "typescript": "FederalTax",
+    "serializer": "serializeTaxes",
+    "validation": "structure typed; field facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCTribMunicipal",
+    "typescript": "MunicipalTax",
+    "serializer": "serializeMunicipalTax",
+    "validation": "enumerations encoded; cross-field rules pending",
+    "fixtures": ["all schema coverage fixtures"]
+  },
+  {
+    "xsdType": "TCTribOutrosPisCofins",
+    "typescript": "PisCofins",
+    "serializer": "serializePisCofins",
+    "validation": "retention enumeration encoded; other facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCTribTotal",
+    "typescript": "TotalTax",
+    "serializer": "serializeTotalTax",
+    "validation": "choice encoded; decimal facets pending",
+    "fixtures": [
+      "common",
+      "monetary approximate taxes",
+      "percentage approximate taxes",
+      "Simples Nacional approximate taxes"
+    ]
+  },
+  {
+    "xsdType": "TCTribTotalMonet",
+    "typescript": "TotalTaxAmounts",
+    "serializer": "serializeTotalTax",
+    "validation": "decimal facets pending",
+    "fixtures": ["monetary approximate taxes"]
+  },
+  {
+    "xsdType": "TCTribTotalPercent",
+    "typescript": "TotalTaxPercentages",
+    "serializer": "serializeTotalTax",
+    "validation": "decimal facets pending",
+    "fixtures": ["percentage approximate taxes"]
+  },
+  {
+    "xsdType": "TCVDescCondIncond",
+    "typescript": "Discounts",
+    "serializer": "serializeValues",
+    "validation": "decimal facets pending",
+    "fixtures": ["specialized groups"]
+  },
+  {
+    "xsdType": "TCVServPrest",
+    "typescript": "ServiceValues",
+    "serializer": "serializeValues",
+    "validation": "vServ format only",
+    "fixtures": ["all schema coverage fixtures"]
+  }
+]

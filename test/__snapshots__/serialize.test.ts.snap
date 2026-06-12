@@ -1,0 +1,1080 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DPS documents > matches the canonical 'IBS/CBS property address' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+    <IBSCBS>
+      <finNFSe>0</finNFSe>
+      <cIndOp>100101</cIndOp>
+      <indDest>0</indDest>
+      <imovel>
+        <inscImobFisc>PROPERTY-2</inscImobFisc>
+        <end>
+          <CEP>01001000</CEP>
+          <xLgr>Praca da Se</xLgr>
+          <nro>1</nro>
+          <xBairro>Se</xBairro>
+        </end>
+      </imovel>
+      <valores>
+        <trib>
+          <gIBSCBS>
+            <CST>000</CST>
+            <cClassTrib>000001</cClassTrib>
+          </gIBSCBS>
+        </trib>
+      </valores>
+    </IBSCBS>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'Simples Nacional approximate taxes' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <pTotTribSN>6.00</pTotTribSN>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'common' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'construction CIB' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+      <obra>
+        <inscImobFisc>PROPERTY-1</inscImobFisc>
+        <cCIB>12345678</cCIB>
+      </obra>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'construction foreign address' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+      <obra>
+        <end>
+          <endExt>
+            <cEndPost>SW1A1AA</cEndPost>
+            <xCidade>London</xCidade>
+            <xEstProvReg>London</xEstProvReg>
+          </endExt>
+          <xLgr>Parliament Square</xLgr>
+          <nro>1</nro>
+          <xBairro>Westminster</xBairro>
+        </end>
+      </obra>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'deduction percentage' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <vDedRed>
+        <pDR>10.00</pDR>
+      </vDedRed>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'deduction value' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <vDedRed>
+        <vDR>10.00</vDR>
+      </vDedRed>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'event domestic address' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+      <atvEvento>
+        <xNome>Technology conference</xNome>
+        <dtIni>2026-06-11</dtIni>
+        <dtFim>2026-06-12</dtFim>
+        <end>
+          <CEP>01001000</CEP>
+          <xLgr>Praca da Se</xLgr>
+          <nro>1</nro>
+          <xBairro>Se</xBairro>
+        </end>
+      </atvEvento>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'monetary approximate taxes' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <vTotTrib>
+            <vTotTribFed>1.00</vTotTribFed>
+            <vTotTribEst>2.00</vTotTribEst>
+            <vTotTribMun>3.00</vTotTribMun>
+          </vTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'municipal benefit percentage reduction' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <BM>
+            <nBM>35503080400001</nBM>
+            <pRedBCBM>10.00</pRedBCBM>
+          </BM>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'municipal benefit value reduction' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <BM>
+            <nBM>35503080400001</nBM>
+            <vRedBCBM>10.00</vRedBCBM>
+          </BM>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'municipal benefit without reduction' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <BM>
+            <nBM>35503080400001</nBM>
+          </BM>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'percentage approximate taxes' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <pTotTrib>
+            <pTotTribFed>1.00</pTotTribFed>
+            <pTotTribEst>2.00</pTotTribEst>
+            <pTotTribMun>3.00</pTotTribMun>
+          </pTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <subst>
+      <chSubstda>99999999999999999999999999999999999999999999999999</chSubstda>
+      <cMotivo>99</cMotivo>
+      <xMotivo>Schema coverage substitution</xMotivo>
+    </subst>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <CAEPF>11111111111111</CAEPF>
+      <IM>12345</IM>
+      <xNome>Example Services Ltda</xNome>
+      <end>
+        <endNac>
+          <cMun>3550308</cMun>
+          <CEP>01001000</CEP>
+        </endNac>
+        <xLgr>Praca da Se</xLgr>
+        <nro>1</nro>
+        <xCpl>Suite 1</xCpl>
+        <xBairro>Se</xBairro>
+      </end>
+      <fone>1130000000</fone>
+      <email>provider@example.com</email>
+      <regTrib>
+        <opSimpNac>3</opSimpNac>
+        <regApTribSN>1</regApTribSN>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <interm>
+      <cNaoNIF>2</cNaoNIF>
+      <xNome>Foreign intermediary</xNome>
+      <fone>442000000000</fone>
+      <email>intermediary@example.com</email>
+    </interm>
+    <serv>
+      <locPrest>
+        <cPaisPrestacao>US</cPaisPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <cTribMun>001</cTribMun>
+        <xDescServ>Software consulting</xDescServ>
+        <cNBS>123456789</cNBS>
+        <cIntContrib>SERVICE1</cIntContrib>
+      </cServ>
+      <comExt>
+        <mdPrestacao>1</mdPrestacao>
+        <vincPrest>0</vincPrest>
+        <tpMoeda>220</tpMoeda>
+        <vServMoeda>100.00</vServMoeda>
+        <mecAFComexP>01</mecAFComexP>
+        <mecAFComexT>01</mecAFComexT>
+        <movTempBens>1</movTempBens>
+        <nDI>DI123</nDI>
+        <nRE>RE123</nRE>
+        <mdic>1</mdic>
+      </comExt>
+      <obra>
+        <inscImobFisc>PROPERTY-1</inscImobFisc>
+        <cObra>CNO-123</cObra>
+      </obra>
+      <atvEvento>
+        <xNome>Technology conference</xNome>
+        <dtIni>2026-06-11</dtIni>
+        <dtFim>2026-06-12</dtFim>
+        <idAtvEvt>EVENT-123</idAtvEvt>
+      </atvEvento>
+      <infoCompl>
+        <idDocTec>ART-123</idDocTec>
+        <docRef>CONTRACT-123</docRef>
+        <xPed>ORDER-123</xPed>
+        <gItemPed>
+          <xItemPed>ITEM-1</xItemPed>
+          <xItemPed>ITEM-2</xItemPed>
+        </gItemPed>
+        <xInfComp>Schema coverage fixture</xInfComp>
+      </infoCompl>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vReceb>100.00</vReceb>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <vDescCondIncond>
+        <vDescIncond>1.00</vDescIncond>
+        <vDescCond>2.00</vDescCond>
+      </vDescCondIncond>
+      <vDedRed>
+        <documentos>
+          <docDedRed>
+            <chNFSe>11111111111111111111111111111111111111111111111111</chNFSe>
+            <tpDedRed>1</tpDedRed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+          </docDedRed>
+          <docDedRed>
+            <chNFe>22222222222222222222222222222222222222222222</chNFe>
+            <tpDedRed>1</tpDedRed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+          </docDedRed>
+          <docDedRed>
+            <NFSeMun>
+              <cMunNFSeMun>3550308</cMunNFSeMun>
+              <nNFSeMun>111111111111111</nNFSeMun>
+              <cVerifNFSeMun>ABC123</cVerifNFSeMun>
+            </NFSeMun>
+            <tpDedRed>1</tpDedRed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+          </docDedRed>
+          <docDedRed>
+            <NFNFS>
+              <nNFS>1111111</nNFS>
+              <modNFS>222222222222222</modNFS>
+              <serieNFS>SERIE1</serieNFS>
+            </NFNFS>
+            <tpDedRed>1</tpDedRed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+          </docDedRed>
+          <docDedRed>
+            <nDocFisc>FISCAL-1</nDocFisc>
+            <tpDedRed>1</tpDedRed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+          </docDedRed>
+          <docDedRed>
+            <nDoc>NON-FISCAL-1</nDoc>
+            <tpDedRed>99</tpDedRed>
+            <xDescOutDed>Other documented deduction</xDescOutDed>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <vDedutivelRedutivel>10.00</vDedutivelRedutivel>
+            <vDeducaoReducao>5.00</vDeducaoReducao>
+            <fornec>
+              <NIF>GB456</NIF>
+              <xNome>Foreign supplier</xNome>
+            </fornec>
+          </docDedRed>
+        </documentos>
+      </vDedRed>
+      <trib>
+        <tribMun>
+          <tribISSQN>3</tribISSQN>
+          <cPaisResult>US</cPaisResult>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <tribFed>
+          <piscofins>
+            <CST>01</CST>
+            <vBCPisCofins>100.00</vBCPisCofins>
+            <pAliqPis>1.00</pAliqPis>
+            <pAliqCofins>2.00</pAliqCofins>
+            <vPis>1.00</vPis>
+            <vCofins>2.00</vCofins>
+            <tpRetPisCofins>0</tpRetPisCofins>
+          </piscofins>
+          <vRetCP>1.00</vRetCP>
+          <vRetIRRF>1.00</vRetIRRF>
+          <vRetCSLL>1.00</vRetCSLL>
+        </tribFed>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+    <IBSCBS>
+      <finNFSe>0</finNFSe>
+      <indFinal>1</indFinal>
+      <cIndOp>100101</cIndOp>
+      <tpOper>1</tpOper>
+      <gRefNFSe>
+        <refNFSe>11111111111111111111111111111111111111111111111111</refNFSe>
+        <refNFSe>22222222222222222222222222222222222222222222222222</refNFSe>
+      </gRefNFSe>
+      <tpEnteGov>1</tpEnteGov>
+      <indDest>1</indDest>
+      <dest>
+        <NIF>GB123</NIF>
+        <xNome>Foreign destination</xNome>
+        <end>
+          <endExt>
+            <cPais>GB</cPais>
+            <cEndPost>SW1A1AA</cEndPost>
+            <xCidade>London</xCidade>
+            <xEstProvReg>London</xEstProvReg>
+          </endExt>
+          <xLgr>Parliament Square</xLgr>
+          <nro>1</nro>
+          <xBairro>Westminster</xBairro>
+        </end>
+      </dest>
+      <imovel>
+        <cCIB>12345678</cCIB>
+      </imovel>
+      <valores>
+        <gReeRepRes>
+          <documentos>
+            <dFeNacional>
+              <tipoChaveDFe>9</tipoChaveDFe>
+              <xTipoChaveDFe>Other national electronic document</xTipoChaveDFe>
+              <chaveDFe>DFe-123</chaveDFe>
+            </dFeNacional>
+            <fornec>
+              <cNaoNIF>2</cNaoNIF>
+              <xNome>Unregistered supplier</xNome>
+            </fornec>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <dtCompDoc>2026-06-01</dtCompDoc>
+            <tpReeRepRes>99</tpReeRepRes>
+            <xTpReeRepRes>Other reimbursement</xTpReeRepRes>
+            <vlrReeRepRes>5.00</vlrReeRepRes>
+          </documentos>
+          <documentos>
+            <docFiscalOutro>
+              <cMunDocFiscal>3550308</cMunDocFiscal>
+              <nDocFiscal>FISCAL-2</nDocFiscal>
+              <xDocFiscal>Other fiscal document</xDocFiscal>
+            </docFiscalOutro>
+            <fornec>
+              <CNPJ>12345678000195</CNPJ>
+              <xNome>Brazilian supplier</xNome>
+            </fornec>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <dtCompDoc>2026-06-01</dtCompDoc>
+            <tpReeRepRes>01</tpReeRepRes>
+            <vlrReeRepRes>5.00</vlrReeRepRes>
+          </documentos>
+          <documentos>
+            <docOutro>
+              <nDoc>NON-FISCAL-2</nDoc>
+              <xDoc>Other non-fiscal document</xDoc>
+            </docOutro>
+            <fornec>
+              <CPF>12345678909</CPF>
+              <xNome>Individual supplier</xNome>
+            </fornec>
+            <dtEmiDoc>2026-06-01</dtEmiDoc>
+            <dtCompDoc>2026-06-01</dtCompDoc>
+            <tpReeRepRes>02</tpReeRepRes>
+            <vlrReeRepRes>5.00</vlrReeRepRes>
+          </documentos>
+        </gReeRepRes>
+        <trib>
+          <gIBSCBS>
+            <CST>000</CST>
+            <cClassTrib>000001</cClassTrib>
+            <cCredPres>01</cCredPres>
+            <gTribRegular>
+              <CSTReg>000</CSTReg>
+              <cClassTribReg>000001</cClassTribReg>
+            </gTribRegular>
+            <gDif>
+              <pDifUF>1.00</pDifUF>
+              <pDifMun>2.00</pDifMun>
+              <pDifCBS>3.00</pDifCBS>
+            </gDif>
+          </gIBSCBS>
+        </trib>
+      </valores>
+    </IBSCBS>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'suspended enforceability' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Example Services Ltda</xNome>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <CPF>12345678909</CPF>
+      <xNome>Example Customer</xNome>
+    </toma>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting</xDescServ>
+      </cServ>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>100.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <exigSusp>
+            <tpSusp>1</tpSusp>
+            <nProcesso>111111111111111111111111111111</nProcesso>
+          </exigSusp>
+          <tpRetISSQN>1</tpRetISSQN>
+          <pAliq>5.00</pAliq>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;

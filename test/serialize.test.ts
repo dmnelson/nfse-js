@@ -6,9 +6,13 @@ import {
   serializeDps,
   validateDps,
 } from "../src/index.js";
-import { validDpsInput } from "./fixtures.js";
+import { schemaCoverageDpsInputs, validDpsInput } from "./fixtures.js";
 
 describe("DPS documents", () => {
+  it.each(schemaCoverageDpsInputs())("matches the canonical $name XML fixture", ({ input }) => {
+    expect(serializeDps(input, { pretty: true })).toMatchSnapshot();
+  });
+
   it("creates an ID and produces deterministic National DPS XML", () => {
     const dps = createDps(validDpsInput());
     const xml = serializeDps(dps);
@@ -82,7 +86,7 @@ describe("DPS documents", () => {
         },
         serv: {
           ...base.infDPS.serv,
-          locPrest: { cPaisPrestacao: "BR" },
+          locPrest: { cPaisPrestacao: "BRA" },
           cServ: {
             ...base.infDPS.serv.cServ,
             cTribNac: "1",
@@ -155,5 +159,88 @@ describe("DPS documents", () => {
         }),
       ).toThrow();
     }
+  });
+
+  it("serializes repeated and mutually exclusive schema groups in order", () => {
+    const fixture = schemaCoverageDpsInputs().find(({ name }) => name === "specialized groups");
+    expect(fixture).toBeDefined();
+
+    const xml = serializeDps(fixture?.input as never);
+
+    expect(xml.match(/<docDedRed>/g)).toHaveLength(6);
+    expect(xml.match(/<documentos>/g)).toHaveLength(4);
+    expect(xml.match(/<refNFSe>/g)).toHaveLength(2);
+    expect(xml).toContain("<comExt><mdPrestacao>1</mdPrestacao>");
+    expect(xml).toContain("<obra><inscImobFisc>PROPERTY-1</inscImobFisc><cObra>CNO-123</cObra>");
+    expect(xml).toContain("<atvEvento><xNome>Technology conference</xNome>");
+    expect(xml).not.toContain("undefined");
+  });
+
+  it.each([
+    ["order items", "infDPS.serv.infoCompl.gItemPed.xItemPed"],
+    ["deduction documents", "infDPS.valores.vDedRed.documentos.docDedRed"],
+    ["referenced NFS-e", "infDPS.IBSCBS.gRefNFSe.refNFSe"],
+    ["reimbursement documents", "infDPS.IBSCBS.valores.gReeRepRes.documentos"],
+  ])("rejects an empty repeated %s group", (_name, expectedPath) => {
+    const fixture = schemaCoverageDpsInputs().find(({ name }) => name === "specialized groups");
+    expect(fixture).toBeDefined();
+    const dps = createDps(fixture?.input as never);
+    const info = dps.infDPS;
+
+    const invalid: DpsDocument =
+      expectedPath === "infDPS.serv.infoCompl.gItemPed.xItemPed"
+        ? {
+            ...dps,
+            infDPS: {
+              ...info,
+              serv: {
+                ...info.serv,
+                infoCompl: {
+                  ...info.serv.infoCompl,
+                  gItemPed: { xItemPed: [] },
+                },
+              },
+            },
+          }
+        : expectedPath === "infDPS.valores.vDedRed.documentos.docDedRed"
+          ? {
+              ...dps,
+              infDPS: {
+                ...info,
+                valores: {
+                  ...info.valores,
+                  vDedRed: { documentos: { docDedRed: [] } },
+                },
+              },
+            }
+          : expectedPath === "infDPS.IBSCBS.gRefNFSe.refNFSe"
+            ? {
+                ...dps,
+                infDPS: {
+                  ...info,
+                  IBSCBS: {
+                    ...info.IBSCBS,
+                    gRefNFSe: { refNFSe: [] },
+                  } as NonNullable<DpsDocument["infDPS"]["IBSCBS"]>,
+                },
+              }
+            : {
+                ...dps,
+                infDPS: {
+                  ...info,
+                  IBSCBS: {
+                    ...info.IBSCBS,
+                    valores: {
+                      ...info.IBSCBS?.valores,
+                      gReeRepRes: { documentos: [] },
+                    },
+                  } as NonNullable<DpsDocument["infDPS"]["IBSCBS"]>,
+                },
+              };
+
+    expect(validateDps(invalid).issues).toContainEqual(
+      expect.objectContaining({ path: expectedPath, code: "length" }),
+    );
+    expect(() => serializeDps(invalid)).toThrow(DpsValidationError);
   });
 });
