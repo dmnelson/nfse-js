@@ -10,10 +10,13 @@ export {
   type ValidationSource,
   XmlParseError,
   type XmlParseErrorCode,
+  XmlSignatureError,
+  type XmlSignatureErrorCode,
   XsdValidationError,
   type XsdViolation,
 } from "./errors.js";
 export * from "./parsing/index.js";
+export * from "./signing/index.js";
 export {
   validateDpsXml,
   validateEventRequestXml,

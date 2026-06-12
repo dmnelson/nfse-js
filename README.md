@@ -7,10 +7,11 @@ application to a CLI, YAML format, framework, storage layer, certificate
 provider, or municipal legacy layout.
 
 > Status: early development. Version 0.1 models and serializes the complete
-> unsigned DPS v1.01 wire structure, applies deterministic local National
+> DPS v1.01 wire structure, applies deterministic local National
 > business rules, securely parses National DPS/NFS-e/event documents and SEFIN
-> document responses, and validates National NFS-e v1.01 XML against the
-> bundled official XSDs. Signing and SEFIN transport remain future modules.
+> document responses, signs and verifies National XML documents, and validates
+> National NFS-e v1.01 XML against the bundled official XSDs. SEFIN transport
+> remains a future module.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -24,6 +25,7 @@ decisions, and the completion roadmap, see
 - Core XML generation is deterministic and synchronous.
 - XML parsing rejects DTD/entity declarations and applies byte/depth limits.
 - XSD validation is optional and isolated behind a subpath import.
+- XML signing is optional and isolated behind a subpath import.
 - Official schemas are committed unchanged with hashes and provenance.
 - Every `TCInfDPS` descendant has an explicit type and serializer.
 - XSD choices are represented by TypeScript unions.
@@ -165,6 +167,42 @@ without relying on undocumented property names: plain XML and gzip/base64 XML
 documents are discovered recursively, while rejection payloads remain
 available as structured JSON.
 
+## Sign and verify XML
+
+```ts
+import {
+  createPkcs12Signer,
+  signDpsXml,
+  verifyNationalXmlSignature,
+} from "nfse-js/signing";
+
+const signer = createPkcs12Signer(pfxBytes, { password: process.env.PFX_PASSWORD });
+const signedXml = await signDpsXml(xml, signer);
+
+const verification = verifyNationalXmlSignature(signedXml, {
+  trustedCertificates: [trustedCertificatePem],
+  requireTrustedCertificate: true,
+});
+```
+
+PEM private keys and certificate chains are supported through
+`createPemSigner`. Applications using an HSM, cloud KMS, or remote signing
+service can implement the asynchronous `XmlSigner` interface without exporting
+private key material.
+
+Signing targets the document information element by `Id`, inserts the
+enveloped signature in schema order, and supports DPS, generated NFS-e, event
+requests, and registered events. Verification checks the digest, signature,
+reference target, algorithm profile, certificate dates, and an optional
+caller-provided trust chain. Only cryptographically authenticated referenced
+XML is returned.
+
+The accessible National NFS-e documentation requires W3C XML Digital Signature
+but does not publish the canonicalization, digest, and signature algorithm
+URIs. The default profile therefore uses inclusive C14N 1.0 and RSA-SHA256,
+and is explicit and configurable. Confirm this profile against the restricted
+SEFIN environment before production use.
+
 ## Entry points
 
 | Import | Purpose |
@@ -172,6 +210,7 @@ available as structured JSON.
 | `nfse-js` | Full public API |
 | `nfse-js/core` | Types, DPS IDs, semantic validation, XML generation |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
+| `nfse-js/signing` | XML signing, credentials, and signature verification |
 | `nfse-js/validation` | XSD validation |
 | `nfse-js/schemas` | Access to bundled National NFS-e schemas |
 
@@ -181,8 +220,8 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include XMLDSig signing and verification, SEFIN API clients,
-event construction/serialization, and municipal parameter discovery.
+Planned modules include SEFIN API clients, event construction/serialization,
+and municipal parameter discovery.
 
 ## Schema provenance
 

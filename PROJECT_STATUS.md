@@ -38,34 +38,36 @@ The package should eventually cover the complete lifecycle:
 The repository is an early `0.1.0` foundation. It can represent and
 deterministically serialize every complex type reachable from `TCInfDPS`, and
 securely parse DPS, issued NFS-e, event, and SEFIN document-response payloads.
-It is **not yet an issuance client** and cannot currently produce a signed
-document ready for submission to SEFIN.
+It can sign and verify DPS, NFS-e, and event XML through PEM, PKCS#12, or
+external signing providers. It is **not yet an issuance client** because no
+SEFIN transport layer exists.
 
 At this handoff:
 
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 106 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
+- 118 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
   received-document fixtures, and XSD validation for every named
   schema-coverage fixture.
-- `npm run test:coverage` reports 89.72% statements, 100% functions, 89.63%
-  lines, and 83.19% branch coverage for the current code.
+- `npm run test:coverage` reports 89.21% statements, 100% functions, 89.09%
+  lines, and 82.59% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 798,782 bytes packed across 51 files.
+- The current package-size baseline is 872,558 bytes packed across 57 files.
 
 ## Implemented Functionality
 
 ### Package Structure
 
-One package exposes five entry points:
+One package exposes six entry points:
 
 | Entry point | Current purpose |
 | --- | --- |
 | `nfse-js` | Aggregated public API |
 | `nfse-js/core` | DPS types, creation, IDs, validation, and XML serialization |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
+| `nfse-js/signing` | XML signing, credential adapters, and signature verification |
 | `nfse-js/validation` | XSD validation through libxml2/WASM |
 | `nfse-js/schemas` | Programmatic access to bundled official schemas |
 
@@ -223,6 +225,29 @@ All parsing failures use structured error codes and paths. Fifteen canonical
 DPS fixtures round-trip through parse and serialize, and representative issued
 NFS-e/event fixtures validate against the bundled official schemas.
 
+### XML Signing and Verification
+
+The signing entry point:
+
+- signs `infDPS`, `infNFSe`, `infPedReg`, and `infEvento` by their `Id`;
+- inserts a direct enveloped `Signature` after the signed information element;
+- loads RSA credentials from PEM private keys and certificate chains;
+- loads RSA credentials from in-memory PKCS#12/PFX containers;
+- supports asynchronous HSM, cloud KMS, and remote signers without private-key
+  export;
+- verifies digest and signature integrity without exposing unauthenticated XML;
+- requires exactly one reference to the expected information element;
+- validates certificate dates and optionally requires a configured trust
+  anchor;
+- enforces an explicit canonicalization, signature, digest, and transform
+  profile to prevent algorithm downgrade.
+
+The default profile is inclusive C14N 1.0 with RSA-SHA256 and SHA-256. Current
+accessible official documents require W3C XML Digital Signature and an
+ICP-Brasil certificate, but do not publish the exact algorithm URIs. The
+profile is therefore configurable and still requires confirmation against the
+restricted SEFIN environment.
+
 ## Important Current Limitations
 
 ### XSD-valid does not mean SEFIN-valid
@@ -265,21 +290,17 @@ or belong to event construction planned for Phase 6. The exact original XML is
 always retained. These subtrees do not yet have dedicated field-by-field
 ergonomic types.
 
-### No XML signature support
+### Signature conformance still needs restricted-production evidence
 
-There is no XMLDSig implementation. The package does not:
+The signing module does not yet:
 
-- load PKCS#12/PFX or PEM credentials;
-- select or validate a certificate;
-- canonicalize XML;
-- create a digest or `SignedInfo`;
-- insert the enveloped signature at the correct schema position;
-- verify a signature or certificate chain;
-- expose a signer abstraction for HSM, cloud KMS, or remote signing.
+- perform online certificate revocation checks through OCSP or CRLs;
+- enforce ICP-Brasil taxpayer identity OIDs against the document issuer;
+- prove the default algorithm profile against the restricted SEFIN service;
+- include a signature fixture produced by a separate XMLDSig implementation.
 
-The exact algorithms and canonicalization profile must be verified against the
-latest official National NFS-e documentation before implementation. Do not
-infer them only from generic XMLDSig examples.
+Callers can supply a different explicit algorithm profile and their own trust
+anchors. Production use still requires conformance evidence from SEFIN.
 
 ### No SEFIN client
 
@@ -441,22 +462,22 @@ Exit criteria:
 
 ### Phase 4: Implement Signing and Verification
 
-- Confirm the exact National NFS-e XMLDSig profile from current official
-  documentation.
-- Define a low-level signer interface based on bytes/digests.
-- Provide Node adapters for PKCS#12/PFX and PEM credentials.
-- Support external/HSM/cloud signers without exporting private keys.
-- Sign the correct element by `Id` and insert `Signature` in schema order.
-- Verify digest, signature, certificate validity, and document reference.
-- Add deterministic cryptographic fixtures where possible.
-- Add tests against independently generated signatures.
+- [ ] Confirm the exact National NFS-e XMLDSig profile against restricted SEFIN;
+  accessible current documents require XMLDSig but omit algorithm URIs.
+- [x] Define a low-level signer interface based on canonicalized bytes.
+- [x] Provide Node adapters for PKCS#12/PFX and PEM credentials.
+- [x] Support external/HSM/cloud signers without exporting private keys.
+- [x] Sign the correct element by `Id` and insert `Signature` in schema order.
+- [x] Verify digest, signature, certificate validity, and document reference.
+- [x] Add deterministic cryptographic fixtures where possible.
+- [ ] Add a fixture produced by an independent XMLDSig implementation.
 
 Exit criteria:
 
-- signed DPS and event documents validate against XSD;
-- signatures verify independently of this package;
-- supported credentials work without writing private material to disk;
-- certificate and signature failures are clearly categorized.
+- [x] signed DPS and event documents validate against XSD;
+- [ ] signatures verify independently of this package;
+- [x] supported credentials work without writing private material to disk;
+- [x] certificate and signature failures are clearly categorized.
 
 ### Phase 5: Implement the SEFIN Transport Layer
 
@@ -554,15 +575,15 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 4 while keeping the missing remote repository as a separate
-operational task:
+Proceed with Phase 5 while retaining the two Phase 4 conformance tasks:
 
-1. confirm the current official XMLDSig algorithms and canonicalization profile;
-2. define byte/digest signer and certificate-provider interfaces;
-3. implement PEM and PKCS#12/PFX Node adapters;
-4. sign DPS and event request elements in schema order;
-5. verify digest, signature, certificate validity, and reference integrity;
-6. add deterministic and independently generated signature fixtures.
+1. model SEFIN environments, operations, and an injectable transport contract;
+2. keep mutual TLS configuration separate from XML signing credentials;
+3. implement submission and response normalization without guessing
+   undocumented response property names;
+4. add timeout, abort, retry, idempotency, and redaction behavior;
+5. confirm the XMLDSig profile and capture independent signature evidence when
+   restricted-production access is available.
 
 ## Working Commands
 
@@ -602,6 +623,10 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/parsing/nfse.ts` | Issued NFS-e read model and parser |
 | `src/parsing/events.ts` | Event request and registered-event parsers |
 | `src/parsing/sefin-response.ts` | Generic JSON/XML/gzip SEFIN response parser |
+| `src/signing/types.ts` | Signing profiles, options, and external signer API |
+| `src/signing/credentials.ts` | PEM and PKCS#12 credential adapters |
+| `src/signing/sign.ts` | National document XML signature creation |
+| `src/signing/verify.ts` | Signature, reference, certificate, and trust verification |
 | `schemas/1.01/dps-coverage.json` | Machine-checked `TCInfDPS` coverage matrix |
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
 | `src/schemas/index.ts` | Bundled-schema public API |

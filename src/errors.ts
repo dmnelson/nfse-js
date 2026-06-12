@@ -83,6 +83,30 @@ export class SefinResponseParseError extends NfseError {
   }
 }
 
+export type XmlSignatureErrorCode =
+  | "unsupported-document"
+  | "existing-signature"
+  | "missing-signature"
+  | "multiple-signatures"
+  | "missing-id"
+  | "invalid-reference"
+  | "invalid-credentials"
+  | "unsupported-algorithm"
+  | "certificate-expired"
+  | "certificate-untrusted"
+  | "signing-failed"
+  | "verification-failed";
+
+export class XmlSignatureError extends NfseError {
+  constructor(
+    readonly code: XmlSignatureErrorCode,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`XML signature failed: ${message}`, options);
+  }
+}
+
 export interface XsdViolation {
   readonly message: string;
   readonly line?: number;
