@@ -10,8 +10,8 @@ provider, or municipal legacy layout.
 > DPS v1.01 wire structure, applies deterministic local National
 > business rules, securely parses National DPS/NFS-e/event documents and SEFIN
 > document responses, signs and verifies National XML documents, and validates
-> National NFS-e v1.01 XML against the bundled official XSDs. SEFIN transport
-> remains a future module.
+> National NFS-e v1.01 XML against the bundled official XSDs. It also provides
+> an injectable SEFIN/ADN HTTP client with separate mutual-TLS configuration.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -26,6 +26,7 @@ decisions, and the completion roadmap, see
 - XML parsing rejects DTD/entity declarations and applies byte/depth limits.
 - XSD validation is optional and isolated behind a subpath import.
 - XML signing is optional and isolated behind a subpath import.
+- SEFIN transport is optional and isolated behind a subpath import.
 - Official schemas are committed unchanged with hashes and provenance.
 - Every `TCInfDPS` descendant has an explicit type and serializer.
 - XSD choices are represented by TypeScript unions.
@@ -203,6 +204,51 @@ URIs. The default profile therefore uses inclusive C14N 1.0 and RSA-SHA256,
 and is explicit and configurable. Confirm this profile against the restricted
 SEFIN environment before production use.
 
+## Call SEFIN and ADN APIs
+
+```ts
+import {
+  createNodeHttpTransport,
+  createSefinClient,
+} from "nfse-js/transport";
+
+const transport = createNodeHttpTransport({
+  tls: {
+    pfx: connectionCertificateBytes,
+    passphrase: process.env.PFX_PASSWORD,
+  },
+});
+
+const sefin = createSefinClient({
+  environment: "restricted-production",
+  transport,
+});
+
+const result = await sefin.submitDps(signedXml, {
+  signal: abortController.signal,
+  timeoutMs: 30_000,
+});
+```
+
+The client models the official restricted-production and production hosts and
+the documented NFS-e, DPS, event, and contributor ADN routes. It supports DPS
+submission, NFS-e and DPS reconciliation queries, event registration and
+queries, and contributor ADN document/event queries.
+
+Connection certificates are configured on the HTTP transport and remain
+independent from XML-signing credentials. GET and HEAD requests retry
+transient network failures and selected HTTP statuses; POST operations are
+never retried automatically because the official material does not document a
+safe idempotency mechanism. Logs contain operation metadata only, not URLs,
+headers, taxpayer identifiers, XML, certificates, or response bodies.
+
+The public manuals describe DPS submission as XML and event communication as
+JSON, but the accessible documentation does not publish every current Swagger
+wrapper property. Raw XML and JSON payloads are supported directly. When the
+active environment requires gzip/base64 JSON, use
+`gzipBase64XmlJsonPayload(xml, propertyName)` with the property name from that
+environment's Swagger instead of relying on a guessed field.
+
 ## Entry points
 
 | Import | Purpose |
@@ -211,6 +257,7 @@ SEFIN environment before production use.
 | `nfse-js/core` | Types, DPS IDs, semantic validation, XML generation |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
 | `nfse-js/signing` | XML signing, credentials, and signature verification |
+| `nfse-js/transport` | SEFIN/ADN clients, retries, timeouts, and mutual TLS |
 | `nfse-js/validation` | XSD validation |
 | `nfse-js/schemas` | Access to bundled National NFS-e schemas |
 
@@ -220,8 +267,8 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include SEFIN API clients, event construction/serialization,
-and municipal parameter discovery.
+Planned modules include event construction/serialization and municipal
+parameter discovery.
 
 ## Schema provenance
 

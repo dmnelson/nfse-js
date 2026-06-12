@@ -29,6 +29,8 @@ try {
     "dist/parsing/index.cjs",
     "dist/signing/index.js",
     "dist/signing/index.cjs",
+    "dist/transport/index.js",
+    "dist/transport/index.cjs",
     "dist/validation/index.js",
     "dist/schemas/index.js",
     "schemas/manifest.json",
@@ -77,6 +79,7 @@ import { createDps, decimal, serializeDps } from "nfse-js/core";
 import { parseDpsXml, parseSefinDocumentResponse } from "nfse-js/parsing";
 import { NATIONAL_NFSE_XMLDSIG_PROFILE } from "nfse-js/signing";
 import { getNationalNfseSchemas } from "nfse-js/schemas";
+import { NATIONAL_SEFIN_ENDPOINTS } from "nfse-js/transport";
 import { validateDpsXml } from "nfse-js/validation";
 
 const dps = createDps({
@@ -111,6 +114,7 @@ const xml = serializeDps(dps);
 assert.deepEqual(parseDpsXml(xml).document, dps);
 assert.equal(parseSefinDocumentResponse('{"errors":["rejected"]}', { status: 422 }).kind, "rejection");
 assert.match(NATIONAL_NFSE_XMLDSIG_PROFILE.signatureAlgorithm, /rsa-sha256$/);
+assert.match(NATIONAL_SEFIN_ENDPOINTS.production.sefin, /^https:/);
 assert.equal(getNationalNfseSchemas().length, 10);
 assert.equal((await validateDpsXml(xml, { throwOnInvalid: false })).valid, true);
 `,
@@ -123,6 +127,7 @@ const core = require("nfse-js/core");
 const parsing = require("nfse-js/parsing");
 const schemas = require("nfse-js/schemas");
 const signing = require("nfse-js/signing");
+const transport = require("nfse-js/transport");
 const validation = require("nfse-js/validation");
 
 assert.equal(typeof core.serializeDps, "function");
@@ -133,6 +138,8 @@ assert.equal(typeof parsing.parseSefinDocumentResponse, "function");
 assert.equal(typeof signing.createPemSigner, "function");
 assert.equal(typeof signing.signDpsXml, "function");
 assert.equal(typeof signing.verifyNationalXmlSignature, "function");
+assert.equal(typeof transport.createSefinClient, "function");
+assert.equal(typeof transport.createNodeHttpTransport, "function");
 assert.equal(typeof validation.validateDpsXml, "function");
 assert.equal(schemas.getNationalNfseSchemas().length, 10);
 `,

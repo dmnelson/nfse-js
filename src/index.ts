@@ -5,6 +5,9 @@ export {
   NfseError,
   SefinResponseParseError,
   type SefinResponseParseErrorCode,
+  SefinTransportError,
+  type SefinTransportErrorCode,
+  type SefinTransportErrorContext,
   type ValidationCategory,
   type ValidationIssue,
   type ValidationSource,
@@ -17,6 +20,7 @@ export {
 } from "./errors.js";
 export * from "./parsing/index.js";
 export * from "./signing/index.js";
+export * from "./transport/index.js";
 export {
   validateDpsXml,
   validateEventRequestXml,

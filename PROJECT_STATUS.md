@@ -39,28 +39,29 @@ The repository is an early `0.1.0` foundation. It can represent and
 deterministically serialize every complex type reachable from `TCInfDPS`, and
 securely parse DPS, issued NFS-e, event, and SEFIN document-response payloads.
 It can sign and verify DPS, NFS-e, and event XML through PEM, PKCS#12, or
-external signing providers. It is **not yet an issuance client** because no
-SEFIN transport layer exists.
+external signing providers. It also has an injectable SEFIN/ADN client with a
+Node HTTP/mTLS adapter. It has not yet completed a live restricted-production
+issuance, so it must not be presented as operationally proven.
 
 At this handoff:
 
 - Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
 - `npm run verify` passes.
-- 118 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
+- 127 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
   received-document fixtures, and XSD validation for every named
   schema-coverage fixture.
-- `npm run test:coverage` reports 89.21% statements, 100% functions, 89.09%
-  lines, and 82.59% branch coverage for the current code.
+- `npm run test:coverage` reports 89.75% statements, 100% functions, 89.64%
+  lines, and 82.64% branch coverage for the current code.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 872,558 bytes packed across 57 files.
+- The current package-size baseline is 1,052,666 bytes packed across 65 files.
 
 ## Implemented Functionality
 
 ### Package Structure
 
-One package exposes six entry points:
+One package exposes seven entry points:
 
 | Entry point | Current purpose |
 | --- | --- |
@@ -68,6 +69,7 @@ One package exposes six entry points:
 | `nfse-js/core` | DPS types, creation, IDs, validation, and XML serialization |
 | `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
 | `nfse-js/signing` | XML signing, credential adapters, and signature verification |
+| `nfse-js/transport` | SEFIN/ADN operations and Node HTTP/mTLS transport |
 | `nfse-js/validation` | XSD validation through libxml2/WASM |
 | `nfse-js/schemas` | Programmatic access to bundled official schemas |
 
@@ -248,6 +250,32 @@ ICP-Brasil certificate, but do not publish the exact algorithm URIs. The
 profile is therefore configurable and still requires confirmation against the
 restricted SEFIN environment.
 
+### SEFIN and ADN Transport
+
+The transport entry point:
+
+- records the official restricted-production and production SEFIN, contributor
+  ADN, and municipal-parameter service hosts;
+- exposes an injectable `SefinHttpTransport` contract for fixtures and custom
+  application adapters;
+- provides a Node HTTP/HTTPS adapter with PEM or PKCS#12 mutual TLS;
+- keeps connection credentials independent from XML-signing credentials;
+- submits DPS payloads and parses generated documents or remote rejections;
+- queries NFS-e by access key and reconciles DPS identifiers through GET/HEAD;
+- registers and queries events through the documented routes;
+- queries contributor ADN documents by NSU and events by NFS-e access key;
+- supports per-call abort signals and timeouts;
+- retries transient GET/HEAD failures with bounded backoff and `Retry-After`;
+- never retries POST operations automatically;
+- bounds response bodies and categorizes network, timeout, abort, HTTP, and
+  malformed-response failures;
+- emits optional logs containing only operation/status metadata.
+
+The public API accepts raw XML/JSON payloads and provides an explicit
+gzip/base64 JSON helper whose property name must come from the current
+environment Swagger. It does not hard-code a wrapper property that is absent
+from the accessible manuals.
+
 ## Important Current Limitations
 
 ### XSD-valid does not mean SEFIN-valid
@@ -302,22 +330,20 @@ The signing module does not yet:
 Callers can supply a different explicit algorithm profile and their own trust
 anchors. Production use still requires conformance evidence from SEFIN.
 
-### No SEFIN client
+### No live SEFIN conformance evidence
 
-There is no transport layer for:
+The transport contract and documented routes are implemented, but the project
+does not yet contain:
 
-- production or restricted-production/homologation environments;
-- mutual TLS and certificate configuration;
-- DPS submission and NFS-e generation;
-- document queries;
-- event registration;
-- municipal parameter queries;
-- request/response compression or encoding required by the API;
-- retry, timeout, cancellation, idempotency, and rate-limit behavior;
-- normalized handling of HTTP, TLS, schema, and business-rule errors.
+- a successful restricted-production DPS issuance captured with sanitized
+  request/response evidence;
+- a rejected restricted-production issuance fixture;
+- confirmation of every current Swagger request-wrapper property;
+- documented rate-limit behavior from the live services;
+- a documented server-side idempotency mechanism for safe POST retries.
 
-Official endpoints and payload rules are operational data and must be checked
-against current documentation when this work begins.
+The client deliberately avoids automatic POST retries and accepts explicit
+payload encoders rather than guessing undocumented wrapper names.
 
 ### Events are read-only
 
@@ -481,24 +507,26 @@ Exit criteria:
 
 ### Phase 5: Implement the SEFIN Transport Layer
 
-- Re-read the latest official API manuals before fixing the transport contract.
-- Model environments and endpoints explicitly.
-- Support mutual TLS independently from XML signing configuration.
-- Implement DPS submission and parse generated NFS-e/rejections.
-- Add query operations needed for reconciliation.
-- Add timeout, abort signal, retry, and idempotency behavior.
-- Avoid retrying non-idempotent operations without a documented safe strategy.
-- Redact certificates, secrets, taxpayer data, and signed XML from logs by
+- [x] Re-read the latest accessible official API manuals before fixing the
+  transport contract.
+- [x] Model environments and endpoints explicitly.
+- [x] Support mutual TLS independently from XML signing configuration.
+- [x] Implement DPS submission and parse generated NFS-e/rejections.
+- [x] Add query operations needed for reconciliation.
+- [x] Add timeout, abort signal, and bounded retry behavior.
+- [x] Avoid retrying non-idempotent operations without a documented safe
+  strategy.
+- [x] Redact certificates, secrets, taxpayer data, and signed XML from logs by
   default.
-- Provide a transport interface so tests can use fixtures and applications can
+- [x] Provide a transport interface so tests can use fixtures and applications can
   supply an HTTP implementation if necessary.
 
 Exit criteria:
 
-- a signed DPS can be submitted in the official test environment;
-- successful and rejected responses are typed;
-- network and remote business failures are actionable;
-- at least one sanitized end-to-end issuance fixture is retained.
+- [ ] a signed DPS can be submitted in the official test environment;
+- [x] successful and rejected responses are typed;
+- [x] network and remote business failures are actionable;
+- [ ] at least one sanitized end-to-end issuance fixture is retained.
 
 ### Phase 6: Implement Events and Municipal Parameters
 
@@ -575,15 +603,15 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 5 while retaining the two Phase 4 conformance tasks:
+Proceed with Phase 6 while retaining the live Phase 4/5 conformance tasks:
 
-1. model SEFIN environments, operations, and an injectable transport contract;
-2. keep mutual TLS configuration separate from XML signing credentials;
-3. implement submission and response normalization without guessing
-   undocumented response property names;
-4. add timeout, abort, retry, idempotency, and redaction behavior;
-5. confirm the XMLDSig profile and capture independent signature evidence when
-   restricted-production access is available.
+1. model current event request variants and deterministic event identifiers;
+2. serialize event requests in schema order and reuse the signing module;
+3. model municipal parameter responses and add bounded caching;
+4. feed fetched parameters into pure validation without adding network access
+   to the core;
+5. capture signed and transport conformance evidence when restricted-production
+   credentials are available.
 
 ## Working Commands
 
@@ -627,6 +655,9 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/signing/credentials.ts` | PEM and PKCS#12 credential adapters |
 | `src/signing/sign.ts` | National document XML signature creation |
 | `src/signing/verify.ts` | Signature, reference, certificate, and trust verification |
+| `src/transport/client.ts` | Document, reconciliation, event, and ADN operations |
+| `src/transport/node-http.ts` | Bounded Node HTTP/HTTPS and mutual-TLS adapter |
+| `src/transport/endpoints.ts` | Official environment hosts and URL construction |
 | `schemas/1.01/dps-coverage.json` | Machine-checked `TCInfDPS` coverage matrix |
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
 | `src/schemas/index.ts` | Bundled-schema public API |

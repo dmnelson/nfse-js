@@ -56,6 +56,11 @@
       "import": "./dist/signing/index.js",
       "require": "./dist/signing/index.cjs"
     },
+    "./transport": {
+      "types": "./dist/transport/index.d.ts",
+      "import": "./dist/transport/index.js",
+      "require": "./dist/transport/index.cjs"
+    },
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js",

@@ -107,6 +107,32 @@ export class XmlSignatureError extends NfseError {
   }
 }
 
+export type SefinTransportErrorCode =
+  | "invalid-config"
+  | "network-error"
+  | "timeout"
+  | "aborted"
+  | "response-too-large"
+  | "invalid-response"
+  | "http-error";
+
+export interface SefinTransportErrorContext {
+  readonly operation?: string;
+  readonly status?: number;
+  readonly attempt?: number;
+}
+
+export class SefinTransportError extends NfseError {
+  constructor(
+    readonly code: SefinTransportErrorCode,
+    message: string,
+    readonly context: SefinTransportErrorContext = {},
+    options?: ErrorOptions,
+  ) {
+    super(`SEFIN transport failed: ${message}`, options);
+  }
+}
+
 export interface XsdViolation {
   readonly message: string;
   readonly line?: number;
