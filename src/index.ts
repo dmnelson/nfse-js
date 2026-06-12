@@ -3,12 +3,17 @@ export {
   DpsValidationError,
   InvalidDpsIdError,
   NfseError,
+  SefinResponseParseError,
+  type SefinResponseParseErrorCode,
   type ValidationCategory,
   type ValidationIssue,
   type ValidationSource,
+  XmlParseError,
+  type XmlParseErrorCode,
   XsdValidationError,
   type XsdViolation,
 } from "./errors.js";
+export * from "./parsing/index.js";
 export {
   validateDpsXml,
   validateEventRequestXml,

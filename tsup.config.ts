@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: "src/index.ts",
     "core/index": "src/core/index.ts",
+    "parsing/index": "src/parsing/index.ts",
     "validation/index": "src/validation/index.ts",
     "schemas/index": "src/schemas/index.ts",
   },

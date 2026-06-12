@@ -25,6 +25,8 @@ try {
     "dist/index.d.ts",
     "dist/core/index.js",
     "dist/core/index.cjs",
+    "dist/parsing/index.js",
+    "dist/parsing/index.cjs",
     "dist/validation/index.js",
     "dist/schemas/index.js",
     "schemas/manifest.json",
@@ -72,6 +74,7 @@ try {
     join(consumerDirectory, "esm.mjs"),
     `import assert from "node:assert/strict";
 import { createDps, decimal, serializeDps } from "nfse-js/core";
+import { parseDpsXml, parseSefinDocumentResponse } from "nfse-js/parsing";
 import { getNationalNfseSchemas } from "nfse-js/schemas";
 import { validateDpsXml } from "nfse-js/validation";
 
@@ -104,6 +107,8 @@ const dps = createDps({
 });
 
 const xml = serializeDps(dps);
+assert.deepEqual(parseDpsXml(xml).document, dps);
+assert.equal(parseSefinDocumentResponse('{"errors":["rejected"]}', { status: 422 }).kind, "rejection");
 assert.equal(getNationalNfseSchemas().length, 10);
 assert.equal((await validateDpsXml(xml, { throwOnInvalid: false })).valid, true);
 `,
@@ -113,10 +118,15 @@ assert.equal((await validateDpsXml(xml, { throwOnInvalid: false })).valid, true)
     join(consumerDirectory, "commonjs.cjs"),
     `const assert = require("node:assert/strict");
 const core = require("nfse-js/core");
+const parsing = require("nfse-js/parsing");
 const schemas = require("nfse-js/schemas");
 const validation = require("nfse-js/validation");
 
 assert.equal(typeof core.serializeDps, "function");
+assert.equal(typeof parsing.parseDpsXml, "function");
+assert.equal(typeof parsing.parseNfseXml, "function");
+assert.equal(typeof parsing.parseRegisteredEventXml, "function");
+assert.equal(typeof parsing.parseSefinDocumentResponse, "function");
 assert.equal(typeof validation.validateDpsXml, "function");
 assert.equal(schemas.getNationalNfseSchemas().length, 10);
 `,

@@ -47,6 +47,42 @@ export class DpsValidationError extends NfseError {
   }
 }
 
+export type XmlParseErrorCode =
+  | "document-too-large"
+  | "unsafe-xml"
+  | "invalid-xml"
+  | "unexpected-root"
+  | "missing-value"
+  | "invalid-value";
+
+export class XmlParseError extends NfseError {
+  constructor(
+    readonly code: XmlParseErrorCode,
+    readonly path: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`XML parse failed at ${path}: ${message}`, options);
+  }
+}
+
+export type SefinResponseParseErrorCode =
+  | "document-too-large"
+  | "invalid-json"
+  | "nesting-too-deep"
+  | "invalid-compressed-document";
+
+export class SefinResponseParseError extends NfseError {
+  constructor(
+    readonly code: SefinResponseParseErrorCode,
+    readonly path: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`SEFIN response parse failed at ${path}: ${message}`, options);
+  }
+}
+
 export interface XsdViolation {
   readonly message: string;
   readonly line?: number;

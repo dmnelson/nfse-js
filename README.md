@@ -8,9 +8,9 @@ provider, or municipal legacy layout.
 
 > Status: early development. Version 0.1 models and serializes the complete
 > unsigned DPS v1.01 wire structure, applies deterministic local National
-> business rules, and validates National NFS-e v1.01 XML against the bundled
-> official XSDs. XML parsing, signing, and SEFIN transport remain future
-> modules.
+> business rules, securely parses National DPS/NFS-e/event documents and SEFIN
+> document responses, and validates National NFS-e v1.01 XML against the
+> bundled official XSDs. Signing and SEFIN transport remain future modules.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -22,6 +22,7 @@ decisions, and the completion roadmap, see
 - Domain input is plain typed data, not files or configuration formats.
 - Decimal values stay strings and are serialized exactly.
 - Core XML generation is deterministic and synchronous.
+- XML parsing rejects DTD/entity declarations and applies byte/depth limits.
 - XSD validation is optional and isolated behind a subpath import.
 - Official schemas are committed unchanged with hashes and provenance.
 - Every `TCInfDPS` descendant has an explicit type and serializer.
@@ -136,12 +137,41 @@ Other validators are available for generated NFS-e documents and events:
 `validateNfseXml`, `validateEventRequestXml`, `validateEventXml`, and the
 generic `validateXml`.
 
+## Parse received documents
+
+```ts
+import {
+  parseDpsXml,
+  parseEventRequestXml,
+  parseNfseXml,
+  parseRegisteredEventXml,
+  parseSefinDocumentResponse,
+} from "nfse-js/parsing";
+
+const parsedDps = parseDpsXml(xml);
+const parsedNfse = parseNfseXml(nfseXml);
+const parsedRequest = parseEventRequestXml(eventRequestXml);
+const parsedEvent = parseRegisteredEventXml(eventXml);
+
+const response = parseSefinDocumentResponse(responseBody, {
+  status: 200,
+  contentType: "application/json",
+});
+```
+
+Parsers preserve the exact original XML, parsed signature material, and raw
+XML trees alongside typed document fields. SEFIN JSON envelopes are parsed
+without relying on undocumented property names: plain XML and gzip/base64 XML
+documents are discovered recursively, while rejection payloads remain
+available as structured JSON.
+
 ## Entry points
 
 | Import | Purpose |
 | --- | --- |
 | `nfse-js` | Full public API |
 | `nfse-js/core` | Types, DPS IDs, semantic validation, XML generation |
+| `nfse-js/parsing` | Secure DPS, NFS-e, event, and SEFIN response parsing |
 | `nfse-js/validation` | XSD validation |
 | `nfse-js/schemas` | Access to bundled National NFS-e schemas |
 
@@ -151,8 +181,8 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned modules include secure XML parsing, XMLDSig signing, SEFIN API clients,
-typed event requests, and municipal parameter discovery.
+Planned modules include XMLDSig signing and verification, SEFIN API clients,
+event construction/serialization, and municipal parameter discovery.
 
 ## Schema provenance
 

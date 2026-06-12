@@ -46,6 +46,11 @@
       "import": "./dist/core/index.js",
       "require": "./dist/core/index.cjs"
     },
+    "./parsing": {
+      "types": "./dist/parsing/index.d.ts",
+      "import": "./dist/parsing/index.js",
+      "require": "./dist/parsing/index.cjs"
+    },
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js",
