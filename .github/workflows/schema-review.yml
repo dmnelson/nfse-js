@@ -1,0 +1,39 @@
+name: Review schema bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Official schema ZIP URL
+        required: true
+        type: string
+      version:
+        description: National schema version
+        required: true
+        default: "1.01"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    name: Stage and compare
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - run: npm run schema:stage -- --source "$SCHEMA_SOURCE" --version "$SCHEMA_VERSION" --output .schema-staging/review
+        env:
+          SCHEMA_SOURCE: ${{ inputs.source }}
+          SCHEMA_VERSION: ${{ inputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: national-nfse-schema-${{ inputs.version }}
+          path: .schema-staging/review
+          if-no-files-found: error

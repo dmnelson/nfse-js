@@ -17,6 +17,11 @@ For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md).
 
+Task guides and the generated public export index are available in
+[`docs/`](docs/README.md). Runtime and release guarantees are defined in
+[`SUPPORT.md`](SUPPORT.md), [`COMPATIBILITY.md`](COMPATIBILITY.md), and
+[`SECURITY.md`](SECURITY.md).
+
 ## Design
 
 - National NFS-e is the only wire standard.
@@ -326,8 +331,9 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Planned work focuses on schema/version lifecycle, live conformance evidence,
-and production release quality.
+Remaining work focuses on restricted-production conformance evidence,
+independent XMLDSig verification, and exercising release candidates in real
+consumer applications.
 
 ## Schema provenance
 
@@ -363,6 +369,17 @@ The command writes schemas and a hash-based diff report under the ignored
 `.schema-staging/` directory. It never edits the supported bundle. ZIP inputs
 require the `unzip` command. Technical-note review state is tracked separately
 in [`schemas/technical-notes.json`](schemas/technical-notes.json).
+
+## Development checks
+
+```sh
+npm run verify
+npm run test:coverage
+npm run benchmark
+```
+
+`npm run docs:api` regenerates the committed API export reference. The normal
+verification command fails when that reference is stale.
 
 ## License
 

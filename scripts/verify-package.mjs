@@ -37,9 +37,16 @@ try {
     "dist/transport/index.cjs",
     "dist/validation/index.js",
     "dist/schemas/index.js",
+    "docs/API.md",
+    "docs/issuance.md",
+    "docs/releases.md",
     "schemas/manifest.json",
     "schemas/technical-notes.json",
+    "CHANGELOG.md",
+    "COMPATIBILITY.md",
     "README.md",
+    "SECURITY.md",
+    "SUPPORT.md",
     "LICENSE",
   ]) {
     assert(packagedPaths.has(requiredPath), `Package is missing ${requiredPath}`);

@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   calendar validation, and DPS identifier consistency checks.
 - Source-linked National business rules with official rejection codes,
   collect-all/fail-fast modes, and municipal-parameter-aware validation.
+- Secure DPS, NFS-e, event, and SEFIN response parsing.
+- XML signing and verification through PEM, PKCS#12, and external signers.
+- Injectable SEFIN/ADN transport with mutual TLS, bounded retries, and
+  reconciliation operations.
+- All National v1.01 event request variants and municipal parameter resolution.
+- Version-aware schema access, immutable schema staging, and technical-note
+  tracking.
+- Generated API export documentation, task guides, benchmarks, compatibility
+  policy, support matrix, and provenance-enabled release automation.
 
 ### Changed
 

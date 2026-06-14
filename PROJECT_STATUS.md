@@ -35,7 +35,8 @@ The package should eventually cover the complete lifecycle:
 
 ## Current State
 
-The repository is an early `0.1.0` foundation. It can represent and
+The repository is a feature-complete `0.1.0` implementation candidate for the
+documented National lifecycle. It can represent and
 deterministically serialize every complex type reachable from `TCInfDPS`, and
 securely parse DPS, issued NFS-e, event, and SEFIN document-response payloads.
 It can sign and verify DPS, NFS-e, and event XML through PEM, PKCS#12, or
@@ -53,9 +54,10 @@ At this handoff:
   schema-coverage fixture.
 - `npm run test:coverage` reports 90.53% statements, 100% functions, 90.45%
   lines, and 83.62% branch coverage for the current code.
+- `npm audit --audit-level=high` reports no known vulnerabilities.
 - The actual npm tarball is unpacked and exercised in isolated ESM and
   CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 1,116,958 bytes packed across 82 files.
+- The current package-size baseline is 1,131,845 bytes packed across 95 files.
 
 ## Implemented Functionality
 
@@ -402,17 +404,16 @@ There are no sanitized real-world fixtures or recorded successful exchanges
 from the official restricted-production environment. Unit coverage is strong
 for the small implementation, but conformance coverage is currently shallow.
 
-### Project operations are not production-ready
+### External release evidence is still missing
 
-Missing project infrastructure includes:
+Repository infrastructure now includes a configured remote, CI, schema review,
+generated API documentation, task guides, benchmarks, compatibility/security
+policies, and provenance-enabled tag releases. The remaining release gaps are:
 
-- remote repository configuration;
-- release automation;
-- npm provenance/signing policy;
-- API reference generation;
-- compatibility and deprecation policy;
-- schema-update detection;
-- published package and end-user feedback.
+- an actually published release candidate;
+- exercise by more than one real consuming application;
+- sanitized restricted-production issuance, event, and parameter evidence;
+- independent verification of a generated XML signature.
 
 ## Architectural Decisions to Preserve
 
@@ -448,7 +449,7 @@ calling an incomplete implementation “complete.”
 ### Phase 0: Establish the Repository Baseline
 
 - [x] Review the generated scaffold and create the initial commit.
-- Create the GitHub repository and configure the existing package metadata.
+- [x] Create the GitHub repository and configure the existing package metadata.
 - [x] Add CI for `npm run verify`, coverage, npm pack inspection, ESM imports, and
   CommonJS imports.
 - [x] Test the supported Node versions.
@@ -597,22 +598,23 @@ Exit criteria:
 
 ### Phase 8: Production Release Quality
 
-- Generate API reference documentation.
-- Add task-oriented guides for issuance, signing, errors, events, and parameter
+- [x] Generate API reference documentation.
+- [x] Add task-oriented guides for issuance, signing, errors, events, and parameter
   lookup.
-- Publish an explicit support matrix.
-- Audit dependencies and XML/cryptographic attack surfaces.
-- Add benchmarks for schema validation, signing, parsing, and batch issuance.
-- Test package installation in clean ESM and CommonJS consumer projects.
-- Define semantic-versioning rules for types and emitted XML.
-- Publish release candidates before declaring `1.0.0`.
+- [x] Publish an explicit support matrix.
+- [x] Audit dependencies and XML/cryptographic attack surfaces.
+- [x] Add benchmarks for schema validation, signing, parsing, and batch issuance.
+- [x] Test package installation in clean ESM and CommonJS consumer projects.
+- [x] Define semantic-versioning rules for types and emitted XML.
+- [ ] Publish release candidates before declaring `1.0.0`.
 
 Exit criteria:
 
-- documentation is sufficient without reading source;
-- releases are reproducible and provenance-enabled;
-- package behavior has been exercised by more than one consuming application;
-- security and compatibility policies are explicit.
+- [x] documentation is sufficient without reading source;
+- [x] release automation is reproducible and provenance-enabled;
+- [ ] package behavior has been exercised by more than one real consuming
+  application;
+- [x] security and compatibility policies are explicit.
 
 ## Definition of Fully Fledged
 
@@ -637,14 +639,13 @@ definition.
 
 ## Recommended Next Session
 
-Proceed with Phase 8 while retaining the live Phase 4-6 conformance tasks:
+The remaining roadmap is external conformance and release evidence:
 
-1. finish task-oriented and generated API documentation;
-2. define compatibility, support, and release policies;
-3. add reproducible benchmarks and release automation;
-4. audit dependency and XML/cryptographic attack surfaces;
-5. capture signed, issuance, event, and parameter evidence when
-   restricted-production credentials are available.
+1. confirm the XMLDSig profile and independently verify a generated fixture;
+2. capture sanitized accepted and rejected restricted-production issuance;
+3. capture event and municipal-parameter fixtures from the active Swagger;
+4. publish an npm release candidate through the tag workflow;
+5. exercise that candidate in at least two real consumer applications.
 
 ## Working Commands
 
@@ -652,6 +653,7 @@ Proceed with Phase 8 while retaining the live Phase 4-6 conformance tasks:
 npm install
 npm run verify
 npm run test:coverage
+npm run benchmark
 ```
 
 Regenerate the embedded runtime schemas after an intentional schema change:
@@ -708,8 +710,13 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/schemas/index.ts` | Bundled-schema public API |
 | `scripts/generate-schema-module.mjs` | XSD embedding and compatibility patch |
 | `scripts/stage-schema-update.mjs` | Candidate schema staging and hash diff |
+| `scripts/generate-api-reference.mjs` | Deterministic public export documentation |
+| `scripts/benchmark.mjs` | Release performance and public-API smoke benchmark |
 | `schemas/manifest.json` | Schema provenance, hashes, and patch record |
 | `schemas/technical-notes.json` | Technical-note review state |
+| `docs/` | Generated API reference and task-oriented guides |
+| `SUPPORT.md` | Runtime, schema, and feature support matrix |
+| `COMPATIBILITY.md` | Semantic-versioning and wire-compatibility policy |
 | `test/fixtures.ts` | Named fixtures covering every DPS choice branch |
 | `test/__snapshots__/serialize.test.ts.snap` | Canonical deterministic XML output |
 | `test/schema-coverage.test.ts` | Coverage-manifest/XSD graph contract |
