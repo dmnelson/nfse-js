@@ -1,1 +1,3 @@
 schemas/**/*.xsd -text
+docs/API.md text eol=lf
+src/schemas/generated.ts text eol=lf

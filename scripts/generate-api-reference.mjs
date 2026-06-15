@@ -65,7 +65,7 @@ ${sections.join("\n\n")}
 `;
 
 if (checkOnly) {
-  if (readFileSync(outputPath, "utf8") !== output) {
+  if (normalizeLineEndings(readFileSync(outputPath, "utf8")) !== output) {
     throw new Error("docs/API.md is stale; run npm run docs:api");
   }
   console.log("API reference is current");
@@ -168,4 +168,8 @@ function normalizeWhitespace(value) {
 
 function escapeCell(value) {
   return value.replaceAll("|", "\\|").replaceAll("`", "\\`");
+}
+
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n?/g, "\n");
 }

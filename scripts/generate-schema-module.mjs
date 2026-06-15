@@ -81,7 +81,7 @@ ${entries}
 `;
 
 if (checkOnly) {
-  if (readFileSync(outputFile, "utf8") !== output) {
+  if (normalizeLineEndings(readFileSync(outputFile, "utf8")) !== output) {
     throw new Error("src/schemas/generated.ts is stale; run npm run generate:schemas");
   }
   console.log(`Verified ${schemaFiles.length} generated schemas`);
@@ -107,4 +107,8 @@ function countOccurrences(value, search) {
 
 function sha256(contents) {
   return createHash("sha256").update(contents).digest("hex");
+}
+
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n?/g, "\n");
 }
