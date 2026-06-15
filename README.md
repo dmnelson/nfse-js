@@ -6,12 +6,13 @@ Spec-first TypeScript tools for Brazil's **National NFS-e standard**.
 application to a CLI, YAML format, framework, storage layer, certificate
 provider, or municipal legacy layout.
 
-> Status: early development. Version 0.2 models and serializes the complete
-> DPS v1.01 wire structure, applies deterministic local National
-> business rules, securely parses National DPS/NFS-e/event documents and SEFIN
-> document responses, signs and verifies National XML documents, and validates
-> National NFS-e v1.01 XML against the bundled official XSDs. It also provides
-> an injectable SEFIN/ADN HTTP client with separate mutual-TLS configuration.
+> Status: implementation-complete for the documented v1.01 lifecycle, but not
+> yet production-proven. Version 0.2 models and serializes the complete DPS
+> v1.01 wire structure, applies deterministic local National business rules,
+> securely parses National DPS/NFS-e/event documents and SEFIN document
+> responses, signs and verifies National XML documents, and validates National
+> NFS-e v1.01 XML against the bundled official XSDs. It also provides an
+> injectable SEFIN/ADN HTTP client with separate mutual-TLS configuration.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
@@ -337,6 +338,69 @@ is data obtained from National APIs rather than a separate DPS layout.
 Remaining work focuses on restricted-production conformance evidence,
 independent XMLDSig verification, and exercising release candidates in real
 consumer applications.
+
+## Production readiness
+
+The library has broad implementation coverage, automated tests, cross-platform
+CI, package-consumer checks, security controls, and release automation. It
+should still be treated as an implementation candidate until the following
+evidence exists:
+
+- successful and rejected DPS submissions have been exercised in the official
+  restricted-production environment and retained as sanitized fixtures;
+- the default XMLDSig canonicalization, digest, and signature algorithms have
+  been confirmed against SEFIN and independently verified outside this
+  package;
+- event registration and municipal-parameter responses have been exercised
+  against the active restricted-production Swagger contracts;
+- remaining locally decidable National business rules and optional DPS schema
+  branches have exhaustive positive and negative coverage;
+- certificate revocation and ICP-Brasil taxpayer identity requirements have
+  an agreed production policy;
+- official schema updates have a publisher-authenticated provenance or digest
+  channel, rather than relying only on an operator-supplied hash;
+- release candidates have been exercised by multiple real applications with
+  different document profiles, certificate providers, and deployment
+  environments.
+
+Until those conditions are met, validate generated XML against the bundled
+XSD, keep POST retry decisions application-controlled, verify certificates
+against application-provided trust anchors, and test the exact taxpayer,
+municipality, service, and event flows in restricted production before relying
+on the library operationally.
+
+The detailed evidence requirements and current limitations are tracked in
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md).
+
+## Help wanted
+
+External usage and conformance evidence are now more valuable than adding
+another abstraction. Contributions are especially useful in these areas:
+
+- **Real consumers:** integrate a release candidate into an application and
+  report the Node.js version, runtime, package entry points, document features,
+  certificate provider, and any compatibility problems encountered.
+- **Restricted-production testing:** help exercise accepted and rejected DPS
+  issuance, reconciliation queries, events, and municipal parameters. Sanitized
+  request/response fixtures and current Swagger observations are particularly
+  valuable.
+- **Independent signature interoperability:** verify an `nfse-js` signature
+  with another XMLDSig implementation, or provide a compatible fixture produced
+  by Java, .NET, OpenSSL-based tooling, an HSM, or a cloud signing service.
+- **National rule review:** map remaining locally decidable rules from official
+  manuals and technical notes to source references, rejection codes, and
+  positive/negative tests.
+- **Schema provenance:** identify an official authenticated channel for schema
+  archive digests or publisher signatures.
+- **Deployment diversity:** test ESM and CommonJS consumers on supported Node
+  versions, Windows/macOS/Linux, serverless platforms, containers, and
+  bundlers.
+
+Please open an issue or pull request with a reproducible description and the
+smallest safe fixture possible. Never publish private keys, certificate
+passwords, taxpayer secrets, or unsanitized fiscal documents. Security
+vulnerabilities should follow [`SECURITY.md`](SECURITY.md); general contribution
+guidance is in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Schema sources and hashes
 
