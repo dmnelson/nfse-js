@@ -37,7 +37,8 @@ The package should eventually cover the complete lifecycle:
 
 The repository is a `0.2.0` implementation candidate for the documented
 National lifecycle. Package and lock metadata report `0.2.0`, and the
-changelog contains a dated `0.2.0` section; the release is not yet published.
+changelog contains a dated `0.2.0` section. Publication state is tracked by
+the npm registry and GitHub releases.
 The implementation can represent and deterministically serialize every complex
 type reachable from `TCInfDPS`, and parse DPS, issued NFS-e, event, and SEFIN
 document-response payloads with bounded XML/JSON front ends. It can sign and
@@ -69,8 +70,8 @@ At this handoff:
 - The sandbox coverage run reported 85.99% statements, 93.77% functions,
   85.88% lines, and 79.55% branches; Node transport coverage is understated
   because its three socket tests were skipped locally.
-- The offline package smoke check produced a 1,099,510-byte tarball with
-  SHA-256 `92f9c065642ac9d71b21bc1778f3479055985c69022d050a2e0c1749d32f6fcd`.
+- The offline package smoke check produced a 1,100,725-byte tarball with
+  SHA-256 `8fb80e0a45a8fcf2b2bff8cf100e44ec15b53fc75fccaead91802299f5c0c417`.
 - Registry-dependent clean-install and audit reruns were blocked by sandbox
   DNS. The release and Node.js 22 CI jobs enforce those checks with network
   access.

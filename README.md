@@ -1,5 +1,11 @@
 # nfse-js
 
+[![npm version](https://img.shields.io/npm/v/nfse-js.svg)](https://www.npmjs.com/package/nfse-js)
+[![CI](https://github.com/dmnelson/nfse-js/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dmnelson/nfse-js/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/node/v/nfse-js.svg)](https://www.npmjs.com/package/nfse-js)
+[![npm downloads](https://img.shields.io/npm/dm/nfse-js.svg)](https://www.npmjs.com/package/nfse-js)
+[![License](https://img.shields.io/npm/l/nfse-js.svg)](LICENSE)
+
 Spec-first TypeScript tools for Brazil's **National NFS-e standard**.
 
 `nfse-js` builds and validates National DPS/NFS-e XML without coupling your

@@ -2,11 +2,10 @@
 
 Tagged releases are built and published by `.github/workflows/release.yml`.
 
-The next intended release is `0.2.0`. The roadmap-completion work changes
-public types and validation behavior relative to `0.1.0`, so it must not be
-published as a patch. `package.json` and `package-lock.json` now report
-`0.2.0`, and the changelog contains a dated `0.2.0` section. The release is not
-yet published.
+Release `0.2.0` contains the roadmap-completion work. It changes public types
+and validation behavior relative to `0.1.0`, so it is a minor release rather
+than a patch. `package.json` and `package-lock.json` report `0.2.0`, and the
+changelog contains a dated `0.2.0` section.
 
 ## Prerequisites
 
