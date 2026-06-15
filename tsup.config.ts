@@ -4,6 +4,11 @@ export default defineConfig({
   entry: {
     index: "src/index.ts",
     "core/index": "src/core/index.ts",
+    "events/index": "src/events/index.ts",
+    "parameters/index": "src/parameters/index.ts",
+    "parsing/index": "src/parsing/index.ts",
+    "signing/index": "src/signing/index.ts",
+    "transport/index": "src/transport/index.ts",
     "validation/index": "src/validation/index.ts",
     "schemas/index": "src/schemas/index.ts",
   },

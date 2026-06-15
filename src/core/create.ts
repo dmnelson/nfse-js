@@ -1,3 +1,4 @@
+import { InvalidDpsIdError } from "../errors.js";
 import { buildDpsId } from "./dps-id.js";
 import {
   type DpsDocument,
@@ -7,11 +8,25 @@ import {
 } from "./types.js";
 
 export function createDps(input: DpsInput): DpsDocument {
+  const issuer =
+    input.infDPS.tpEmit === "1"
+      ? input.infDPS.prest
+      : input.infDPS.tpEmit === "2"
+        ? input.infDPS.toma
+        : input.infDPS.interm;
+  if (!issuer) {
+    throw new InvalidDpsIdError(
+      input.infDPS.tpEmit === "2" ? "toma" : "interm",
+      "",
+      "the selected DPS issuer group must be supplied",
+    );
+  }
+
   const Id =
     input.infDPS.Id ??
     buildDpsId({
       cLocEmi: input.infDPS.cLocEmi,
-      emitente: providerTaxId(input.infDPS.prest),
+      emitente: federalTaxId(issuer),
       serie: input.infDPS.serie,
       nDPS: input.infDPS.nDPS,
     });
@@ -25,15 +40,15 @@ export function createDps(input: DpsInput): DpsDocument {
   };
 }
 
-function providerTaxId(provider: DpsInput["infDPS"]["prest"]): FederalTaxId {
-  if ("CNPJ" in provider && provider.CNPJ !== undefined) {
-    return { CNPJ: provider.CNPJ };
+function federalTaxId(subject: FederalTaxId): FederalTaxId {
+  if ("CNPJ" in subject && subject.CNPJ !== undefined) {
+    return { CNPJ: subject.CNPJ };
   }
-  if ("CPF" in provider && provider.CPF !== undefined) {
-    return { CPF: provider.CPF };
+  if ("CPF" in subject && subject.CPF !== undefined) {
+    return { CPF: subject.CPF };
   }
-  if ("NIF" in provider && provider.NIF !== undefined) {
-    return { NIF: provider.NIF };
+  if ("NIF" in subject && subject.NIF !== undefined) {
+    return { NIF: subject.NIF };
   }
-  return { cNaoNIF: provider.cNaoNIF };
+  return { cNaoNIF: subject.cNaoNIF };
 }

@@ -1,9 +1,21 @@
 export * from "./core/index.js";
 export {
   DpsValidationError,
+  EventValidationError,
   InvalidDpsIdError,
   NfseError,
+  SefinResponseParseError,
+  type SefinResponseParseErrorCode,
+  SefinTransportError,
+  type SefinTransportErrorCode,
+  type SefinTransportErrorContext,
+  type ValidationCategory,
   type ValidationIssue,
+  type ValidationSource,
+  XmlParseError,
+  type XmlParseErrorCode,
+  XmlSignatureError,
+  type XmlSignatureErrorCode,
   XsdValidationError,
   type XsdViolation,
 } from "./errors.js";

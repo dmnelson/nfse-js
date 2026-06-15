@@ -1,6 +1,6 @@
 {
   "name": "nfse-js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spec-first TypeScript toolkit for Brazil's National NFS-e standard.",
   "keywords": [
     "brazil",
@@ -28,8 +28,13 @@
   "homepage": "https://github.com/dmnelson/nfse-js#readme",
   "files": [
     "dist",
+    "docs",
     "schemas",
+    "CHANGELOG.md",
+    "COMPATIBILITY.md",
     "README.md",
+    "SECURITY.md",
+    "SUPPORT.md",
     "LICENSE"
   ],
   "main": "./dist/index.cjs",
@@ -46,6 +51,31 @@
       "import": "./dist/core/index.js",
       "require": "./dist/core/index.cjs"
     },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "import": "./dist/events/index.js",
+      "require": "./dist/events/index.cjs"
+    },
+    "./parameters": {
+      "types": "./dist/parameters/index.d.ts",
+      "import": "./dist/parameters/index.js",
+      "require": "./dist/parameters/index.cjs"
+    },
+    "./parsing": {
+      "types": "./dist/parsing/index.d.ts",
+      "import": "./dist/parsing/index.js",
+      "require": "./dist/parsing/index.cjs"
+    },
+    "./signing": {
+      "types": "./dist/signing/index.d.ts",
+      "import": "./dist/signing/index.js",
+      "require": "./dist/signing/index.cjs"
+    },
+    "./transport": {
+      "types": "./dist/transport/index.d.ts",
+      "import": "./dist/transport/index.js",
+      "require": "./dist/transport/index.cjs"
+    },
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js",
@@ -59,27 +89,41 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
     "build": "tsup",
     "check": "tsc --noEmit",
+    "docs:api": "node scripts/generate-api-reference.mjs",
+    "docs:check": "node scripts/generate-api-reference.mjs --check",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "generate:schemas": "node scripts/generate-schema-module.mjs",
     "lint": "biome check .",
+    "package:check": "node scripts/verify-package.mjs",
+    "package:check:install": "node scripts/verify-package.mjs --clean-install",
+    "schema:stage": "node scripts/stage-schema-update.mjs",
+    "schemas:check": "node scripts/generate-schema-module.mjs --check",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "verify": "npm run generate:schemas && npm run check && npm run lint && npm test && npm run build",
+    "verify": "npm run schemas:check && npm run docs:check && npm run check && npm run lint && npm test && npm run build && npm run package:check",
     "prepublishOnly": "npm run verify"
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.9.10",
     "fast-xml-parser": "^5.8.0",
+    "node-forge": "^1.4.0",
+    "xml-crypto": "^6.1.2",
     "xmllint-wasm": "^5.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
     "@types/node": "^22.19.21",
+    "@types/node-forge": "^1.3.14",
     "@vitest/coverage-v8": "^4.1.8",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
   }
 }

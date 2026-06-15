@@ -15,10 +15,28 @@ export class InvalidDpsIdError extends NfseError {
   }
 }
 
+export type ValidationCategory =
+  | "format"
+  | "schema"
+  | "business"
+  | "municipal-parameter"
+  | "remote";
+
+export interface ValidationSource {
+  readonly document: string;
+  readonly version: string;
+  readonly section?: string;
+  readonly row?: number;
+  readonly url?: string;
+}
+
 export interface ValidationIssue {
   readonly path: string;
   readonly code: string;
+  readonly category: ValidationCategory;
   readonly message: string;
+  readonly officialCode?: string;
+  readonly source?: ValidationSource;
 }
 
 export class DpsValidationError extends NfseError {
@@ -26,6 +44,105 @@ export class DpsValidationError extends NfseError {
     const first = issues[0]?.message ?? "Unknown validation failure";
     const remaining = Math.max(issues.length - 1, 0);
     super(remaining > 0 ? `Invalid DPS: ${first} (+${remaining} more)` : `Invalid DPS: ${first}`);
+  }
+}
+
+export class EventValidationError extends NfseError {
+  constructor(readonly issues: readonly ValidationIssue[]) {
+    const first = issues[0]?.message ?? "Unknown validation failure";
+    const remaining = Math.max(issues.length - 1, 0);
+    super(
+      remaining > 0
+        ? `Invalid event request: ${first} (+${remaining} more)`
+        : `Invalid event request: ${first}`,
+    );
+  }
+}
+
+export type XmlParseErrorCode =
+  | "document-too-large"
+  | "unsafe-xml"
+  | "invalid-xml"
+  | "unexpected-root"
+  | "missing-value"
+  | "invalid-value";
+
+export class XmlParseError extends NfseError {
+  constructor(
+    readonly code: XmlParseErrorCode,
+    readonly path: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`XML parse failed at ${path}: ${message}`, options);
+  }
+}
+
+export type SefinResponseParseErrorCode =
+  | "document-too-large"
+  | "invalid-json"
+  | "nesting-too-deep"
+  | "invalid-compressed-document"
+  | "invalid-document";
+
+export class SefinResponseParseError extends NfseError {
+  constructor(
+    readonly code: SefinResponseParseErrorCode,
+    readonly path: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`SEFIN response parse failed at ${path}: ${message}`, options);
+  }
+}
+
+export type XmlSignatureErrorCode =
+  | "unsupported-document"
+  | "existing-signature"
+  | "missing-signature"
+  | "multiple-signatures"
+  | "missing-id"
+  | "invalid-reference"
+  | "invalid-credentials"
+  | "unsupported-algorithm"
+  | "certificate-expired"
+  | "certificate-untrusted"
+  | "signing-failed"
+  | "verification-failed";
+
+export class XmlSignatureError extends NfseError {
+  constructor(
+    readonly code: XmlSignatureErrorCode,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(`XML signature failed: ${message}`, options);
+  }
+}
+
+export type SefinTransportErrorCode =
+  | "invalid-config"
+  | "network-error"
+  | "timeout"
+  | "aborted"
+  | "response-too-large"
+  | "invalid-response"
+  | "http-error";
+
+export interface SefinTransportErrorContext {
+  readonly operation?: string;
+  readonly status?: number;
+  readonly attempt?: number;
+}
+
+export class SefinTransportError extends NfseError {
+  constructor(
+    readonly code: SefinTransportErrorCode,
+    message: string,
+    readonly context: SefinTransportErrorContext = {},
+    options?: ErrorOptions,
+  ) {
+    super(`SEFIN transport failed: ${message}`, options);
   }
 }
 

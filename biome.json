@@ -1,7 +1,14 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
   "files": {
-    "includes": ["**", "!src/schemas/generated.ts", "!coverage", "!dist", "!node_modules"]
+    "includes": [
+      "**",
+      "!src/schemas/generated.ts",
+      "!coverage",
+      "!dist",
+      "!node_modules",
+      "!reference-docs"
+    ]
   },
   "formatter": {
     "enabled": true,

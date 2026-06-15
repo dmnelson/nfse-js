@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify and publish
+    runs-on: ubuntu-latest
+    environment: npm
+    env:
+      PACKAGE_DIR: ${{ runner.temp }}/nfse-js-release
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Require tagged commit on origin/main
+        run: |
+          git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"
+          TAG_COMMIT=$(git rev-parse "${GITHUB_REF}^{commit}")
+          test "$TAG_COMMIT" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "$TAG_COMMIT" refs/remotes/origin/main
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.14.0
+          registry-url: https://registry.npmjs.org
+      - name: Install trusted-publishing npm client
+        run: npm install --global npm@11.5.1
+      - run: npm ci
+      - name: Match tag to package version
+        run: |
+          node -e "const version = require('./package.json').version; if (process.env.GITHUB_REF_NAME !== 'v' + version) throw new Error('tag must equal v' + version)"
+      - name: Require stable-release conformance attestation
+        run: |
+          node -e "const version=require('./package.json').version; const major=Number(version.split('.')[0]); if (major >= 1 && !version.includes('-') && process.env.STABLE_RELEASE_APPROVED !== process.env.GITHUB_REF_NAME) throw new Error('stable major releases require STABLE_RELEASE_APPROVED to equal the exact tag')"
+        env:
+          STABLE_RELEASE_APPROVED: ${{ vars.STABLE_RELEASE_APPROVED }}
+      - name: Verify and build release artifact
+        run: npm run verify
+        env:
+          NFSE_PACKAGE_CLEAN_INSTALL: "1"
+          NFSE_PACKAGE_OUTPUT: ${{ env.PACKAGE_DIR }}
+      - name: Enforce release coverage, benchmark, and dependency audit
+        run: |
+          npm run test:coverage
+          npm run benchmark
+          npm audit --audit-level=high
+      - name: Require deterministic generated files
+        run: git diff --exit-code
+      - name: Verify package digest
+        id: package
+        run: |
+          node -e "const crypto=require('node:crypto'); const fs=require('node:fs'); const path=require('node:path'); const dir=process.env.PACKAGE_DIR; const metadata=JSON.parse(fs.readFileSync(path.join(dir, 'package-check.json'), 'utf8')); const tarball=path.join(dir, metadata.tarball); const digest=crypto.createHash('sha256').update(fs.readFileSync(tarball)).digest('hex'); if (digest !== metadata.sha256) throw new Error('package digest mismatch'); const sums=fs.readFileSync(path.join(dir, 'SHA256SUMS'), 'utf8'); if (sums !== digest + '  ' + metadata.tarball + '\n') throw new Error('SHA256SUMS mismatch'); fs.appendFileSync(process.env.GITHUB_OUTPUT, 'tarball=' + tarball + '\n');"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: npm-package-${{ github.ref_name }}
+          path: ${{ env.PACKAGE_DIR }}
+          if-no-files-found: error
+      - name: Publish with provenance
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=latest
+          case "$VERSION" in
+            *-*) TAG=next ;;
+          esac
+          npm publish "${{ steps.package.outputs.tarball }}" --ignore-scripts --access public --provenance --tag "$TAG"
