@@ -109,7 +109,7 @@
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.10",
-    "fast-xml-parser": "^5.8.0",
+    "fast-xml-parser": "^5.9.0",
     "node-forge": "^1.4.0",
     "xml-crypto": "^6.1.2",
     "xmllint-wasm": "^5.2.0"
