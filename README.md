@@ -8,21 +8,34 @@
 
 Spec-first TypeScript tools for Brazil's **National NFS-e standard**.
 
-`nfse-js` builds and validates National DPS/NFS-e XML without coupling your
-application to a CLI, YAML format, framework, storage layer, certificate
-provider, or municipal legacy layout.
+`nfse-js` builds and validates National DPS XML and processes National
+NFS-e documents without coupling your application to a CLI, YAML format,
+framework, storage layer, certificate provider, or municipal legacy layout.
 
-> Status: implementation-complete for the documented v1.01 lifecycle, but not
-> yet production-proven. Version 0.2 models and serializes the complete DPS
-> v1.01 wire structure, applies deterministic local National business rules,
-> securely parses National DPS/NFS-e/event documents and SEFIN document
-> responses, signs and verifies National XML documents, and validates National
-> NFS-e v1.01 XML against the bundled official XSDs. It also provides an
-> injectable SEFIN/ADN HTTP client with separate mutual-TLS configuration.
+The library produces the DPS submitted by a contributor. SEFIN validates that
+DPS and, when it accepts the submission, produces the NFS-e.
+
+## Capability status
+
+| Capability | Status | Meaning |
+| --- | --- | --- |
+| Typed DPS model | Complete for reachable v1.01 `TCInfDPS` types | Every reachable complex type has an explicit TypeScript representation |
+| DPS serialization | Complete for the modeled v1.01 structure | Named coverage fixtures serialize deterministically and validate against the bundled XSD |
+| XSD structural validation | Available for DPS, NFS-e, and events | Proves conformance to the bundled schema structure, not acceptance by SEFIN |
+| Local semantic validation | Partial deterministic coverage | Implements documented facets and locally decidable National rules tracked in the coverage manifest |
+| Authoritative code-table validation | Not yet implemented | Lexically valid ISO, IBGE, BACEN, service, NBS, and IBS/CBS codes are not currently checked for table membership |
+| Signing and transport | Implemented with synthetic tests | XMLDSig defaults, active wrappers, and response shapes still require live confirmation |
+| Restricted-production evidence | Not yet captured | No sanitized accepted and rejected issuance evidence is retained |
+
+An XSD-valid DPS can still be rejected because of National business rules,
+authoritative reference data, municipal parameters, taxpayer state, signature
+requirements, or the active SEFIN API contract.
 
 For the detailed implementation state, known limitations, architectural
 decisions, and the completion roadmap, see
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md).
+Machine-readable DPS coverage claims are tracked in
+[`schemas/1.01/dps-coverage.json`](schemas/1.01/dps-coverage.json).
 
 Task guides and the generated public export index are available in
 [`docs/`](docs/README.md). Runtime and release guarantees are defined in
@@ -131,6 +144,9 @@ rejection code where documented, and source metadata. Use
 Municipal validation accepts already-resolved parameters and performs no
 network calls. Rules that require SEFIN, CNC, municipal parameter, or IBS/CBS
 calculator state are intentionally not guessed by the pure validator.
+Authoritative code-table membership is also outside the current validator; a
+lexically valid country, currency, service, NBS, or IBS/CBS code may still be
+unknown to the applicable official dataset.
 
 ## Validate against the XSD
 
@@ -341,9 +357,10 @@ This library does not implement ABRASF or municipality-specific legacy
 formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
-Remaining work focuses on restricted-production conformance evidence,
-independent XMLDSig verification, and exercising release candidates in real
-consumer applications.
+Remaining work includes completing locally decidable semantic validation,
+adding authoritative code-table validation, capturing restricted-production
+conformance evidence, independently verifying XMLDSig interoperability, and
+exercising releases in real consumer applications.
 
 ## Production readiness
 

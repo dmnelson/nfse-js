@@ -2,10 +2,9 @@
 
 Tagged releases are built and published by `.github/workflows/release.yml`.
 
-Release `0.2.0` contains the roadmap-completion work. It changes public types
-and validation behavior relative to `0.1.0`, so it is a minor release rather
-than a patch. `package.json` and `package-lock.json` report `0.2.0`, and the
-changelog contains a dated `0.2.0` section.
+`package.json` defines the version being prepared. The npm registry and GitHub
+Releases are authoritative for publication state; release instructions must
+not claim that the current package version is unpublished.
 
 ## Prerequisites
 
@@ -18,14 +17,15 @@ changelog contains a dated `0.2.0` section.
 - Ensure the npm package points to this repository so npm provenance is
   verifiable.
 
-## Prepare 0.2.0
+## Prepare a release
 
-1. Decide whether to publish `0.2.0-rc.1` first or proceed to stable `0.2.0`.
-   If using a release candidate, update package, lock, and changelog versions
-   to that exact prerelease; prereleases publish under the npm `next` tag.
-2. Review the prepared `0.2.0` changelog and migration notes against the final
-   release diff.
-3. Confirm the breaking changes listed below.
+1. Decide whether to publish a release candidate first or proceed to a stable
+   version. If using a release candidate, update package, lock, and changelog
+   versions to that exact prerelease; prereleases publish under the npm `next`
+   tag.
+2. Review the prepared changelog and migration notes against the final release
+   diff.
+3. Confirm the breaking changes for the target version.
 4. Run `npm run verify`, `npm run test:coverage`, `npm run benchmark`, and
    `npm audit --audit-level=high`.
 5. Run `npm run package:check:install` to install the packed tarball and its
@@ -35,8 +35,9 @@ changelog contains a dated `0.2.0` section.
 6. Confirm the release commit is reviewed and contained in protected
    `origin/main`, then tag it with exactly `v<package version>`.
 
-After any release-candidate exercise, restore the prepared `0.2.0` metadata,
-repeat the checks, and tag `v0.2.0`. Stable versions publish under `latest`.
+After any release-candidate exercise, set the intended stable metadata, repeat
+the checks, and tag `v<package version>`. Stable versions publish under
+`latest`.
 
 ## Breaking changes from 0.1.0
 

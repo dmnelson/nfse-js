@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Clarified the distinction between complete DPS model coverage, partial local
+  validation, authoritative code-table validation, and operational
+  conformance.
+- Removed mutable publication-state claims, packaged linked project documents,
+  and added documentation consistency checks.
+
 ## [0.2.0] - 2026-06-15
 
 ### Added

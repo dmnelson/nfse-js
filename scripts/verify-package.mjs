@@ -76,6 +76,8 @@ try {
     "schemas/technical-notes.json",
     "CHANGELOG.md",
     "COMPATIBILITY.md",
+    "CONTRIBUTING.md",
+    "PROJECT_STATUS.md",
     "README.md",
     "SECURITY.md",
     "SUPPORT.md",

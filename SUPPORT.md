@@ -26,10 +26,9 @@ conformance evidence.
 
 ## Release status
 
-The roadmap-completion branch is a `0.2.0` candidate because it includes
-breaking public type and validation changes relative to `0.1.0`. Package and
-lock metadata and the changelog report `0.2.0`, but no `0.2.0` release has
-been published.
+`package.json` defines the version of the current source tree. The npm registry
+and GitHub Releases are authoritative for whether a version has been
+published; this document intentionally does not duplicate that mutable state.
 
 The packed-consumer check runs ESM/CommonJS consumers and compiles TypeScript
 consumers. Its default local mode links already-installed dependencies for
@@ -45,4 +44,4 @@ manual gates before tagging.
 
 Only maintained release lines receive security fixes. Before `1.0.0`, the
 maintained line is the latest published prerelease or `0.x` minor release.
-After `0.2.0` is published, `0.1.x` should not be assumed to receive fixes.
+Older `0.x` minor lines should not be assumed to receive fixes.
