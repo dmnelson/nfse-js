@@ -20,7 +20,6 @@ import { fileURLToPath } from "node:url";
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "nfse-js-package-"));
 const npmCacheDirectory = join(temporaryDirectory, "npm-cache");
-const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
 const argumentsMap = parseArguments(process.argv.slice(2));
 const cleanInstall =
   argumentsMap.has("clean-install") || process.env.NFSE_PACKAGE_CLEAN_INSTALL === "1";
@@ -31,12 +30,7 @@ const packageOutputDirectory = retainedOutputDirectory
 
 try {
   prepareOutputDirectory(packageOutputDirectory);
-  const packOutput = run(npmExecutable, [
-    "pack",
-    "--json",
-    "--pack-destination",
-    packageOutputDirectory,
-  ]);
+  const packOutput = runNpm(["pack", "--json", "--pack-destination", packageOutputDirectory]);
   const [packResult] = JSON.parse(packOutput);
   const projectPackage = JSON.parse(readFileSync(join(repositoryRoot, "package.json"), "utf8"));
   const packageLock = JSON.parse(readFileSync(join(repositoryRoot, "package-lock.json"), "utf8"));
@@ -122,8 +116,7 @@ try {
     `${JSON.stringify(packageJson, null, 2)}\n`,
   );
   if (cleanInstall) {
-    run(
-      npmExecutable,
+    runNpm(
       ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false"],
       consumerDirectory,
     );
@@ -436,4 +429,15 @@ function run(command, arguments_, cwd = repositoryRoot) {
     },
     stdio: ["ignore", "pipe", "inherit"],
   });
+}
+
+function runNpm(arguments_, cwd = repositoryRoot) {
+  const npmCli = process.env.npm_execpath;
+  if (npmCli) {
+    return run(process.execPath, [npmCli, ...arguments_], cwd);
+  }
+  if (process.platform === "win32") {
+    throw new Error("npm_execpath is required to run package verification on Windows");
+  }
+  return run("npm", arguments_, cwd);
 }
