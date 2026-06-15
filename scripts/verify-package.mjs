@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "nfse-js-package-"));
 const npmCacheDirectory = join(temporaryDirectory, "npm-cache");
+const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
 const argumentsMap = parseArguments(process.argv.slice(2));
 const cleanInstall =
   argumentsMap.has("clean-install") || process.env.NFSE_PACKAGE_CLEAN_INSTALL === "1";
@@ -30,7 +31,12 @@ const packageOutputDirectory = retainedOutputDirectory
 
 try {
   prepareOutputDirectory(packageOutputDirectory);
-  const packOutput = run("npm", ["pack", "--json", "--pack-destination", packageOutputDirectory]);
+  const packOutput = run(npmExecutable, [
+    "pack",
+    "--json",
+    "--pack-destination",
+    packageOutputDirectory,
+  ]);
   const [packResult] = JSON.parse(packOutput);
   const projectPackage = JSON.parse(readFileSync(join(repositoryRoot, "package.json"), "utf8"));
   const packageLock = JSON.parse(readFileSync(join(repositoryRoot, "package-lock.json"), "utf8"));
@@ -117,7 +123,7 @@ try {
   );
   if (cleanInstall) {
     run(
-      "npm",
+      npmExecutable,
       ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false"],
       consumerDirectory,
     );
