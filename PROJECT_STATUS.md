@@ -727,25 +727,21 @@ true:
 Supporting every legacy municipality format is explicitly **not** part of this
 definition.
 
-## Recommended Next Session
+## Recommended Next Work
 
-The next release is `0.2.0` because this branch changes public types,
-validation behavior, and emitted-data expectations relative to `0.1.0`.
-Package and lock metadata are already set to `0.2.0`. Before `1.0.0`, such
-breaking changes are permitted in a minor release but must be documented as
-migrations.
+Publication state is owned by the npm registry and GitHub Releases rather than
+this roadmap. The remaining engineering priorities are:
 
-The remaining roadmap combines `0.2.0` release hardening with external
-conformance evidence:
-
-1. review the prepared `0.2.0` migration notes and changelog against the final
-   release diff;
-2. confirm CI passes coverage, benchmark, audit, and clean-installation gates;
-3. publish `0.2.0-rc.1` first if prerelease exercise is still required;
-   otherwise tag the reviewed `origin/main` commit as `v0.2.0`;
-4. confirm the XMLDSig profile and independently verify a generated fixture;
-5. capture sanitized accepted and rejected restricted-production issuance;
-6. capture event and municipal-parameter fixtures from the active Swagger.
+1. complete the locally decidable semantic rules for the foreign-service
+   export profile and retain positive and negative end-to-end fixtures;
+2. add injectable authoritative reference-data validation for all generally
+   applicable National DPS code tables;
+3. confirm the XMLDSig profile and independently verify a generated fixture;
+4. capture protected evidence plus sanitized or synthetic contract fixtures
+   for accepted and rejected restricted-production issuance;
+5. capture event and municipal-parameter fixtures from the active Swagger;
+6. keep release, coverage, benchmark, audit, and clean-installation gates
+   passing as those capabilities are added.
 
 ## Working Commands
 
