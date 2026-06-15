@@ -1,5 +1,5 @@
 import { createPrivateKey, createPublicKey, KeyObject, X509Certificate } from "node:crypto";
-import * as forge from "node-forge";
+import forge from "node-forge";
 import { XmlSignatureError } from "../errors.js";
 import type { PemSignerOptions, SigningCertificateInfo } from "./types.js";
 

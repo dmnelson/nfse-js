@@ -41,9 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   intermediary issuer rather than always using the provider.
 - The package root retains the `0.1.x` core/error/XSD surface; lifecycle modules
   are loaded through explicit subpath imports.
+- Corrected `node-forge` interop in the built ESM signing entry point so PEM
+  and PKCS#12 credentials load through the packaged artifact.
 - Release automation publishes the exact verified tarball and enforces main
-  ancestry, clean consumer installation, coverage, audit, and stable-release
-  attestation gates.
+  ancestry, clean consumer installation, coverage, benchmark smoke, audit, and
+  stable-release attestation gates.
 
 ### Security
 

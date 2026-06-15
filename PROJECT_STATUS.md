@@ -69,8 +69,8 @@ At this handoff:
 - The sandbox coverage run reported 85.99% statements, 93.77% functions,
   85.88% lines, and 79.55% branches; Node transport coverage is understated
   because its three socket tests were skipped locally.
-- The offline package smoke check produced a 1,099,568-byte tarball with
-  SHA-256 `e2c53071fb38f2492e3ee99398a8163dc5dc05db8cd55deaf7b7a46b50f6ce99`.
+- The offline package smoke check produced a 1,099,510-byte tarball with
+  SHA-256 `92f9c065642ac9d71b21bc1778f3479055985c69022d050a2e0c1749d32f6fcd`.
 - Registry-dependent clean-install and audit reruns were blocked by sandbox
   DNS. The release and Node.js 22 CI jobs enforce those checks with network
   access.
@@ -463,10 +463,10 @@ tag matches the package version, runs `npm run verify`, requires generated
 files to remain unchanged, verifies the packed-artifact digest, and publishes
 that artifact through npm trusted publishing with provenance.
 
-The workflow also runs coverage and dependency-audit checks and performs a
-clean npm installation of the package and its dependencies. It does not
-execute benchmarks or independently verify the external conformance criteria
-below. Stable major tags require the protected environment variable
+The workflow also runs coverage, benchmark smoke, and dependency-audit checks
+and performs a clean npm installation of the package and its dependencies. It
+does not independently verify the external conformance criteria below. Stable
+major tags require the protected environment variable
 `STABLE_RELEASE_APPROVED` to equal the exact tag, making that evidence an
 explicit reviewer attestation. The remaining release gaps are:
 
@@ -684,8 +684,10 @@ Exit criteria:
   tests.
 - [x] Compile strict TypeScript ESM and CommonJS consumers against declarations
   unpacked from the tarball.
-- [ ] Install the tarball and dependencies with npm in a clean isolated
-  consumer rather than linking repository dependencies.
+- [x] Install the tarball and dependencies with npm in a clean isolated
+  consumer rather than linking repository dependencies. Node.js 22 CI and the
+  release workflow enforce this mode; the latest local sandbox rerun was
+  blocked by restricted DNS.
 - [x] Define semantic-versioning rules for types and emitted XML.
 - [ ] Publish release candidates before declaring `1.0.0`.
 
@@ -696,7 +698,7 @@ Exit criteria:
 - [x] tag ancestry, version equality, generated-file cleanliness, and package
   digest are enforced by the release workflow;
 - [x] coverage, dependency audit, and clean installation gates are enforced;
-- [ ] benchmark execution is enforced automatically;
+- [x] benchmark smoke execution is enforced automatically in CI and release;
 - [x] stable major releases require an exact-tag protected-environment
   conformance attestation;
 - [ ] package behavior has been exercised by more than one real consuming
@@ -737,15 +739,12 @@ conformance evidence:
 
 1. review the prepared `0.2.0` migration notes and changelog against the final
    release diff;
-2. install the packed tarball and its dependencies in clean JavaScript and
-   TypeScript consumers;
-3. manually attest the coverage, audit, benchmark, and clean-installation
-   gates before tagging;
-4. publish `0.2.0-rc.1` first if prerelease exercise is still required;
+2. confirm CI passes coverage, benchmark, audit, and clean-installation gates;
+3. publish `0.2.0-rc.1` first if prerelease exercise is still required;
    otherwise tag the reviewed `origin/main` commit as `v0.2.0`;
-5. confirm the XMLDSig profile and independently verify a generated fixture;
-6. capture sanitized accepted and rejected restricted-production issuance;
-7. capture event and municipal-parameter fixtures from the active Swagger.
+4. confirm the XMLDSig profile and independently verify a generated fixture;
+5. capture sanitized accepted and rejected restricted-production issuance;
+6. capture event and municipal-parameter fixtures from the active Swagger.
 
 ## Working Commands
 

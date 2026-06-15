@@ -72,22 +72,19 @@ The tag workflow currently:
 - runs `npm ci` and `npm run verify`;
 - rejects changes to generated files after verification;
 - performs a clean npm installation of the tarball and dependency graph;
-- runs coverage and high-severity dependency audit checks;
+- runs coverage, benchmark smoke, and high-severity dependency audit checks;
 - verifies the tarball against generated SHA-256 metadata;
 - uploads the tarball, digest, and package-check metadata;
 - publishes the verified tarball through npm trusted publishing with
   provenance;
 - selects `next` for SemVer prereleases and `latest` otherwise.
 
-It does not currently:
+It does not verify the restricted-production, independent-signature, or
+multi-consumer evidence behind the protected stable-release attestation.
 
-- run benchmarks;
-- verify the restricted-production, independent-signature, or multi-consumer
-  evidence behind the protected stable-release attestation.
-
-These remaining items are manual or repository-protection gates until further
-release hardening adds enforcement. Do not describe npm provenance as schema
-provenance or as proof of runtime conformance.
+Those remaining items are manual or repository-protection gates. Do not
+describe npm provenance as schema provenance or as proof of runtime
+conformance.
 
 ## Stable 1.0 gate
 

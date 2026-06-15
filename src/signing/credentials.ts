@@ -1,5 +1,5 @@
 import { sign as signBytes } from "node:crypto";
-import * as forge from "node-forge";
+import forge from "node-forge";
 import { XmlSignatureError } from "../errors.js";
 import { normalizePemCredentials } from "./certificates.js";
 import type {

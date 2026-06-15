@@ -51,9 +51,10 @@ jobs:
         env:
           NFSE_PACKAGE_CLEAN_INSTALL: "1"
           NFSE_PACKAGE_OUTPUT: ${{ env.PACKAGE_DIR }}
-      - name: Enforce release coverage and dependency audit
+      - name: Enforce release coverage, benchmark, and dependency audit
         run: |
           npm run test:coverage
+          npm run benchmark
           npm audit --audit-level=high
       - name: Require deterministic generated files
         run: git diff --exit-code
