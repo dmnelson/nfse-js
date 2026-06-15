@@ -2,11 +2,12 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "nfse-js-schema-staging-"));
-const script = new URL("../scripts/stage-schema-update.mjs", import.meta.url).pathname;
-const repositoryRoot = new URL("..", import.meta.url);
+const script = fileURLToPath(new URL("../scripts/stage-schema-update.mjs", import.meta.url));
+const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
 
 afterAll(() => {
   rmSync(temporaryDirectory, { recursive: true, force: true });

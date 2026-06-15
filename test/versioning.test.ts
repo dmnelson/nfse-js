@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 import {
   assertSupportedNationalNfseVersion,
@@ -22,7 +23,7 @@ import {
 } from "../src/schemas/index.js";
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "nfse-js-versioning-"));
-const repositoryRoot = new URL("..", import.meta.url);
+const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
 
 afterAll(() => {
   rmSync(temporaryDirectory, { recursive: true, force: true });
@@ -172,9 +173,9 @@ function runStage(source: URL | string, output: string): void {
   execFileSync(
     process.execPath,
     [
-      new URL("../scripts/stage-schema-update.mjs", import.meta.url).pathname,
+      fileURLToPath(new URL("../scripts/stage-schema-update.mjs", import.meta.url)),
       "--source",
-      source instanceof URL ? source.pathname : source,
+      source instanceof URL ? fileURLToPath(source) : source,
       "--version",
       "1.01",
       "--output",
