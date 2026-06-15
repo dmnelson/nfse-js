@@ -9,25 +9,13 @@ declaration. Installed packages include the complete TypeScript declarations.
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `Address` | type | `Address` | [`src/core/types.ts:66`](../src/core/types.ts#L66) |
-| `appendEndpointPath` | function | `(baseUrl: string, path: string): string` | [`src/transport/endpoints.ts:43`](../src/transport/endpoints.ts#L43) |
 | `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:127`](../src/core/semantic-validation.ts#L127) |
-| `assertValidEventRequest` | function | `(input: EventRequestInput \| NationalEventRequest): void` | [`src/events/validation.ts:78`](../src/events/validation.ts#L78) |
-| `BlockableEventCode` | type | `BlockableEventCode` | [`src/events/types.ts:27`](../src/events/types.ts#L27) |
 | `buildDpsId` | function | `(options: BuildDpsIdOptions): string` | [`src/core/dps-id.ts:17`](../src/core/dps-id.ts#L17) |
 | `BuildDpsIdOptions` | interface | `BuildDpsIdOptions` | [`src/core/dps-id.ts:4`](../src/core/dps-id.ts#L4) |
-| `buildEventRequestId` | function | `(accessKey: string, eventCode: "e101101" \| "e105102" \| "e101103" \| "e105104" \| "e105105" \| "e202201" \| "e203202" \| "e204203" \| "e205204" \| "e202205" \| "e203206" \| "e204207" \| "e205208" \| "e305101" \| "e305102" \| "e305103"): string` | [`src/events/ids.ts:7`](../src/events/ids.ts#L7) |
-| `buildRegisteredEventId` | function | `(eventRequestId: string, sequence: string \| number): string` | [`src/events/ids.ts:14`](../src/events/ids.ts#L14) |
-| `CancellationReason` | type | `CancellationReason` | [`src/events/types.ts:24`](../src/events/types.ts#L24) |
 | `ComplementaryServiceInformation` | interface | `ComplementaryServiceInformation` | [`src/core/types.ts:206`](../src/core/types.ts#L206) |
 | `Construction` | type | `Construction` | [`src/core/types.ts:182`](../src/core/types.ts#L182) |
 | `ConstructionEventAddress` | type | `SimpleAddress` | [`src/core/types.ts:171`](../src/core/types.ts#L171) |
 | `createDps` | function | `(input: DpsInput): DpsDocument` | [`src/core/create.ts:10`](../src/core/create.ts#L10) |
-| `createEventRequest` | function | `(input: EventRequestInput): NationalEventRequest` | [`src/events/create.ts:6`](../src/events/create.ts#L6) |
-| `createMunicipalParameterResolver` | function | `(options: MunicipalParameterResolverOptions): MunicipalParameterResolver` | [`src/parameters/resolver.ts:20`](../src/parameters/resolver.ts#L20) |
-| `createNodeHttpTransport` | function | `(options?: NodeHttpTransportOptions): SefinHttpTransport` | [`src/transport/node-http.ts:16`](../src/transport/node-http.ts#L16) |
-| `createPemSigner` | function | `(options: PemSignerOptions): XmlSigner` | [`src/signing/credentials.ts:12`](../src/signing/credentials.ts#L12) |
-| `createPkcs12Signer` | function | `(input: Uint8Array<ArrayBufferLike>, options?: Pkcs12SignerOptions): XmlSigner` | [`src/signing/credentials.ts:23`](../src/signing/credentials.ts#L23) |
-| `createSefinClient` | function | `(options: SefinClientOptions): SefinClient` | [`src/transport/client.ts:70`](../src/transport/client.ts#L70) |
 | `decimal` | function | `(value: string): Decimal15V2 / (value: string, options: DecimalOptions): Decimal<"custom">` | [`src/core/decimal.ts:9`](../src/core/decimal.ts#L9) |
 | `Decimal` | type | `Decimal<Schema>` | [`src/core/types.ts:17`](../src/core/types.ts#L17) |
 | `decimal15v2` | function | `(value: string): Decimal15V2` | [`src/core/decimal.ts:40`](../src/core/decimal.ts#L40) |
@@ -53,21 +41,11 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `DpsInfo` | interface | `DpsInfo` | [`src/core/types.ts:543`](../src/core/types.ts#L543) |
 | `DpsInput` | interface | `DpsInput` | [`src/core/types.ts:569`](../src/core/types.ts#L569) |
 | `DpsIssuer` | type | `DpsIssuer` | [`src/core/types.ts:5`](../src/core/types.ts#L5) |
-| `DpsParseOptions` | interface | `DpsParseOptions` | [`src/parsing/types.ts:14`](../src/parsing/types.ts#L14) |
 | `DpsValidationError` | class | `new (issues: readonly ValidationIssue[]): DpsValidationError` | [`src/errors.ts:42`](../src/errors.ts#L42) |
 | `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:74`](../src/core/semantic-validation.ts#L74) |
 | `Environment` | type | `Environment` | [`src/core/types.ts:4`](../src/core/types.ts#L4) |
 | `EventActivity` | type | `EventActivity` | [`src/core/types.ts:173`](../src/core/types.ts#L173) |
-| `EventAuthor` | type | `EventAuthor` | [`src/parsing/types.ts:135`](../src/parsing/types.ts#L135) |
-| `EventParseOptions` | type | `XmlParseOptions` | [`src/parsing/types.ts:19`](../src/parsing/types.ts#L19) |
-| `EventRequestAuthor` | type | `EventRequestAuthor` | [`src/events/types.ts:29`](../src/events/types.ts#L29) |
-| `EventRequestDocument` | interface | `EventRequestDocument` | [`src/parsing/types.ts:154`](../src/parsing/types.ts#L154) |
-| `EventRequestInfo` | interface | `EventRequestInfo` | [`src/parsing/types.ts:144`](../src/parsing/types.ts#L144) |
-| `EventRequestInfoInput` | interface | `EventRequestInfoInput` | [`src/events/types.ts:107`](../src/events/types.ts#L107) |
-| `EventRequestInput` | interface | `EventRequestInput` | [`src/events/types.ts:117`](../src/events/types.ts#L117) |
-| `EventRequestPayload` | type | `EventRequestPayload` | [`src/events/types.ts:33`](../src/events/types.ts#L33) |
 | `EventValidationError` | class | `new (issues: readonly ValidationIssue[]): EventValidationError` | [`src/errors.ts:50`](../src/errors.ts#L50) |
-| `EventValidationResult` | interface | `EventValidationResult` | [`src/events/types.ts:132`](../src/events/types.ts#L132) |
 | `FacetFailure` | interface | `FacetFailure` | [`src/core/facets.ts:193`](../src/core/facets.ts#L193) |
 | `FederalTax` | interface | `FederalTax` | [`src/core/types.ts:369`](../src/core/types.ts#L369) |
 | `FederalTaxId` | type | `FederalTaxId` | [`src/core/types.ts:25`](../src/core/types.ts#L25) |
@@ -80,7 +58,6 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ForeignTradeRelationship` | type | `ForeignTradeRelationship` | [`src/core/types.ts:106`](../src/core/types.ts#L106) |
 | `ForeignTradeServiceMode` | type | `ForeignTradeServiceMode` | [`src/core/types.ts:105`](../src/core/types.ts#L105) |
 | `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:271`](../src/core/rules.ts#L271) |
-| `gzipBase64XmlJsonPayload` | function | `(xml: string, propertyName: string): SefinRequestPayload` | [`src/transport/payloads.ts:13`](../src/transport/payloads.ts#L13) |
 | `IbsCbs` | interface | `IbsCbs` | [`src/core/types.ts:530`](../src/core/types.ts#L530) |
 | `IbsCbsDeferral` | interface | `IbsCbsDeferral` | [`src/core/types.ts:503`](../src/core/types.ts#L503) |
 | `IbsCbsDestination` | type | `IbsCbsDestination` | [`src/core/types.ts:437`](../src/core/types.ts#L437) |
@@ -96,121 +73,44 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `IssqnWithholding` | type | `IssqnWithholding` | [`src/core/types.ts:11`](../src/core/types.ts#L11) |
 | `isValidCnpj` | function | `(value: string): boolean` | [`src/core/tax-id.ts:12`](../src/core/tax-id.ts#L12) |
 | `isValidCpf` | function | `(value: string): boolean` | [`src/core/tax-id.ts:1`](../src/core/tax-id.ts#L1) |
-| `jsonRequestPayload` | function | `(value: JsonValue): SefinRequestPayload` | [`src/transport/payloads.ts:9`](../src/transport/payloads.ts#L9) |
-| `JsonValue` | type | `JsonValue` | [`src/parsing/types.ts:191`](../src/parsing/types.ts#L191) |
 | `MunicipalBenefit` | type | `MunicipalBenefit` | [`src/core/types.ts:332`](../src/core/types.ts#L332) |
 | `MunicipalNfseReference` | interface | `MunicipalNfseReference` | [`src/core/types.ts:233`](../src/core/types.ts#L233) |
-| `MunicipalParameterClient` | interface | `MunicipalParameterClient` | [`src/parameters/types.ts:10`](../src/parameters/types.ts#L10) |
-| `MunicipalParameterMapper` | type | `MunicipalParameterMapper` | [`src/parameters/types.ts:39`](../src/parameters/types.ts#L39) |
-| `MunicipalParameterMapping` | type | `MunicipalParameterMapping` | [`src/parameters/types.ts:34`](../src/parameters/types.ts#L34) |
-| `MunicipalParameterQuery` | interface | `MunicipalParameterQuery` | [`src/parameters/types.ts:4`](../src/parameters/types.ts#L4) |
-| `MunicipalParameterResolveOptions` | interface | `MunicipalParameterResolveOptions` | [`src/parameters/types.ts:51`](../src/parameters/types.ts#L51) |
-| `MunicipalParameterResolver` | interface | `MunicipalParameterResolver` | [`src/parameters/types.ts:55`](../src/parameters/types.ts#L55) |
-| `MunicipalParameterResolverOptions` | interface | `MunicipalParameterResolverOptions` | [`src/parameters/types.ts:43`](../src/parameters/types.ts#L43) |
-| `MunicipalParameterSnapshot` | interface | `MunicipalParameterSnapshot` | [`src/parameters/types.ts:27`](../src/parameters/types.ts#L27) |
 | `MunicipalTax` | interface | `MunicipalTax` | [`src/core/types.ts:349`](../src/core/types.ts#L349) |
 | `NATIONAL_DPS_RULES` | constant | `readonly [NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, ... 62 more ..., NationalDpsRule]` | [`src/core/rules.ts:28`](../src/core/rules.ts#L28) |
-| `NATIONAL_EVENT_CODES` | constant | `readonly ["e101101", "e105102", "e101103", "e105104", "e105105", "e202201", "e203202", "e204203", "e205204", "e202205", "e203206", "e204207", "e205208", "e305101", "e305102", "e305103"]` | [`src/events/types.ts:4`](../src/events/types.ts#L4) |
-| `NATIONAL_NFSE_EVENT_CODES` | constant | `readonly ["e101101", "e105102", "e101103", "e105104", "e105105", "e202201", "e203202", "e204203", "e205204", "e202205", "e203206", "e204207", "e205208", "e305101", "e305102", "e305103"]` | [`src/parsing/types.ts:114`](../src/parsing/types.ts#L114) |
 | `NATIONAL_NFSE_NAMESPACE` | constant | `"http://www.sped.fazenda.gov.br/nfse"` | [`src/core/types.ts:1`](../src/core/types.ts#L1) |
 | `NATIONAL_NFSE_VERSION` | constant | `"1.01"` | [`src/core/types.ts:2`](../src/core/types.ts#L2) |
-| `NATIONAL_NFSE_XMLDSIG_PROFILE` | constant | `XmlSignatureProfile` | [`src/signing/types.ts:22`](../src/signing/types.ts#L22) |
-| `NATIONAL_SEFIN_ENDPOINTS` | constant | `Readonly<Record<SefinEnvironment, SefinEndpoints>>` | [`src/transport/endpoints.ts:4`](../src/transport/endpoints.ts#L4) |
 | `NationalDpsRule` | interface | `NationalDpsRule` | [`src/core/rules.ts:6`](../src/core/rules.ts#L6) |
-| `NationalEventCode` | type | `"e101101" \| "e105102" \| "e101103" \| "e105104" \| "e105105" \| "e202201" \| "e203202" \| "e204203" \| "e205204" \| "e202205" \| "e203206" \| "e204207" \| "e205208" \| "e305101" \| "e305102" \| "e305103"` | [`src/events/types.ts:23`](../src/events/types.ts#L23) |
-| `NationalEventRequest` | interface | `NationalEventRequest` | [`src/events/types.ts:122`](../src/events/types.ts#L122) |
 | `NationalFiscalDocumentReference` | interface | `NationalFiscalDocumentReference` | [`src/core/types.ts:451`](../src/core/types.ts#L451) |
-| `NationalXmlDocumentKind` | type | `NationalXmlDocumentKind` | [`src/signing/types.ts:29`](../src/signing/types.ts#L29) |
-| `NfseDocument` | interface | `NfseDocument` | [`src/parsing/types.ts:101`](../src/parsing/types.ts#L101) |
 | `NfseError` | class | `new (message: string, options?: ErrorOptions \| undefined): NfseError` | [`src/errors.ts:1`](../src/errors.ts#L1) |
-| `NfseEventCode` | type | `"e101101" \| "e105102" \| "e101103" \| "e105104" \| "e105105" \| "e202201" \| "e203202" \| "e204203" \| "e205204" \| "e202205" \| "e203206" \| "e204207" \| "e205208" \| "e305101" \| "e305102" \| "e305103"` | [`src/parsing/types.ts:133`](../src/parsing/types.ts#L133) |
-| `NfseEventPayload` | interface | `NfseEventPayload` | [`src/parsing/types.ts:139`](../src/parsing/types.ts#L139) |
-| `NfseInfo` | interface | `NfseInfo` | [`src/parsing/types.ts:76`](../src/parsing/types.ts#L76) |
-| `NfseIssuer` | type | `NfseIssuer` | [`src/parsing/types.ts:43`](../src/parsing/types.ts#L43) |
-| `NfseIssuerAddress` | interface | `NfseIssuerAddress` | [`src/parsing/types.ts:33`](../src/parsing/types.ts#L33) |
-| `NfseParseOptions` | type | `DpsParseOptions` | [`src/parsing/types.ts:18`](../src/parsing/types.ts#L18) |
-| `NfseValues` | interface | `NfseValues` | [`src/parsing/types.ts:65`](../src/parsing/types.ts#L65) |
-| `NodeHttpTransportOptions` | interface | `NodeHttpTransportOptions` | [`src/transport/types.ts:60`](../src/transport/types.ts#L60) |
 | `NonFiscalDocumentReference` | interface | `NonFiscalDocumentReference` | [`src/core/types.ts:463`](../src/core/types.ts#L463) |
 | `NonNifReason` | type | `NonNifReason` | [`src/core/types.ts:6`](../src/core/types.ts#L6) |
 | `OrderItemList` | interface | `OrderItemList` | [`src/core/types.ts:202`](../src/core/types.ts#L202) |
 | `OtherFiscalDocumentReference` | interface | `OtherFiscalDocumentReference` | [`src/core/types.ts:457`](../src/core/types.ts#L457) |
 | `PaperInvoiceReference` | interface | `PaperInvoiceReference` | [`src/core/types.ts:239`](../src/core/types.ts#L239) |
-| `ParsedDps` | interface | `ParsedDps` | [`src/parsing/types.ts:25`](../src/parsing/types.ts#L25) |
-| `ParsedEventRequest` | interface | `ParsedEventRequest` | [`src/parsing/types.ts:159`](../src/parsing/types.ts#L159) |
-| `ParsedNationalDocument` | type | `ParsedNationalDocument` | [`src/parsing/types.ts:199`](../src/parsing/types.ts#L199) |
-| `ParsedNfse` | interface | `ParsedNfse` | [`src/parsing/types.ts:106`](../src/parsing/types.ts#L106) |
-| `parseDpsXml` | function | `(xml: string, options?: DpsParseOptions): ParsedDps` | [`src/parsing/dps.ts:45`](../src/parsing/dps.ts#L45) |
-| `ParsedRegisteredEvent` | interface | `ParsedRegisteredEvent` | [`src/parsing/types.ts:183`](../src/parsing/types.ts#L183) |
-| `ParsedSefinRejectionResponse` | interface | `ParsedSefinRejectionResponse` | [`src/parsing/types.ts:223`](../src/parsing/types.ts#L223) |
-| `ParsedSefinResponse` | type | `ParsedSefinResponse` | [`src/parsing/types.ts:228`](../src/parsing/types.ts#L228) |
-| `ParsedSefinSuccessResponse` | interface | `ParsedSefinSuccessResponse` | [`src/parsing/types.ts:218`](../src/parsing/types.ts#L218) |
-| `ParsedXmlRoot` | interface | `ParsedXmlRoot` | [`src/parsing/xml.ts:11`](../src/parsing/xml.ts#L11) |
-| `parseEventRequestXml` | function | `(xml: string, options?: XmlParseOptions): ParsedEventRequest` | [`src/parsing/events.ts:28`](../src/parsing/events.ts#L28) |
-| `parseNfseXml` | function | `(xml: string, options?: DpsParseOptions): ParsedNfse` | [`src/parsing/nfse.ts:23`](../src/parsing/nfse.ts#L23) |
-| `parseRegisteredEventXml` | function | `(xml: string, options?: XmlParseOptions): ParsedRegisteredEvent` | [`src/parsing/events.ts:46`](../src/parsing/events.ts#L46) |
-| `parseSefinDocumentResponse` | function | `(body: string, options?: SefinResponseParseOptions): ParsedSefinResponse` | [`src/parsing/sefin-response.ts:22`](../src/parsing/sefin-response.ts#L22) |
-| `parseXmlRoot` | function | `(xml: string, options?: XmlParseOptions): ParsedXmlRoot` | [`src/parsing/xml.ts:17`](../src/parsing/xml.ts#L17) |
-| `PemSignerOptions` | interface | `PemSignerOptions` | [`src/signing/types.ts:42`](../src/signing/types.ts#L42) |
 | `Person` | type | `Person` | [`src/core/types.ts:84`](../src/core/types.ts#L84) |
 | `PisCofins` | interface | `PisCofins` | [`src/core/types.ts:359`](../src/core/types.ts#L359) |
-| `Pkcs12SignerOptions` | interface | `Pkcs12SignerOptions` | [`src/signing/types.ts:48`](../src/signing/types.ts#L48) |
 | `Provider` | type | `Provider` | [`src/core/types.ts:74`](../src/core/types.ts#L74) |
 | `ReferencedNfseList` | interface | `ReferencedNfseList` | [`src/core/types.ts:433`](../src/core/types.ts#L433) |
-| `RegisteredEventDocument` | interface | `RegisteredEventDocument` | [`src/parsing/types.ts:178`](../src/parsing/types.ts#L178) |
-| `RegisteredEventInfo` | interface | `RegisteredEventInfo` | [`src/parsing/types.ts:167`](../src/parsing/types.ts#L167) |
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
-| `RejectionReason` | type | `RejectionReason` | [`src/events/types.ts:26`](../src/events/types.ts#L26) |
 | `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:79`](../src/core/semantic-validation.ts#L79) |
-| `resolveSefinEndpoints` | function | `(environment: SefinEnvironment, overrides?: Partial<SefinEndpoints>): SefinEndpoints` | [`src/transport/endpoints.ts:17`](../src/transport/endpoints.ts#L17) |
-| `SefinCallOptions` | interface | `SefinCallOptions` | [`src/transport/types.ts:93`](../src/transport/types.ts#L93) |
-| `SefinClient` | interface | `SefinClient` | [`src/transport/client.ts:26`](../src/transport/client.ts#L26) |
-| `SefinClientOptions` | interface | `SefinClientOptions` | [`src/transport/types.ts:83`](../src/transport/types.ts#L83) |
-| `SefinDocumentResponse` | interface | `SefinDocumentResponse` | [`src/transport/types.ts:111`](../src/transport/types.ts#L111) |
-| `SefinEndpoints` | interface | `SefinEndpoints` | [`src/transport/types.ts:5`](../src/transport/types.ts#L5) |
-| `SefinEnvironment` | type | `SefinEnvironment` | [`src/transport/types.ts:3`](../src/transport/types.ts#L3) |
-| `SefinExistenceResponse` | interface | `SefinExistenceResponse` | [`src/transport/types.ts:119`](../src/transport/types.ts#L119) |
-| `SefinHttpMethod` | type | `SefinHttpMethod` | [`src/transport/types.ts:27`](../src/transport/types.ts#L27) |
-| `SefinHttpRequest` | interface | `SefinHttpRequest` | [`src/transport/types.ts:29`](../src/transport/types.ts#L29) |
-| `SefinHttpResponse` | interface | `SefinHttpResponse` | [`src/transport/types.ts:39`](../src/transport/types.ts#L39) |
-| `SefinHttpTransport` | interface | `SefinHttpTransport` | [`src/transport/types.ts:46`](../src/transport/types.ts#L46) |
-| `SefinLogEvent` | interface | `SefinLogEvent` | [`src/transport/types.ts:73`](../src/transport/types.ts#L73) |
-| `SefinOperation` | type | `SefinOperation` | [`src/transport/types.ts:11`](../src/transport/types.ts#L11) |
-| `SefinRequestPayload` | interface | `SefinRequestPayload` | [`src/transport/types.ts:99`](../src/transport/types.ts#L99) |
-| `SefinResponseDocument` | interface | `SefinResponseDocument` | [`src/parsing/types.ts:205`](../src/parsing/types.ts#L205) |
-| `SefinResponseMetadata` | interface | `SefinResponseMetadata` | [`src/transport/types.ts:104`](../src/transport/types.ts#L104) |
-| `SefinResponseParseError` | class | `new (code: SefinResponseParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): SefinResponseParseError` | [`src/errors.ts:87`](../src/errors.ts#L87) |
+| `SefinResponseParseError` | class | `new (code: SefinResponseParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): SefinResponseParseError` | [`src/errors.ts:88`](../src/errors.ts#L88) |
 | `SefinResponseParseErrorCode` | type | `SefinResponseParseErrorCode` | [`src/errors.ts:81`](../src/errors.ts#L81) |
-| `SefinResponseParseOptions` | interface | `SefinResponseParseOptions` | [`src/parsing/types.ts:20`](../src/parsing/types.ts#L20) |
-| `SefinRetryOptions` | interface | `SefinRetryOptions` | [`src/transport/types.ts:66`](../src/transport/types.ts#L66) |
-| `SefinTlsOptions` | interface | `SefinTlsOptions` | [`src/transport/types.ts:50`](../src/transport/types.ts#L50) |
-| `SefinTransportError` | class | `new (code: SefinTransportErrorCode, message: string, context?: SefinTransportErrorContext, options?: ErrorOptions \| undefined): SefinTransportError` | [`src/errors.ts:137`](../src/errors.ts#L137) |
-| `SefinTransportErrorCode` | type | `SefinTransportErrorCode` | [`src/errors.ts:122`](../src/errors.ts#L122) |
-| `SefinTransportErrorContext` | interface | `SefinTransportErrorContext` | [`src/errors.ts:131`](../src/errors.ts#L131) |
-| `SefinValueResponse` | interface | `SefinValueResponse` | [`src/transport/types.ts:115`](../src/transport/types.ts#L115) |
-| `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:33`](../src/core/serialize.ts#L33) |
+| `SefinTransportError` | class | `new (code: SefinTransportErrorCode, message: string, context?: SefinTransportErrorContext, options?: ErrorOptions \| undefined): SefinTransportError` | [`src/errors.ts:138`](../src/errors.ts#L138) |
+| `SefinTransportErrorCode` | type | `SefinTransportErrorCode` | [`src/errors.ts:123`](../src/errors.ts#L123) |
+| `SefinTransportErrorContext` | interface | `SefinTransportErrorContext` | [`src/errors.ts:132`](../src/errors.ts#L132) |
+| `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:40`](../src/core/serialize.ts#L40) |
 | `SerializeDpsOptions` | interface | `SerializeDpsOptions` | [`src/core/types.ts:576`](../src/core/types.ts#L576) |
-| `serializeEventRequest` | function | `(input: EventRequestInput \| NationalEventRequest, options?: SerializeEventRequestOptions): string` | [`src/events/serialize.ts:31`](../src/events/serialize.ts#L31) |
-| `SerializeEventRequestOptions` | interface | `SerializeEventRequestOptions` | [`src/events/types.ts:127`](../src/events/types.ts#L127) |
 | `Service` | interface | `Service` | [`src/core/types.ts:214`](../src/core/types.ts#L214) |
 | `ServiceCode` | interface | `ServiceCode` | [`src/core/types.ts:97`](../src/core/types.ts#L97) |
 | `ServiceLocation` | type | `ServiceLocation` | [`src/core/types.ts:93`](../src/core/types.ts#L93) |
 | `ServiceValues` | interface | `ServiceValues` | [`src/core/types.ts:223`](../src/core/types.ts#L223) |
-| `signDpsXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:15`](../src/signing/sign.ts#L15) |
-| `signEventRequestXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:31`](../src/signing/sign.ts#L31) |
-| `SigningCertificateInfo` | interface | `SigningCertificateInfo` | [`src/signing/types.ts:83`](../src/signing/types.ts#L83) |
-| `signNationalXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions): Promise<string>` | [`src/signing/sign.ts:47`](../src/signing/sign.ts#L47) |
-| `signNfseXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:23`](../src/signing/sign.ts#L23) |
-| `signRegisteredEventXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:39`](../src/signing/sign.ts#L39) |
-| `SignXmlOptions` | interface | `SignXmlOptions` | [`src/signing/types.ts:52`](../src/signing/types.ts#L52) |
 | `SimpleAddress` | type | `SimpleAddress` | [`src/core/types.ts:165`](../src/core/types.ts#L165) |
 | `SimplesNacionalAssessment` | type | `SimplesNacionalAssessment` | [`src/core/types.ts:8`](../src/core/types.ts#L8) |
 | `SimplesNacionalStatus` | type | `SimplesNacionalStatus` | [`src/core/types.ts:7`](../src/core/types.ts#L7) |
 | `SpecialTaxRegime` | type | `SpecialTaxRegime` | [`src/core/types.ts:9`](../src/core/types.ts#L9) |
 | `StringFacet` | interface | `StringFacet` | [`src/core/facets.ts:1`](../src/core/facets.ts#L1) |
 | `Substitution` | interface | `Substitution` | [`src/core/types.ts:427`](../src/core/types.ts#L427) |
-| `SubstitutionReason` | type | `SubstitutionReason` | [`src/events/types.ts:25`](../src/events/types.ts#L25) |
 | `SuspendedEnforceability` | interface | `SuspendedEnforceability` | [`src/core/types.ts:327`](../src/core/types.ts#L327) |
 | `Taxes` | interface | `Taxes` | [`src/core/types.ts:414`](../src/core/types.ts#L414) |
 | `TaxRegime` | interface | `TaxRegime` | [`src/core/types.ts:68`](../src/core/types.ts#L68) |
@@ -221,7 +121,6 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:91`](../src/core/semantic-validation.ts#L91) |
 | `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:108`](../src/core/semantic-validation.ts#L108) |
 | `validateDpsXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:51`](../src/validation/xsd.ts#L51) |
-| `validateEventRequest` | function | `(input: EventRequestInput \| NationalEventRequest): EventValidationResult` | [`src/events/validation.ts:12`](../src/events/validation.ts#L12) |
 | `validateEventRequestXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:65`](../src/validation/xsd.ts#L65) |
 | `validateEventXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:72`](../src/validation/xsd.ts#L72) |
 | `validateFacet` | function | `(facetName: "TSDec15V2" \| "TSDec3V2" \| "TSDec2V2" \| "TSDec1V2" \| "TSIdDPS" \| "TSData" \| "TSDateTimeUTC" \| "TSSerieDPS" \| "TSNumDPS" \| "TSCNPJ" \| "TSCPF" \| "TSCAEPF" \| "TSNIF" \| "TSInscMun" \| ... 17 more ... \| "TSChaveNFe", value: string): FacetFailure \| undefined` | [`src/core/facets.ts:198`](../src/core/facets.ts#L198) |
@@ -232,31 +131,14 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:69`](../src/core/semantic-validation.ts#L69) |
 | `ValidationSource` | interface | `ValidationSource` | [`src/errors.ts:25`](../src/errors.ts#L25) |
 | `Values` | interface | `Values` | [`src/core/types.ts:420`](../src/core/types.ts#L420) |
-| `verifyNationalXmlSignature` | function | `(xml: string, options?: VerifyXmlSignatureOptions): VerifyXmlSignatureResult` | [`src/signing/verify.ts:14`](../src/signing/verify.ts#L14) |
-| `VerifyXmlSignatureOptions` | interface | `VerifyXmlSignatureOptions` | [`src/signing/types.ts:60`](../src/signing/types.ts#L60) |
-| `VerifyXmlSignatureResult` | interface | `VerifyXmlSignatureResult` | [`src/signing/types.ts:92`](../src/signing/types.ts#L92) |
-| `XMLDSIG_C14N_1_0` | constant | `"http://www.w3.org/TR/2001/REC-xml-c14n-20010315"` | [`src/signing/types.ts:4`](../src/signing/types.ts#L4) |
-| `XMLDSIG_ENVELOPED_SIGNATURE` | constant | `"http://www.w3.org/2000/09/xmldsig#enveloped-signature"` | [`src/signing/types.ts:5`](../src/signing/types.ts#L5) |
-| `XMLDSIG_NAMESPACE` | constant | `"http://www.w3.org/2000/09/xmldsig#"` | [`src/signing/types.ts:3`](../src/signing/types.ts#L3) |
-| `XMLDSIG_RSA_SHA256` | constant | `"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"` | [`src/signing/types.ts:6`](../src/signing/types.ts#L6) |
-| `XMLDSIG_SHA256` | constant | `"http://www.w3.org/2001/04/xmlenc#sha256"` | [`src/signing/types.ts:7`](../src/signing/types.ts#L7) |
-| `XmlElement` | interface | `XmlElement` | [`src/parsing/types.ts:5`](../src/parsing/types.ts#L5) |
 | `XmlParseError` | class | `new (code: XmlParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): XmlParseError` | [`src/errors.ts:70`](../src/errors.ts#L70) |
 | `XmlParseErrorCode` | type | `XmlParseErrorCode` | [`src/errors.ts:62`](../src/errors.ts#L62) |
-| `XmlParseOptions` | interface | `XmlParseOptions` | [`src/parsing/types.ts:9`](../src/parsing/types.ts#L9) |
-| `xmlRequestPayload` | function | `(xml: string): SefinRequestPayload` | [`src/transport/payloads.ts:5`](../src/transport/payloads.ts#L5) |
-| `XmlSignatureError` | class | `new (code: XmlSignatureErrorCode, message: string, options?: ErrorOptions \| undefined): XmlSignatureError` | [`src/errors.ts:112`](../src/errors.ts#L112) |
-| `XmlSignatureErrorCode` | type | `XmlSignatureErrorCode` | [`src/errors.ts:98`](../src/errors.ts#L98) |
-| `XmlSignatureIssue` | interface | `XmlSignatureIssue` | [`src/signing/types.ts:78`](../src/signing/types.ts#L78) |
-| `XmlSignatureIssueCode` | type | `XmlSignatureIssueCode` | [`src/signing/types.ts:70`](../src/signing/types.ts#L70) |
-| `XmlSignatureProfile` | interface | `XmlSignatureProfile` | [`src/signing/types.ts:9`](../src/signing/types.ts#L9) |
-| `XmlSigner` | interface | `XmlSigner` | [`src/signing/types.ts:37`](../src/signing/types.ts#L37) |
-| `XmlSignerContext` | interface | `XmlSignerContext` | [`src/signing/types.ts:31`](../src/signing/types.ts#L31) |
-| `XmlValue` | type | `XmlValue` | [`src/parsing/types.ts:3`](../src/parsing/types.ts#L3) |
-| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:153`](../src/errors.ts#L153) |
+| `XmlSignatureError` | class | `new (code: XmlSignatureErrorCode, message: string, options?: ErrorOptions \| undefined): XmlSignatureError` | [`src/errors.ts:113`](../src/errors.ts#L113) |
+| `XmlSignatureErrorCode` | type | `XmlSignatureErrorCode` | [`src/errors.ts:99`](../src/errors.ts#L99) |
+| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:154`](../src/errors.ts#L154) |
 | `XsdValidationOptions` | interface | `XsdValidationOptions` | [`src/validation/xsd.ts:13`](../src/validation/xsd.ts#L13) |
 | `XsdValidationResult` | interface | `XsdValidationResult` | [`src/validation/xsd.ts:8`](../src/validation/xsd.ts#L8) |
-| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:148`](../src/errors.ts#L148) |
+| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:149`](../src/errors.ts#L149) |
 
 ## `nfse-js/core`
 
@@ -344,7 +226,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
 | `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:79`](../src/core/semantic-validation.ts#L79) |
-| `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:33`](../src/core/serialize.ts#L33) |
+| `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:40`](../src/core/serialize.ts#L40) |
 | `SerializeDpsOptions` | interface | `SerializeDpsOptions` | [`src/core/types.ts:576`](../src/core/types.ts#L576) |
 | `Service` | interface | `Service` | [`src/core/types.ts:214`](../src/core/types.ts#L214) |
 | `ServiceCode` | interface | `ServiceCode` | [`src/core/types.ts:97`](../src/core/types.ts#L97) |
@@ -397,7 +279,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
-| `createMunicipalParameterResolver` | function | `(options: MunicipalParameterResolverOptions): MunicipalParameterResolver` | [`src/parameters/resolver.ts:20`](../src/parameters/resolver.ts#L20) |
+| `createMunicipalParameterResolver` | function | `(options: MunicipalParameterResolverOptions): MunicipalParameterResolver` | [`src/parameters/resolver.ts:24`](../src/parameters/resolver.ts#L24) |
 | `MunicipalParameterClient` | interface | `MunicipalParameterClient` | [`src/parameters/types.ts:10`](../src/parameters/types.ts#L10) |
 | `MunicipalParameterMapper` | type | `MunicipalParameterMapper` | [`src/parameters/types.ts:39`](../src/parameters/types.ts#L39) |
 | `MunicipalParameterMapping` | type | `MunicipalParameterMapping` | [`src/parameters/types.ts:34`](../src/parameters/types.ts#L34) |
@@ -412,38 +294,38 @@ declaration. Installed packages include the complete TypeScript declarations.
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `DpsParseOptions` | interface | `DpsParseOptions` | [`src/parsing/types.ts:14`](../src/parsing/types.ts#L14) |
-| `EventAuthor` | type | `EventAuthor` | [`src/parsing/types.ts:135`](../src/parsing/types.ts#L135) |
+| `EventAuthor` | type | `EventAuthor` | [`src/parsing/types.ts:137`](../src/parsing/types.ts#L137) |
 | `EventParseOptions` | type | `XmlParseOptions` | [`src/parsing/types.ts:19`](../src/parsing/types.ts#L19) |
-| `EventRequestDocument` | interface | `EventRequestDocument` | [`src/parsing/types.ts:154`](../src/parsing/types.ts#L154) |
-| `EventRequestInfo` | interface | `EventRequestInfo` | [`src/parsing/types.ts:144`](../src/parsing/types.ts#L144) |
-| `JsonValue` | type | `JsonValue` | [`src/parsing/types.ts:191`](../src/parsing/types.ts#L191) |
-| `NATIONAL_NFSE_EVENT_CODES` | constant | `readonly ["e101101", "e105102", "e101103", "e105104", "e105105", "e202201", "e203202", "e204203", "e205204", "e202205", "e203206", "e204207", "e205208", "e305101", "e305102", "e305103"]` | [`src/parsing/types.ts:114`](../src/parsing/types.ts#L114) |
-| `NfseDocument` | interface | `NfseDocument` | [`src/parsing/types.ts:101`](../src/parsing/types.ts#L101) |
-| `NfseEventCode` | type | `"e101101" \| "e105102" \| "e101103" \| "e105104" \| "e105105" \| "e202201" \| "e203202" \| "e204203" \| "e205204" \| "e202205" \| "e203206" \| "e204207" \| "e205208" \| "e305101" \| "e305102" \| "e305103"` | [`src/parsing/types.ts:133`](../src/parsing/types.ts#L133) |
-| `NfseEventPayload` | interface | `NfseEventPayload` | [`src/parsing/types.ts:139`](../src/parsing/types.ts#L139) |
-| `NfseInfo` | interface | `NfseInfo` | [`src/parsing/types.ts:76`](../src/parsing/types.ts#L76) |
-| `NfseIssuer` | type | `NfseIssuer` | [`src/parsing/types.ts:43`](../src/parsing/types.ts#L43) |
-| `NfseIssuerAddress` | interface | `NfseIssuerAddress` | [`src/parsing/types.ts:33`](../src/parsing/types.ts#L33) |
+| `EventRequestDocument` | interface | `EventRequestDocument` | [`src/parsing/types.ts:156`](../src/parsing/types.ts#L156) |
+| `EventRequestInfo` | interface | `EventRequestInfo` | [`src/parsing/types.ts:146`](../src/parsing/types.ts#L146) |
+| `JsonValue` | type | `JsonValue` | [`src/parsing/types.ts:193`](../src/parsing/types.ts#L193) |
+| `NATIONAL_NFSE_EVENT_CODES` | constant | `readonly ["e101101", "e105102", "e101103", "e105104", "e105105", "e202201", "e203202", "e204203", "e205204", "e202205", "e203206", "e204207", "e205208", "e305101", "e305102", "e305103"]` | [`src/parsing/types.ts:116`](../src/parsing/types.ts#L116) |
+| `NfseDocument` | interface | `NfseDocument` | [`src/parsing/types.ts:103`](../src/parsing/types.ts#L103) |
+| `NfseEventCode` | type | `"e101101" \| "e105102" \| "e101103" \| "e105104" \| "e105105" \| "e202201" \| "e203202" \| "e204203" \| "e205204" \| "e202205" \| "e203206" \| "e204207" \| "e205208" \| "e305101" \| "e305102" \| "e305103"` | [`src/parsing/types.ts:135`](../src/parsing/types.ts#L135) |
+| `NfseEventPayload` | interface | `NfseEventPayload` | [`src/parsing/types.ts:141`](../src/parsing/types.ts#L141) |
+| `NfseInfo` | interface | `NfseInfo` | [`src/parsing/types.ts:78`](../src/parsing/types.ts#L78) |
+| `NfseIssuer` | type | `NfseIssuer` | [`src/parsing/types.ts:45`](../src/parsing/types.ts#L45) |
+| `NfseIssuerAddress` | interface | `NfseIssuerAddress` | [`src/parsing/types.ts:35`](../src/parsing/types.ts#L35) |
 | `NfseParseOptions` | type | `DpsParseOptions` | [`src/parsing/types.ts:18`](../src/parsing/types.ts#L18) |
-| `NfseValues` | interface | `NfseValues` | [`src/parsing/types.ts:65`](../src/parsing/types.ts#L65) |
-| `ParsedDps` | interface | `ParsedDps` | [`src/parsing/types.ts:25`](../src/parsing/types.ts#L25) |
-| `ParsedEventRequest` | interface | `ParsedEventRequest` | [`src/parsing/types.ts:159`](../src/parsing/types.ts#L159) |
-| `ParsedNationalDocument` | type | `ParsedNationalDocument` | [`src/parsing/types.ts:199`](../src/parsing/types.ts#L199) |
-| `ParsedNfse` | interface | `ParsedNfse` | [`src/parsing/types.ts:106`](../src/parsing/types.ts#L106) |
-| `parseDpsXml` | function | `(xml: string, options?: DpsParseOptions): ParsedDps` | [`src/parsing/dps.ts:45`](../src/parsing/dps.ts#L45) |
-| `ParsedRegisteredEvent` | interface | `ParsedRegisteredEvent` | [`src/parsing/types.ts:183`](../src/parsing/types.ts#L183) |
-| `ParsedSefinRejectionResponse` | interface | `ParsedSefinRejectionResponse` | [`src/parsing/types.ts:223`](../src/parsing/types.ts#L223) |
-| `ParsedSefinResponse` | type | `ParsedSefinResponse` | [`src/parsing/types.ts:228`](../src/parsing/types.ts#L228) |
-| `ParsedSefinSuccessResponse` | interface | `ParsedSefinSuccessResponse` | [`src/parsing/types.ts:218`](../src/parsing/types.ts#L218) |
-| `ParsedXmlRoot` | interface | `ParsedXmlRoot` | [`src/parsing/xml.ts:11`](../src/parsing/xml.ts#L11) |
-| `parseEventRequestXml` | function | `(xml: string, options?: XmlParseOptions): ParsedEventRequest` | [`src/parsing/events.ts:28`](../src/parsing/events.ts#L28) |
-| `parseNfseXml` | function | `(xml: string, options?: DpsParseOptions): ParsedNfse` | [`src/parsing/nfse.ts:23`](../src/parsing/nfse.ts#L23) |
-| `parseRegisteredEventXml` | function | `(xml: string, options?: XmlParseOptions): ParsedRegisteredEvent` | [`src/parsing/events.ts:46`](../src/parsing/events.ts#L46) |
-| `parseSefinDocumentResponse` | function | `(body: string, options?: SefinResponseParseOptions): ParsedSefinResponse` | [`src/parsing/sefin-response.ts:22`](../src/parsing/sefin-response.ts#L22) |
-| `parseXmlRoot` | function | `(xml: string, options?: XmlParseOptions): ParsedXmlRoot` | [`src/parsing/xml.ts:17`](../src/parsing/xml.ts#L17) |
-| `RegisteredEventDocument` | interface | `RegisteredEventDocument` | [`src/parsing/types.ts:178`](../src/parsing/types.ts#L178) |
-| `RegisteredEventInfo` | interface | `RegisteredEventInfo` | [`src/parsing/types.ts:167`](../src/parsing/types.ts#L167) |
-| `SefinResponseDocument` | interface | `SefinResponseDocument` | [`src/parsing/types.ts:205`](../src/parsing/types.ts#L205) |
+| `NfseValues` | interface | `NfseValues` | [`src/parsing/types.ts:67`](../src/parsing/types.ts#L67) |
+| `ParsedDps` | interface | `ParsedDps` | [`src/parsing/types.ts:27`](../src/parsing/types.ts#L27) |
+| `ParsedEventRequest` | interface | `ParsedEventRequest` | [`src/parsing/types.ts:161`](../src/parsing/types.ts#L161) |
+| `ParsedNationalDocument` | type | `ParsedNationalDocument` | [`src/parsing/types.ts:201`](../src/parsing/types.ts#L201) |
+| `ParsedNfse` | interface | `ParsedNfse` | [`src/parsing/types.ts:108`](../src/parsing/types.ts#L108) |
+| `parseDpsXml` | function | `(xml: string, options?: DpsParseOptions): ParsedDps` | [`src/parsing/dps.ts:54`](../src/parsing/dps.ts#L54) |
+| `ParsedRegisteredEvent` | interface | `ParsedRegisteredEvent` | [`src/parsing/types.ts:185`](../src/parsing/types.ts#L185) |
+| `ParsedSefinRejectionResponse` | interface | `ParsedSefinRejectionResponse` | [`src/parsing/types.ts:225`](../src/parsing/types.ts#L225) |
+| `ParsedSefinResponse` | type | `ParsedSefinResponse` | [`src/parsing/types.ts:230`](../src/parsing/types.ts#L230) |
+| `ParsedSefinSuccessResponse` | interface | `ParsedSefinSuccessResponse` | [`src/parsing/types.ts:220`](../src/parsing/types.ts#L220) |
+| `ParsedXmlRoot` | interface | `ParsedXmlRoot` | [`src/parsing/xml.ts:25`](../src/parsing/xml.ts#L25) |
+| `parseEventRequestXml` | function | `(xml: string, options?: XmlParseOptions): ParsedEventRequest` | [`src/parsing/events.ts:33`](../src/parsing/events.ts#L33) |
+| `parseNfseXml` | function | `(xml: string, options?: DpsParseOptions): ParsedNfse` | [`src/parsing/nfse.ts:41`](../src/parsing/nfse.ts#L41) |
+| `parseRegisteredEventXml` | function | `(xml: string, options?: XmlParseOptions): ParsedRegisteredEvent` | [`src/parsing/events.ts:51`](../src/parsing/events.ts#L51) |
+| `parseSefinDocumentResponse` | function | `(body: string, options?: SefinResponseParseOptions): ParsedSefinResponse` | [`src/parsing/sefin-response.ts:32`](../src/parsing/sefin-response.ts#L32) |
+| `parseXmlRoot` | function | `(xml: string, options?: XmlParseOptions): ParsedXmlRoot` | [`src/parsing/xml.ts:48`](../src/parsing/xml.ts#L48) |
+| `RegisteredEventDocument` | interface | `RegisteredEventDocument` | [`src/parsing/types.ts:180`](../src/parsing/types.ts#L180) |
+| `RegisteredEventInfo` | interface | `RegisteredEventInfo` | [`src/parsing/types.ts:169`](../src/parsing/types.ts#L169) |
+| `SefinResponseDocument` | interface | `SefinResponseDocument` | [`src/parsing/types.ts:207`](../src/parsing/types.ts#L207) |
 | `SefinResponseParseOptions` | interface | `SefinResponseParseOptions` | [`src/parsing/types.ts:20`](../src/parsing/types.ts#L20) |
 | `XmlElement` | interface | `XmlElement` | [`src/parsing/types.ts:5`](../src/parsing/types.ts#L5) |
 | `XmlParseOptions` | interface | `XmlParseOptions` | [`src/parsing/types.ts:9`](../src/parsing/types.ts#L9) |
@@ -459,12 +341,12 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `NationalXmlDocumentKind` | type | `NationalXmlDocumentKind` | [`src/signing/types.ts:29`](../src/signing/types.ts#L29) |
 | `PemSignerOptions` | interface | `PemSignerOptions` | [`src/signing/types.ts:42`](../src/signing/types.ts#L42) |
 | `Pkcs12SignerOptions` | interface | `Pkcs12SignerOptions` | [`src/signing/types.ts:48`](../src/signing/types.ts#L48) |
-| `signDpsXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:15`](../src/signing/sign.ts#L15) |
-| `signEventRequestXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:31`](../src/signing/sign.ts#L31) |
+| `signDpsXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:20`](../src/signing/sign.ts#L20) |
+| `signEventRequestXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:36`](../src/signing/sign.ts#L36) |
 | `SigningCertificateInfo` | interface | `SigningCertificateInfo` | [`src/signing/types.ts:83`](../src/signing/types.ts#L83) |
-| `signNationalXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions): Promise<string>` | [`src/signing/sign.ts:47`](../src/signing/sign.ts#L47) |
-| `signNfseXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:23`](../src/signing/sign.ts#L23) |
-| `signRegisteredEventXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:39`](../src/signing/sign.ts#L39) |
+| `signNationalXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions): Promise<string>` | [`src/signing/sign.ts:52`](../src/signing/sign.ts#L52) |
+| `signNfseXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:28`](../src/signing/sign.ts#L28) |
+| `signRegisteredEventXml` | function | `(xml: string, signer: XmlSigner, options?: SignXmlOptions \| undefined): Promise<string>` | [`src/signing/sign.ts:44`](../src/signing/sign.ts#L44) |
 | `SignXmlOptions` | interface | `SignXmlOptions` | [`src/signing/types.ts:52`](../src/signing/types.ts#L52) |
 | `verifyNationalXmlSignature` | function | `(xml: string, options?: VerifyXmlSignatureOptions): VerifyXmlSignatureResult` | [`src/signing/verify.ts:14`](../src/signing/verify.ts#L14) |
 | `VerifyXmlSignatureOptions` | interface | `VerifyXmlSignatureOptions` | [`src/signing/types.ts:60`](../src/signing/types.ts#L60) |
@@ -484,32 +366,33 @@ declaration. Installed packages include the complete TypeScript declarations.
 
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
-| `appendEndpointPath` | function | `(baseUrl: string, path: string): string` | [`src/transport/endpoints.ts:43`](../src/transport/endpoints.ts#L43) |
-| `createNodeHttpTransport` | function | `(options?: NodeHttpTransportOptions): SefinHttpTransport` | [`src/transport/node-http.ts:16`](../src/transport/node-http.ts#L16) |
-| `createSefinClient` | function | `(options: SefinClientOptions): SefinClient` | [`src/transport/client.ts:70`](../src/transport/client.ts#L70) |
+| `AdnDocumentCallOptions` | interface | `AdnDocumentCallOptions` | [`src/transport/types.ts:101`](../src/transport/types.ts#L101) |
+| `appendEndpointPath` | function | `(baseUrl: string, path: string): string` | [`src/transport/endpoints.ts:66`](../src/transport/endpoints.ts#L66) |
+| `createNodeHttpTransport` | function | `(options?: NodeHttpTransportOptions): SefinHttpTransport` | [`src/transport/node-http.ts:29`](../src/transport/node-http.ts#L29) |
+| `createSefinClient` | function | `(options: SefinClientOptions): SefinClient` | [`src/transport/client.ts:73`](../src/transport/client.ts#L73) |
 | `gzipBase64XmlJsonPayload` | function | `(xml: string, propertyName: string): SefinRequestPayload` | [`src/transport/payloads.ts:13`](../src/transport/payloads.ts#L13) |
 | `jsonRequestPayload` | function | `(value: JsonValue): SefinRequestPayload` | [`src/transport/payloads.ts:9`](../src/transport/payloads.ts#L9) |
 | `NATIONAL_SEFIN_ENDPOINTS` | constant | `Readonly<Record<SefinEnvironment, SefinEndpoints>>` | [`src/transport/endpoints.ts:4`](../src/transport/endpoints.ts#L4) |
 | `NodeHttpTransportOptions` | interface | `NodeHttpTransportOptions` | [`src/transport/types.ts:60`](../src/transport/types.ts#L60) |
-| `resolveSefinEndpoints` | function | `(environment: SefinEnvironment, overrides?: Partial<SefinEndpoints>): SefinEndpoints` | [`src/transport/endpoints.ts:17`](../src/transport/endpoints.ts#L17) |
-| `SefinCallOptions` | interface | `SefinCallOptions` | [`src/transport/types.ts:93`](../src/transport/types.ts#L93) |
-| `SefinClient` | interface | `SefinClient` | [`src/transport/client.ts:26`](../src/transport/client.ts#L26) |
-| `SefinClientOptions` | interface | `SefinClientOptions` | [`src/transport/types.ts:83`](../src/transport/types.ts#L83) |
-| `SefinDocumentResponse` | interface | `SefinDocumentResponse` | [`src/transport/types.ts:111`](../src/transport/types.ts#L111) |
+| `resolveSefinEndpoints` | function | `(environment: SefinEnvironment, overrides?: Partial<SefinEndpoints>, options?: { readonly allowInsecureLocalhost?: boolean; }): SefinEndpoints` | [`src/transport/endpoints.ts:17`](../src/transport/endpoints.ts#L17) |
+| `SefinCallOptions` | interface | `SefinCallOptions` | [`src/transport/types.ts:95`](../src/transport/types.ts#L95) |
+| `SefinClient` | interface | `SefinClient` | [`src/transport/client.ts:29`](../src/transport/client.ts#L29) |
+| `SefinClientOptions` | interface | `SefinClientOptions` | [`src/transport/types.ts:84`](../src/transport/types.ts#L84) |
+| `SefinDocumentResponse` | interface | `SefinDocumentResponse` | [`src/transport/types.ts:117`](../src/transport/types.ts#L117) |
 | `SefinEndpoints` | interface | `SefinEndpoints` | [`src/transport/types.ts:5`](../src/transport/types.ts#L5) |
 | `SefinEnvironment` | type | `SefinEnvironment` | [`src/transport/types.ts:3`](../src/transport/types.ts#L3) |
-| `SefinExistenceResponse` | interface | `SefinExistenceResponse` | [`src/transport/types.ts:119`](../src/transport/types.ts#L119) |
+| `SefinExistenceResponse` | interface | `SefinExistenceResponse` | [`src/transport/types.ts:125`](../src/transport/types.ts#L125) |
 | `SefinHttpMethod` | type | `SefinHttpMethod` | [`src/transport/types.ts:27`](../src/transport/types.ts#L27) |
 | `SefinHttpRequest` | interface | `SefinHttpRequest` | [`src/transport/types.ts:29`](../src/transport/types.ts#L29) |
 | `SefinHttpResponse` | interface | `SefinHttpResponse` | [`src/transport/types.ts:39`](../src/transport/types.ts#L39) |
 | `SefinHttpTransport` | interface | `SefinHttpTransport` | [`src/transport/types.ts:46`](../src/transport/types.ts#L46) |
-| `SefinLogEvent` | interface | `SefinLogEvent` | [`src/transport/types.ts:73`](../src/transport/types.ts#L73) |
+| `SefinLogEvent` | interface | `SefinLogEvent` | [`src/transport/types.ts:74`](../src/transport/types.ts#L74) |
 | `SefinOperation` | type | `SefinOperation` | [`src/transport/types.ts:11`](../src/transport/types.ts#L11) |
-| `SefinRequestPayload` | interface | `SefinRequestPayload` | [`src/transport/types.ts:99`](../src/transport/types.ts#L99) |
-| `SefinResponseMetadata` | interface | `SefinResponseMetadata` | [`src/transport/types.ts:104`](../src/transport/types.ts#L104) |
-| `SefinRetryOptions` | interface | `SefinRetryOptions` | [`src/transport/types.ts:66`](../src/transport/types.ts#L66) |
+| `SefinRequestPayload` | interface | `SefinRequestPayload` | [`src/transport/types.ts:105`](../src/transport/types.ts#L105) |
+| `SefinResponseMetadata` | interface | `SefinResponseMetadata` | [`src/transport/types.ts:110`](../src/transport/types.ts#L110) |
+| `SefinRetryOptions` | interface | `SefinRetryOptions` | [`src/transport/types.ts:67`](../src/transport/types.ts#L67) |
 | `SefinTlsOptions` | interface | `SefinTlsOptions` | [`src/transport/types.ts:50`](../src/transport/types.ts#L50) |
-| `SefinValueResponse` | interface | `SefinValueResponse` | [`src/transport/types.ts:115`](../src/transport/types.ts#L115) |
+| `SefinValueResponse` | interface | `SefinValueResponse` | [`src/transport/types.ts:121`](../src/transport/types.ts#L121) |
 | `xmlRequestPayload` | function | `(xml: string): SefinRequestPayload` | [`src/transport/payloads.ts:5`](../src/transport/payloads.ts#L5) |
 
 ## `nfse-js/validation`
@@ -521,10 +404,10 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `validateEventXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:72`](../src/validation/xsd.ts#L72) |
 | `validateNfseXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:58`](../src/validation/xsd.ts#L58) |
 | `validateXml` | function | `(xml: string, schema: NationalNfseSchema, options?: XsdValidationOptions): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:17`](../src/validation/xsd.ts#L17) |
-| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:153`](../src/errors.ts#L153) |
+| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:154`](../src/errors.ts#L154) |
 | `XsdValidationOptions` | interface | `XsdValidationOptions` | [`src/validation/xsd.ts:13`](../src/validation/xsd.ts#L13) |
 | `XsdValidationResult` | interface | `XsdValidationResult` | [`src/validation/xsd.ts:8`](../src/validation/xsd.ts#L8) |
-| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:148`](../src/errors.ts#L148) |
+| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:149`](../src/errors.ts#L149) |
 
 ## `nfse-js/schemas`
 

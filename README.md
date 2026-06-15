@@ -6,7 +6,7 @@ Spec-first TypeScript tools for Brazil's **National NFS-e standard**.
 application to a CLI, YAML format, framework, storage layer, certificate
 provider, or municipal legacy layout.
 
-> Status: early development. Version 0.1 models and serializes the complete
+> Status: early development. Version 0.2 models and serializes the complete
 > DPS v1.01 wire structure, applies deterministic local National
 > business rules, securely parses National DPS/NFS-e/event documents and SEFIN
 > document responses, signs and verifies National XML documents, and validates
@@ -29,10 +29,11 @@ Task guides and the generated public export index are available in
 - Decimal values stay strings and are serialized exactly.
 - Core XML generation is deterministic and synchronous.
 - XML parsing rejects DTD/entity declarations and applies byte/depth limits.
-- XSD validation is optional and isolated behind a subpath import.
+- The root entry point preserves the core, error, and XSD compatibility surface.
+- Parsing, events, parameters, signing, and transport use explicit subpath imports.
 - XML signing is optional and isolated behind a subpath import.
 - SEFIN transport is optional and isolated behind a subpath import.
-- Official schemas are committed unchanged with hashes and provenance.
+- Official schemas are committed unchanged with recorded source URLs and hashes.
 - Every `TCInfDPS` descendant has an explicit type and serializer.
 - XSD choices are represented by TypeScript unions.
 
@@ -238,7 +239,9 @@ const result = await sefin.submitDps(signedXml, {
 The client models the official restricted-production and production hosts and
 the documented NFS-e, DPS, event, and contributor ADN routes. It supports DPS
 submission, NFS-e and DPS reconciliation queries, event registration and
-queries, and contributor ADN document/event queries.
+queries, and contributor ADN document/event queries. NSU document lookups
+support the optional CNPJ selector for another establishment with the same
+CNPJ root as the connection certificate.
 
 Connection certificates are configured on the HTTP transport and remain
 independent from XML-signing credentials. GET and HEAD requests retry
@@ -335,7 +338,7 @@ Remaining work focuses on restricted-production conformance evidence,
 independent XMLDSig verification, and exercising release candidates in real
 consumer applications.
 
-## Schema provenance
+## Schema sources and hashes
 
 The v1.01 schemas were published by the Brazilian National NFS-e project on
 February 9, 2026. See [`schemas/manifest.json`](schemas/manifest.json) for the
@@ -367,7 +370,18 @@ npm run schema:stage -- \
 
 The command writes schemas and a hash-based diff report under the ignored
 `.schema-staging/` directory. It never edits the supported bundle. ZIP inputs
-require the `unzip` command. Technical-note review state is tracked separately
+require the `unzip` command. Remote downloads are restricted to official
+`gov.br` HTTPS URLs and require an independently verified archive digest:
+
+```sh
+npm run schema:stage -- \
+  --source https://www.gov.br/path/to/official-schemas.zip \
+  --sha256 <verified-archive-sha256> \
+  --version 1.01
+```
+
+Every redirect is revalidated and the verified final URL and archive digest
+are recorded in the report. Technical-note review state is tracked separately
 in [`schemas/technical-notes.json`](schemas/technical-notes.json).
 
 ## Development checks

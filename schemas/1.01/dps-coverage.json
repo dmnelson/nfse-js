@@ -85,7 +85,7 @@
     "typescript": "Address",
     "serializer": "serializeAddress",
     "validation": "address choice encoded; provider domestic fields partially validated",
-    "fixtures": ["common", "specialized groups"]
+    "fixtures": ["specialized groups"]
   },
   {
     "xsdType": "TCEnderecoSimples",

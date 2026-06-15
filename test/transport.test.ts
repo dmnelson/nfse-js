@@ -21,9 +21,9 @@ import { validDpsInput } from "./fixtures.js";
 const ACCESS_KEY = "1".repeat(50);
 const DPS_ID = `DPS${"2".repeat(42)}`;
 const DPS_XML = serializeDps(validDpsInput());
-const SEFIN_BASE = "http://sefin.test/api";
-const ADN_BASE = "http://adn.test/contribuintes";
-const PARAMETERS_BASE = "http://parameters.test/api";
+const SEFIN_BASE = "https://sefin.test/api";
+const ADN_BASE = "https://adn.test/contribuintes";
+const PARAMETERS_BASE = "https://parameters.test/api";
 
 describe("SEFIN client", () => {
   it("submits raw DPS XML and parses a generated document response", async () => {
@@ -76,7 +76,7 @@ describe("SEFIN client", () => {
     await client.getEvents(ACCESS_KEY);
     await client.getEventsByType(ACCESS_KEY, "101101");
     await client.getEvent(ACCESS_KEY, "101101", 1);
-    await client.getAdnDocument("000000000000001");
+    await client.getAdnDocument("000000000000001", { cnpj: "12345678000195" });
     await client.getAdnEvents(ACCESS_KEY);
     await client.getMunicipalConvention("3550308");
     await client.getMunicipalServiceParameters("3550308", "010101");
@@ -90,12 +90,15 @@ describe("SEFIN client", () => {
       `GET ${SEFIN_BASE}/nfse/${ACCESS_KEY}/eventos`,
       `GET ${SEFIN_BASE}/nfse/${ACCESS_KEY}/eventos/101101`,
       `GET ${SEFIN_BASE}/nfse/${ACCESS_KEY}/eventos/101101/1`,
-      `GET ${ADN_BASE}/DFe/000000000000001`,
+      `GET ${ADN_BASE}/DFe/000000000000001?CNPJ=12345678000195`,
       `GET ${ADN_BASE}/NFSe/${ACCESS_KEY}/Eventos`,
       `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/convenio`,
       `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/010101`,
       `GET ${PARAMETERS_BASE}/parametros_municipais/3550308/12345678000195`,
     ]);
+    expect(() => client.getAdnDocument("000000000000001", { cnpj: "11111111111111" })).toThrowError(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
+    );
   });
 
   it("sends event JSON and caller-configured gzip/base64 XML wrappers", async () => {
@@ -118,6 +121,65 @@ describe("SEFIN client", () => {
       dpsXmlGZipB64: string;
     };
     expect(gunzipSync(Buffer.from(encoded.dpsXmlGZipB64, "base64")).toString("utf8")).toBe(DPS_XML);
+  });
+
+  it("applies authoritative status policies before parsing response bodies", async () => {
+    const documentClient = testClient(
+      new QueueTransport([
+        response(400, JSON.stringify({ erros: [{ codigo: "E400" }] }), "application/json"),
+        response(302, "", undefined, { location: "https://attacker.test" }),
+        response(401, JSON.stringify({ error: "unauthorized" }), "application/json"),
+        response(404, JSON.stringify({ error: "missing" }), "application/json"),
+        response(500, JSON.stringify({ error: "down" }), "application/json"),
+      ]),
+      { retry: { maxAttempts: 1 } },
+    );
+    expect((await documentClient.submitDps(DPS_XML)).payload).toEqual(
+      expect.objectContaining({ kind: "rejection", status: 400 }),
+    );
+    for (const status of [302, 401, 404, 500]) {
+      await expect(documentClient.getNfse(ACCESS_KEY)).rejects.toEqual(
+        expect.objectContaining<Partial<SefinTransportError>>({
+          code: "http-error",
+          context: expect.objectContaining({ status }),
+        }),
+      );
+    }
+
+    const valueClient = testClient(
+      new QueueTransport([
+        response(404, JSON.stringify({ error: "missing" }), "application/json"),
+        response(500, JSON.stringify({ error: "down" }), "application/json"),
+      ]),
+      { retry: { maxAttempts: 1 } },
+    );
+    for (const status of [404, 500]) {
+      await expect(valueClient.getMunicipalConvention("3550308")).rejects.toEqual(
+        expect.objectContaining<Partial<SefinTransportError>>({
+          code: "http-error",
+          context: expect.objectContaining({ status }),
+        }),
+      );
+    }
+
+    const existenceClient = testClient(
+      new QueueTransport([
+        response(404, ""),
+        response(302, "", undefined, { location: "https://attacker.test" }),
+        response(401, ""),
+        response(500, ""),
+      ]),
+      { retry: { maxAttempts: 1 } },
+    );
+    expect((await existenceClient.hasNfseForDps(DPS_ID)).exists).toBe(false);
+    for (const status of [302, 401, 500]) {
+      await expect(existenceClient.hasNfseForDps(DPS_ID)).rejects.toEqual(
+        expect.objectContaining<Partial<SefinTransportError>>({
+          code: "http-error",
+          context: expect.objectContaining({ status }),
+        }),
+      );
+    }
   });
 
   it("retries safe queries but never retries submission POSTs", async () => {
@@ -193,6 +255,65 @@ describe("SEFIN client", () => {
     );
   });
 
+  it("enforces one wall-clock deadline across custom requests and Retry-After", async () => {
+    const captured = new QueueTransport([response(200, "ok", "text/plain")]);
+    const client = testClient(captured, { timeoutMs: 25, retry: { maxAttempts: 1 } });
+    await client.request({
+      operation: "custom",
+      method: "GET",
+      url: "https://custom.test/resource",
+      headers: {},
+    });
+    expect(captured.requests[0]?.timeoutMs).toBeGreaterThan(0);
+    expect(captured.requests[0]?.timeoutMs).toBeLessThanOrEqual(25);
+
+    const ignoringTransport: SefinHttpTransport = {
+      async request(request) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        return response(200, "late", "text/plain", {}, request.url);
+      },
+    };
+    const deadlineClient = testClient(ignoringTransport, {
+      timeoutMs: 10,
+      retry: { maxAttempts: 3 },
+    });
+    await expect(
+      deadlineClient.request({
+        operation: "custom",
+        method: "GET",
+        url: "https://custom.test/late",
+        headers: {},
+      }),
+    ).rejects.toEqual(expect.objectContaining<Partial<SefinTransportError>>({ code: "timeout" }));
+
+    const delays: number[] = [];
+    const retryAfterClient = testClient(
+      new QueueTransport([
+        response(429, JSON.stringify({ error: "slow down" }), "application/json", {
+          "retry-after": "60",
+        }),
+      ]),
+      {
+        timeoutMs: 15,
+        retry: { maxAttempts: 2, baseDelayMs: 1, maxDelayMs: 2 },
+        sleep: (milliseconds, signal) => {
+          delays.push(milliseconds);
+          return new Promise<void>((_resolve, reject) => {
+            const abort = (): void => reject(signal?.reason);
+            signal?.addEventListener("abort", abort, { once: true });
+            if (signal?.aborted) {
+              abort();
+            }
+          });
+        },
+      },
+    );
+    await expect(retryAfterClient.getNfse(ACCESS_KEY)).rejects.toEqual(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "timeout" }),
+    );
+    expect(delays).toEqual([60_000]);
+  });
+
   it("categorizes HTTP, response, abort, and configuration failures", async () => {
     const transport = new QueueTransport([
       response(500, ""),
@@ -217,12 +338,25 @@ describe("SEFIN client", () => {
     expect(() => resolveSefinEndpoints("production", { sefin: "file:///not-http" })).toThrowError(
       expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
     );
+    expect(() => resolveSefinEndpoints("production", { sefin: "http://sefin.test" })).toThrowError(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
+    );
+    expect(
+      resolveSefinEndpoints(
+        "production",
+        { sefin: "http://localhost:3000/api" },
+        { allowInsecureLocalhost: true },
+      ).sefin,
+    ).toBe("http://localhost:3000/api");
     expect(NATIONAL_SEFIN_ENDPOINTS.production.sefin).toContain("sefin.nfse.gov.br");
     expect(() => gzipBase64XmlJsonPayload(DPS_XML, "")).toThrowError(TypeError);
   });
 });
 
-describe("Node HTTP transport", () => {
+const describeSocketTransport =
+  process.env.NFSE_SKIP_SOCKET_TESTS === "1" ? describe.skip : describe;
+
+describeSocketTransport("Node HTTP transport", () => {
   let server: Server;
   let baseUrl: string;
   let httpsServer: HttpsServer;
@@ -247,6 +381,18 @@ describe("Node HTTP transport", () => {
         response.end("x".repeat(15));
         return;
       }
+      if (request.url === "/trickle") {
+        let count = 0;
+        const timer = setInterval(() => {
+          response.write("x");
+          count += 1;
+          if (count === 20) {
+            clearInterval(timer);
+            response.end();
+          }
+        }, 5);
+        return;
+      }
       const chunks: Buffer[] = [];
       request.on("data", (chunk: Buffer) => chunks.push(chunk));
       request.on("end", () => {
@@ -255,6 +401,8 @@ describe("Node HTTP transport", () => {
         response.end(
           JSON.stringify({
             body: Buffer.concat(chunks).toString("utf8"),
+            contentLength: request.headers["content-length"],
+            transferEncoding: request.headers["transfer-encoding"],
             userAgent: request.headers["user-agent"],
           }),
         );
@@ -305,7 +453,10 @@ describe("Node HTTP transport", () => {
   });
 
   it("sends bounded requests and normalizes responses", async () => {
-    const transport = createNodeHttpTransport({ userAgent: "nfse-js-test" });
+    const transport = createNodeHttpTransport({
+      allowInsecureLocalhost: true,
+      userAgent: "nfse-js-test",
+    });
     const result = await transport.request({
       operation: "custom",
       method: "POST",
@@ -319,12 +470,16 @@ describe("Node HTTP transport", () => {
     expect(result.headers["x-method"]).toBe("POST");
     expect(JSON.parse(Buffer.from(result.body).toString("utf8"))).toEqual({
       body: "payload",
+      contentLength: "7",
       userAgent: "nfse-js-test",
     });
   });
 
   it("enforces timeout, abort, response-size, and URL constraints", async () => {
-    const transport = createNodeHttpTransport({ maxResponseBytes: 20 });
+    const transport = createNodeHttpTransport({
+      allowInsecureLocalhost: true,
+      maxResponseBytes: 20,
+    });
     await expect(
       transport.request({
         operation: "custom",
@@ -332,6 +487,15 @@ describe("Node HTTP transport", () => {
         url: `${baseUrl}/slow`,
         headers: {},
         timeoutMs: 10,
+      }),
+    ).rejects.toEqual(expect.objectContaining<Partial<SefinTransportError>>({ code: "timeout" }));
+    await expect(
+      transport.request({
+        operation: "custom",
+        method: "GET",
+        url: `${baseUrl}/trickle`,
+        headers: {},
+        timeoutMs: 15,
       }),
     ).rejects.toEqual(expect.objectContaining<Partial<SefinTransportError>>({ code: "timeout" }));
     await expect(
@@ -386,6 +550,43 @@ describe("Node HTTP transport", () => {
     ).rejects.toEqual(
       expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
     );
+    await expect(
+      createNodeHttpTransport().request({
+        operation: "custom",
+        method: "GET",
+        url: `${baseUrl}/echo`,
+        headers: {},
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
+    );
+    await expect(
+      transport.request({
+        operation: "custom",
+        method: "GET",
+        url: `http://user:secret@127.0.0.1:${new URL(baseUrl).port}/echo`,
+        headers: {},
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
+    );
+    for (const headers of [
+      { host: "attacker.test" },
+      { "content-length": "999" },
+      { "x-injected": "value\r\nx-evil: true" },
+    ]) {
+      await expect(
+        transport.request({
+          operation: "custom",
+          method: "POST",
+          url: `${baseUrl}/echo`,
+          headers,
+          body: Buffer.from("payload"),
+        }),
+      ).rejects.toEqual(
+        expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
+      );
+    }
     expect(() => createNodeHttpTransport({ maxResponseBytes: 0 })).toThrowError(
       expect.objectContaining<Partial<SefinTransportError>>({ code: "invalid-config" }),
     );
@@ -451,6 +652,7 @@ function response(
   body: string,
   contentType?: string,
   headers: Readonly<Record<string, string>> = {},
+  url = "http://placeholder.test",
 ): SefinHttpResponse {
   return {
     status,
@@ -459,7 +661,7 @@ function response(
       ...headers,
     },
     body: Buffer.from(body),
-    url: "http://placeholder.test",
+    url,
   };
 }
 

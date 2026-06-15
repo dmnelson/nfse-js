@@ -7,7 +7,7 @@ import type {
 } from "./types.js";
 
 export const nationalNfseVersion = "1.01";
-export const SUPPORTED_NATIONAL_NFSE_VERSIONS = ["1.01"] as const;
+export const SUPPORTED_NATIONAL_NFSE_VERSIONS = Object.freeze(["1.01"] as const);
 
 export function getNationalNfseSchemas(
   version: NationalNfseVersion = nationalNfseVersion,
@@ -32,7 +32,7 @@ export function getNationalNfseSchema(
 export function getNationalNfseSchemaSet(
   version: NationalNfseVersion = nationalNfseVersion,
 ): NationalNfseSchemaSet {
-  return { version, files: getNationalNfseSchemas(version) };
+  return Object.freeze({ version, files: getNationalNfseSchemas(version) });
 }
 
 export function isSupportedNationalNfseVersion(value: string): value is NationalNfseVersion {

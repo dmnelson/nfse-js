@@ -8,7 +8,7 @@ import {
   serializeEventRequest,
   validateEventRequest,
 } from "../src/events/index.js";
-import type { EventValidationError, XmlSignatureError } from "../src/index.js";
+import { EventValidationError, type XmlSignatureError } from "../src/index.js";
 import { parseEventRequestXml } from "../src/parsing/index.js";
 import {
   createPemSigner,
@@ -108,10 +108,15 @@ describe("National event construction", () => {
     });
     const xml = serializeEventRequest(request);
     const parsed = parseEventRequestXml(xml);
+    const { code: discardedCode, ...expectedDetails } = payload;
+    void discardedCode;
 
     expect(request.infPedReg.Id).toBe(buildEventRequestId(ACCESS_KEY, payload.code));
     expect(parsed.document.infPedReg.evento.code).toBe(payload.code);
-    expect(parsed.document.infPedReg.evento.details.xDesc).toEqual(expect.any(String));
+    expect(parsed.document.infPedReg.evento.details).toEqual({
+      xDesc: expect.any(String),
+      ...expectedDetails,
+    });
     await expect(validateEventRequestXml(xml)).resolves.toEqual(
       expect.objectContaining({ valid: true }),
     );
@@ -187,6 +192,31 @@ describe("National event construction", () => {
     );
   });
 
+  it("rejects length-valid event reasons that violate the TSString pattern", () => {
+    const input = {
+      infPedReg: {
+        tpAmb: "2" as const,
+        verAplic: "nfse-js-test",
+        dhEvento: "2026-06-11T11:00:00-03:00",
+        autor: { CNPJAutor: AUTHOR_CNPJ },
+        chNFSe: ACCESS_KEY,
+        evento: {
+          code: "e101101" as const,
+          cMotivo: "1" as const,
+          xMotivo: " Documento emitido incorretamente ",
+        },
+      },
+    };
+
+    expect(validateEventRequest(input).issues).toContainEqual(
+      expect.objectContaining({
+        path: "infPedReg.evento.xMotivo",
+        code: "event.reason",
+      }),
+    );
+    expect(() => createEventRequest(input)).toThrowError(EventValidationError);
+  });
+
   it("rejects malformed payload references before XML generation", async () => {
     const input = {
       infPedReg: {
@@ -219,7 +249,7 @@ describe("National event construction", () => {
 });
 
 function createTestCredentials(): { readonly privateKey: string; readonly certificate: string } {
-  const keys = forge.pki.rsa.generateKeyPair(1024);
+  const keys = forge.pki.rsa.generateKeyPair(2048);
   const certificate = forge.pki.createCertificate();
   certificate.publicKey = keys.publicKey;
   certificate.serialNumber = "01";

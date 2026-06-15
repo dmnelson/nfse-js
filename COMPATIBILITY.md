@@ -26,6 +26,13 @@ Deprecations remain available for at least one minor release where practical.
 Security fixes or official schema mandates may require faster removal and must
 be documented explicitly.
 
+## 0.2.0 compatibility note
+
+Version `0.2.0` intentionally narrows the initial `0.1.0` extension-group and
+decimal types into schema-specific public types and adds required validation
+issue metadata. Consumers upgrading from `0.1.0` must use the field-specific
+decimal constructors and explicit DPS group models.
+
 ## Wire compatibility
 
 Canonical XML snapshots are the emitted-wire contract. A changed snapshot

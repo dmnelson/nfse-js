@@ -17,6 +17,10 @@ interface CacheEntry {
   readonly value: ResolvedMunicipalParameters;
 }
 
+interface InFlightEntry {
+  readonly promise: Promise<ResolvedMunicipalParameters>;
+}
+
 export function createMunicipalParameterResolver(
   options: MunicipalParameterResolverOptions,
 ): MunicipalParameterResolver {
@@ -26,11 +30,24 @@ export function createMunicipalParameterResolver(
   assertPositiveInteger(maxEntries, "maxEntries");
   const now = options.now ?? Date.now;
   const cache = new Map<string, CacheEntry>();
-  const inFlight = new Map<string, Promise<ResolvedMunicipalParameters>>();
+  const inFlight = new Map<string, InFlightEntry>();
+  const latestRequests = new Map<string, number>();
+  let nextRequestId = 0;
 
   return {
     async resolve(query, resolveOptions = {}) {
       validateQuery(query);
+      validateResolveOptions(resolveOptions);
+      if (resolveOptions.signal?.aborted) {
+        throw abortedError();
+      }
+      if (hasPrivateHeaders(resolveOptions)) {
+        return waitForCaller(
+          resolveParameters(options, query, resolveOptions, now),
+          resolveOptions,
+        );
+      }
+
       const key = cacheKey(query);
       const currentTime = now();
       if (!resolveOptions.bypassCache) {
@@ -41,29 +58,44 @@ export function createMunicipalParameterResolver(
         cache.delete(key);
         const pending = inFlight.get(key);
         if (pending) {
-          return pending;
+          return waitForCaller(pending.promise, resolveOptions);
         }
       }
 
-      const pending = resolveParameters(options, query, resolveOptions, currentTime)
+      const requestId = ++nextRequestId;
+      latestRequests.set(key, requestId);
+      let entry: InFlightEntry;
+      const pending = resolveParameters(options, query, {}, now)
         .then((value) => {
-          setCacheEntry(cache, key, value, currentTime + ttlMs, maxEntries);
+          if (latestRequests.get(key) === requestId) {
+            setCacheEntry(cache, key, value, now() + ttlMs, maxEntries);
+          }
           return value;
         })
         .finally(() => {
-          inFlight.delete(key);
+          if (inFlight.get(key) === entry) {
+            inFlight.delete(key);
+          }
+          if (latestRequests.get(key) === requestId) {
+            latestRequests.delete(key);
+          }
         });
-      if (!resolveOptions.bypassCache) {
-        inFlight.set(key, pending);
-      }
-      return pending;
+      entry = { promise: pending };
+      inFlight.set(key, entry);
+      return waitForCaller(pending, resolveOptions);
     },
     invalidate(query) {
       validateQuery(query);
-      return cache.delete(cacheKey(query));
+      const key = cacheKey(query);
+      const existed = cache.delete(key) || inFlight.has(key);
+      latestRequests.delete(key);
+      inFlight.delete(key);
+      return existed;
     },
     clear() {
       cache.clear();
+      inFlight.clear();
+      latestRequests.clear();
     },
     get size() {
       return cache.size;
@@ -75,7 +107,7 @@ async function resolveParameters(
   options: MunicipalParameterResolverOptions,
   query: MunicipalParameterQuery,
   resolveOptions: MunicipalParameterResolveOptions,
-  resolvedAt: number,
+  now: () => number,
 ): Promise<ResolvedMunicipalParameters> {
   const callOptions = {
     ...(resolveOptions.signal ? { signal: resolveOptions.signal } : {}),
@@ -107,13 +139,82 @@ async function resolveParameters(
     ...(contributor ? { contributor } : {}),
   };
   const mapped = await options.map(snapshot);
+  const completedAt = now();
   return {
     municipality: query.municipality,
     serviceCode: query.serviceCode,
     ...mapped,
-    resolvedAt: mapped.resolvedAt ?? new Date(resolvedAt).toISOString(),
+    resolvedAt: mapped.resolvedAt ?? new Date(completedAt).toISOString(),
     source: mapped.source ?? DEFAULT_SOURCE,
   };
+}
+
+function waitForCaller<T>(
+  promise: Promise<T>,
+  options: MunicipalParameterResolveOptions,
+): Promise<T> {
+  if (!options.signal && options.timeoutMs === undefined) {
+    return promise;
+  }
+  return new Promise<T>((resolve, reject) => {
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const cleanup = (): boolean => {
+      if (settled) {
+        return false;
+      }
+      settled = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+      options.signal?.removeEventListener("abort", abort);
+      return true;
+    };
+    const succeed = (value: T): void => {
+      if (cleanup()) {
+        resolve(value);
+      }
+    };
+    const fail = (error: unknown): void => {
+      if (cleanup()) {
+        reject(error);
+      }
+    };
+    const abort = (): void => {
+      fail(abortedError());
+    };
+
+    options.signal?.addEventListener("abort", abort, { once: true });
+    if (options.signal?.aborted) {
+      abort();
+      return;
+    }
+    if (options.timeoutMs !== undefined) {
+      timer = setTimeout(() => {
+        fail(
+          new SefinTransportError(
+            "timeout",
+            `parameter resolution exceeded ${options.timeoutMs} ms`,
+          ),
+        );
+      }, options.timeoutMs);
+    }
+    promise.then(succeed, fail);
+  });
+}
+
+function hasPrivateHeaders(options: MunicipalParameterResolveOptions): boolean {
+  return options.headers !== undefined && Object.keys(options.headers).length > 0;
+}
+
+function validateResolveOptions(options: MunicipalParameterResolveOptions): void {
+  if (options.timeoutMs !== undefined) {
+    assertPositiveInteger(options.timeoutMs, "timeoutMs");
+  }
+}
+
+function abortedError(): SefinTransportError {
+  return new SefinTransportError("aborted", "parameter resolution was aborted");
 }
 
 function setCacheEntry(

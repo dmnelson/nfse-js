@@ -11,6 +11,7 @@ export {
   xmlRequestPayload,
 } from "./payloads.js";
 export type {
+  AdnDocumentCallOptions,
   NodeHttpTransportOptions,
   SefinCallOptions,
   SefinClientOptions,

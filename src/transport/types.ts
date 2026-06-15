@@ -61,6 +61,7 @@ export interface NodeHttpTransportOptions {
   readonly tls?: SefinTlsOptions;
   readonly maxResponseBytes?: number;
   readonly userAgent?: string;
+  readonly allowInsecureLocalhost?: boolean;
 }
 
 export interface SefinRetryOptions {
@@ -84,6 +85,7 @@ export interface SefinClientOptions {
   readonly transport: SefinHttpTransport;
   readonly environment?: SefinEnvironment;
   readonly endpoints?: Partial<SefinEndpoints>;
+  readonly allowInsecureLocalhost?: boolean;
   readonly timeoutMs?: number;
   readonly retry?: SefinRetryOptions;
   readonly logger?: (event: SefinLogEvent) => void;
@@ -94,6 +96,10 @@ export interface SefinCallOptions {
   readonly signal?: AbortSignal;
   readonly timeoutMs?: number;
   readonly headers?: Readonly<Record<string, string>>;
+}
+
+export interface AdnDocumentCallOptions extends SefinCallOptions {
+  readonly cnpj?: string;
 }
 
 export interface SefinRequestPayload {

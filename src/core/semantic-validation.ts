@@ -218,7 +218,17 @@ function validateAddress(collector: IssueCollector, address: Address, path: stri
       `${path}.endExt.cEndPost`,
       "TSCodigoEndPostal",
     );
+    stringLength(collector, address.endExt.xCidade, 1, 60, `${path}.endExt.xCidade`, "TSCidade");
+    stringLength(
+      collector,
+      address.endExt.xEstProvReg,
+      1,
+      60,
+      `${path}.endExt.xEstProvReg`,
+      "TSEstadoProvRegiao",
+    );
   }
+  validateAddressTextFields(collector, address, path);
 }
 
 function validateService(collector: IssueCollector, dps: DpsDocument): void {
@@ -330,7 +340,30 @@ function validateSimpleAddress(
       `${path}.endExt.cEndPost`,
       "TSCodigoEndPostal",
     );
+    stringLength(collector, address.endExt.xCidade, 1, 60, `${path}.endExt.xCidade`, "TSCidade");
+    stringLength(
+      collector,
+      address.endExt.xEstProvReg,
+      1,
+      60,
+      `${path}.endExt.xEstProvReg`,
+      "TSEstadoProvRegiao",
+    );
   }
+  validateAddressTextFields(collector, address, path);
+}
+
+function validateAddressTextFields(
+  collector: IssueCollector,
+  address: Address | SimpleAddress,
+  path: string,
+): void {
+  xsdString(collector, address.xLgr, 1, 255, `${path}.xLgr`, "TSLogradouro");
+  xsdString(collector, address.nro, 1, 60, `${path}.nro`, "TSNumeroEndereco");
+  if (address.xCpl !== undefined) {
+    xsdString(collector, address.xCpl, 1, 156, `${path}.xCpl`, "TSComplementoEndereco");
+  }
+  xsdString(collector, address.xBairro, 1, 60, `${path}.xBairro`, "TSBairro");
 }
 
 function validateValues(collector: IssueCollector, dps: DpsDocument): void {
@@ -808,9 +841,9 @@ function validateValueRules(collector: IssueCollector, dps: DpsDocument): void {
     national(collector, "E0453", "infDPS.valores.vDedRed.pDR");
   }
 
-  const knownReduction = knownReductionCents(dps);
   const serviceCents = scaledInteger(serviceValue);
   const discountCents = scaledInteger(unconditional ?? "0");
+  const knownReduction = knownReductionCents(dps, serviceCents);
   const benefitCents =
     municipal.BM && "vRedBCBM" in municipal.BM ? scaledInteger(municipal.BM.vRedBCBM ?? "0") : 0n;
   if (
@@ -838,7 +871,8 @@ function validateValueRules(collector: IssueCollector, dps: DpsDocument): void {
   }
 
   const federal = values.trib.tribFed;
-  if ("CPF" in info.prest && federal !== undefined) {
+  const issuer = info.tpEmit === "1" ? info.prest : info.tpEmit === "2" ? info.toma : info.interm;
+  if (issuer && "CPF" in issuer && federal !== undefined) {
     national(collector, "E0675", "infDPS.valores.trib.tribFed");
   }
   if (federal?.piscofins?.vBCPisCofins !== undefined) {
@@ -1138,10 +1172,20 @@ function validateSeriesChannel(
   }
 }
 
-function knownReductionCents(dps: DpsDocument): bigint | undefined {
+function knownReductionCents(
+  dps: DpsDocument,
+  serviceCents: bigint | undefined,
+): bigint | undefined {
   const deduction = dps.infDPS.valores.vDedRed;
-  if (!deduction || "pDR" in deduction) {
+  if (!deduction) {
     return 0n;
+  }
+  if ("pDR" in deduction) {
+    const rate = scaledInteger(deduction.pDR);
+    if (serviceCents === undefined || rate === undefined) {
+      return undefined;
+    }
+    return (serviceCents * rate + 5000n) / 10000n;
   }
   if ("vDR" in deduction) {
     return scaledInteger(deduction.vDR);
@@ -1276,6 +1320,18 @@ function stringLength(
       `must contain between ${minimum} and ${maximum} characters for ${type}`,
     );
   }
+}
+
+function xsdString(
+  collector: IssueCollector,
+  value: string,
+  minimum: number,
+  maximum: number,
+  path: string,
+  type: string,
+): void {
+  stringLength(collector, value, minimum, maximum, path, type);
+  pattern(collector, value, /^(?:[!-\u00ff]|[!-\u00ff][ -\u00ff]*[!-\u00ff])$/, path, type);
 }
 
 function pattern(

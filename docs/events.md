@@ -45,3 +45,7 @@ const response = await sefin.registerEvent(accessKey, payload);
 Query `getEvents`, `getEventsByType`, or `getEvent` to reconcile processing.
 Remote acceptance still depends on author role, NFS-e state, prior events,
 municipal permissions, and environment rules.
+
+Generated XML for all 16 variants is tested against the bundled XSD, and parser
+coverage asserts every event-specific payload field. Received-event fixtures
+are synthetic rather than sanitized SEFIN exchanges.

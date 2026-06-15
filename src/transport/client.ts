@@ -1,10 +1,12 @@
 import { Buffer } from "node:buffer";
+import { isValidCnpj } from "../core/tax-id.js";
 import { SefinResponseParseError, SefinTransportError } from "../errors.js";
 import { parseSefinDocumentResponse } from "../parsing/sefin-response.js";
 import type { JsonValue } from "../parsing/types.js";
 import { appendEndpointPath, resolveSefinEndpoints } from "./endpoints.js";
 import { jsonRequestPayload, xmlRequestPayload } from "./payloads.js";
 import type {
+  AdnDocumentCallOptions,
   SefinCallOptions,
   SefinClientOptions,
   SefinDocumentResponse,
@@ -22,6 +24,7 @@ import type {
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_RETRY_STATUSES = [408, 425, 429, 500, 502, 503, 504] as const;
+const DOCUMENT_REJECTION_STATUSES = new Set([400, 409, 422]);
 
 export interface SefinClient {
   submitDps(
@@ -48,7 +51,7 @@ export interface SefinClient {
     sequence: string | number,
     options?: SefinCallOptions,
   ): Promise<SefinDocumentResponse>;
-  getAdnDocument(nsu: string, options?: SefinCallOptions): Promise<SefinDocumentResponse>;
+  getAdnDocument(nsu: string, options?: AdnDocumentCallOptions): Promise<SefinDocumentResponse>;
   getAdnEvents(accessKey: string, options?: SefinCallOptions): Promise<SefinDocumentResponse>;
   getMunicipalConvention(
     municipality: string,
@@ -69,13 +72,24 @@ export interface SefinClient {
 
 export function createSefinClient(options: SefinClientOptions): SefinClient {
   const environment = options.environment ?? "restricted-production";
-  const endpoints = resolveSefinEndpoints(environment, options.endpoints);
+  const endpoints = resolveSefinEndpoints(environment, options.endpoints, {
+    ...(options.allowInsecureLocalhost === undefined
+      ? {}
+      : { allowInsecureLocalhost: options.allowInsecureLocalhost }),
+  });
   const retry = normalizeRetryOptions(options);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   assertPositiveInteger(timeoutMs, "timeoutMs");
 
   const execute = (request: SefinHttpRequest): Promise<SefinHttpResponse> =>
-    executeWithRetry(request, options, retry);
+    executeWithRetry(
+      {
+        ...request,
+        timeoutMs: request.timeoutMs ?? timeoutMs,
+      },
+      options,
+      retry,
+    );
 
   return {
     submitDps(xmlOrPayload, callOptions) {
@@ -127,16 +141,10 @@ export function createSefinClient(options: SefinClientOptions): SefinClient {
           timeoutMs,
         ),
       );
-      if (response.status >= 400 && response.status !== 404) {
-        throw new SefinTransportError(
-          "http-error",
-          `DPS existence query returned HTTP ${response.status}`,
-          { operation: "has-nfse-for-dps", status: response.status },
-        );
-      }
+      const classification = classifyHttpStatus("has-nfse-for-dps", response, "existence");
       return {
         ...metadata("has-nfse-for-dps", response),
-        exists: response.status >= 200 && response.status < 300,
+        exists: classification === "success",
       };
     },
     registerEvent(accessKey, value, callOptions) {
@@ -189,14 +197,23 @@ export function createSefinClient(options: SefinClientOptions): SefinClient {
       );
     },
     getAdnDocument(nsu, callOptions) {
+      const { cnpj, ...requestOptions } = callOptions ?? {};
+      if (cnpj !== undefined && !isValidCnpj(cnpj)) {
+        throw new SefinTransportError(
+          "invalid-config",
+          "ADN document CNPJ must contain a valid 14-digit CNPJ",
+          { operation: "get-adn-document" },
+        );
+      }
+      const query = cnpj ? `?${new URLSearchParams({ CNPJ: cnpj })}` : "";
       return documentRequest(
         execute,
         endpoints,
         "get-adn-document",
         "GET",
-        `DFe/${pathSegment(nsu, "nsu")}`,
+        `DFe/${pathSegment(nsu, "nsu")}${query}`,
         undefined,
-        callOptions,
+        requestOptions,
         timeoutMs,
         endpoints.adnContributor,
       );
@@ -247,7 +264,12 @@ export function createSefinClient(options: SefinClientOptions): SefinClient {
         endpoints.municipalParameters,
       );
     },
-    request: execute,
+    request(request) {
+      return execute({
+        ...request,
+        timeoutMs: request.timeoutMs ?? timeoutMs,
+      });
+    },
   };
 }
 
@@ -263,6 +285,9 @@ async function executeWithRetry(
   options: SefinClientOptions,
   retry: NormalizedRetryOptions,
 ): Promise<SefinHttpResponse> {
+  const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  assertPositiveInteger(timeoutMs, "timeoutMs");
+  const deadline = Date.now() + timeoutMs;
   const retryableMethod = request.method === "GET" || request.method === "HEAD";
   const maxAttempts = retryableMethod ? retry.maxAttempts : 1;
 
@@ -275,7 +300,13 @@ async function executeWithRetry(
       attempt,
     });
     try {
-      const response = await options.transport.request(request);
+      const response = await runWithinDeadline(request, deadline, (signal, remainingMs) =>
+        options.transport.request({
+          ...request,
+          signal,
+          timeoutMs: remainingMs,
+        }),
+      );
       const durationMs = Date.now() - started;
       if (
         attempt < maxAttempts &&
@@ -291,7 +322,7 @@ async function executeWithRetry(
           durationMs,
           status: response.status,
         });
-        await sleep(options, delay, request.signal);
+        await sleep(options, request, deadline, delay);
         continue;
       }
       log(options, {
@@ -308,7 +339,8 @@ async function executeWithRetry(
       const canRetry =
         attempt < maxAttempts &&
         (normalized.code === "network-error" || normalized.code === "timeout") &&
-        !request.signal?.aborted;
+        !request.signal?.aborted &&
+        Date.now() < deadline;
       log(options, {
         phase: canRetry ? "retry" : "error",
         operation: request.operation,
@@ -320,7 +352,7 @@ async function executeWithRetry(
       if (!canRetry) {
         throw normalized;
       }
-      await sleep(options, retryDelay(attempt, retry), request.signal);
+      await sleep(options, request, deadline, retryDelay(attempt, retry));
     }
   }
   throw new SefinTransportError("network-error", "retry loop ended unexpectedly", {
@@ -342,6 +374,7 @@ async function documentRequest(
   const response = await execute(
     createRequest(baseUrl, operation, method, path, payload, options, defaultTimeoutMs),
   );
+  classifyHttpStatus(operation, response, "document");
   const body = decodeBody(response.body);
   try {
     return {
@@ -378,6 +411,7 @@ async function valueRequest(
   const response = await execute(
     createRequest(baseUrl, operation, method, path, undefined, options, defaultTimeoutMs),
   );
+  classifyHttpStatus(operation, response, "success-only");
   return {
     ...metadata(operation, response),
     value: parseResponseValue(decodeBody(response.body)),
@@ -423,6 +457,30 @@ function metadata(operation: SefinOperation, response: SefinHttpResponse): Sefin
     headers: response.headers,
     url: response.url,
   };
+}
+
+type HttpStatusPolicy = "document" | "existence" | "success-only";
+type HttpStatusClassification = "success" | "domain-rejection" | "not-found";
+
+function classifyHttpStatus(
+  operation: SefinOperation,
+  response: SefinHttpResponse,
+  policy: HttpStatusPolicy,
+): HttpStatusClassification {
+  if (response.status >= 200 && response.status < 300) {
+    return "success";
+  }
+  if (policy === "document" && DOCUMENT_REJECTION_STATUSES.has(response.status)) {
+    return "domain-rejection";
+  }
+  if (policy === "existence" && response.status === 404) {
+    return "not-found";
+  }
+  throw new SefinTransportError(
+    "http-error",
+    `${operation} returned unexpected HTTP ${response.status}`,
+    { operation, status: response.status },
+  );
 }
 
 function parseResponseValue(body: string): JsonValue | string | null {
@@ -493,11 +551,11 @@ function retryDelay(attempt: number, retry: NormalizedRetryOptions, retryAfter?:
   if (retryAfter) {
     const seconds = Number(retryAfter);
     if (Number.isFinite(seconds) && seconds >= 0) {
-      return Math.min(seconds * 1_000, retry.maxDelayMs);
+      return seconds * 1_000;
     }
     const date = Date.parse(retryAfter);
     if (Number.isFinite(date)) {
-      return Math.min(Math.max(date - Date.now(), 0), retry.maxDelayMs);
+      return Math.max(date - Date.now(), 0);
     }
   }
   return Math.min(retry.baseDelayMs * 2 ** (attempt - 1), retry.maxDelayMs);
@@ -505,28 +563,100 @@ function retryDelay(attempt: number, retry: NormalizedRetryOptions, retryAfter?:
 
 async function sleep(
   options: SefinClientOptions,
+  request: SefinHttpRequest,
+  deadline: number,
   milliseconds: number,
-  signal?: AbortSignal,
 ): Promise<void> {
-  if (options.sleep) {
-    await options.sleep(milliseconds, signal);
-    return;
-  }
-  if (signal?.aborted) {
-    throw new SefinTransportError("aborted", "request was aborted during retry delay");
-  }
-  await new Promise<void>((resolve, reject) => {
+  await runWithinDeadline(request, deadline, (signal) =>
+    options.sleep ? options.sleep(milliseconds, signal) : defaultSleep(milliseconds, signal),
+  );
+}
+
+function defaultSleep(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     const finish = (): void => {
-      signal?.removeEventListener("abort", abort);
+      signal.removeEventListener("abort", abort);
       resolve();
     };
     const timer = setTimeout(finish, milliseconds);
     const abort = (): void => {
       clearTimeout(timer);
-      signal?.removeEventListener("abort", abort);
+      signal.removeEventListener("abort", abort);
       reject(new SefinTransportError("aborted", "request was aborted during retry delay"));
     };
-    signal?.addEventListener("abort", abort, { once: true });
+    signal.addEventListener("abort", abort, { once: true });
+    if (signal.aborted) {
+      abort();
+    }
+  });
+}
+
+function runWithinDeadline<T>(
+  request: SefinHttpRequest,
+  deadline: number,
+  action: (signal: AbortSignal, remainingMs: number) => Promise<T>,
+): Promise<T> {
+  const remainingMs = Math.ceil(deadline - Date.now());
+  if (request.signal?.aborted) {
+    return Promise.reject(abortedOperationError(request));
+  }
+  if (remainingMs <= 0) {
+    return Promise.reject(timeoutOperationError(request));
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const controller = new AbortController();
+    let settled = false;
+    const cleanup = (): boolean => {
+      if (settled) {
+        return false;
+      }
+      settled = true;
+      clearTimeout(timer);
+      request.signal?.removeEventListener("abort", abort);
+      return true;
+    };
+    const succeed = (value: T): void => {
+      if (cleanup()) {
+        resolve(value);
+      }
+    };
+    const fail = (error: unknown): void => {
+      if (cleanup()) {
+        reject(error);
+      }
+    };
+    const abort = (): void => {
+      const error = abortedOperationError(request);
+      fail(error);
+      controller.abort(error);
+    };
+    const timer = setTimeout(() => {
+      const error = timeoutOperationError(request);
+      fail(error);
+      controller.abort(error);
+    }, remainingMs);
+
+    request.signal?.addEventListener("abort", abort, { once: true });
+    if (request.signal?.aborted) {
+      abort();
+      return;
+    }
+    Promise.resolve()
+      .then(() => action(controller.signal, remainingMs))
+      .then(succeed, fail);
+  });
+}
+
+function abortedOperationError(request: SefinHttpRequest): SefinTransportError {
+  return new SefinTransportError("aborted", "request was aborted", {
+    operation: request.operation,
+  });
+}
+
+function timeoutOperationError(request: SefinHttpRequest): SefinTransportError {
+  return new SefinTransportError("timeout", `request exceeded ${request.timeoutMs} ms`, {
+    operation: request.operation,
   });
 }
 

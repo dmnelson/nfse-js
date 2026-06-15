@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-15
+
 ### Added
 
 - Complete typed coverage and deterministic serialization for all 51 complex
@@ -31,10 +33,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Narrowed the initial extension-group and decimal types into schema-specific
+  public types. This is an intentional pre-1.0 compatibility break from 0.1.0.
 - Corrected foreign country validation to use two-letter ISO codes.
 - Added runtime cardinality checks for repeated DPS groups.
 - DPS identifiers are generated from the selected provider, customer, or
   intermediary issuer rather than always using the provider.
+- The package root retains the `0.1.x` core/error/XSD surface; lifecycle modules
+  are loaded through explicit subpath imports.
+- Release automation publishes the exact verified tarball and enforces main
+  ancestry, clean consumer installation, coverage, audit, and stable-release
+  attestation gates.
+
+### Security
+
+- Enforced namespace-aware National XML parsing, cumulative decompression
+  limits, authoritative HTTP status handling, and wall-clock request deadlines.
+- Hardened XMLDSig structure and algorithm checks, certificate-path
+  constraints, minimum RSA key size, and external-signer verification.
+- Isolated authorization-sensitive parameter lookups and made cache
+  invalidation, refresh races, and waiter cancellation deterministic.
 
 ### Documentation
 

@@ -13,11 +13,18 @@ import {
   type FederalTaxId,
   type ForeignTrade,
   type IbsCbs,
+  type IbsCbsDeferral,
   type IbsCbsDestination,
   type IbsCbsProperty,
+  type IbsCbsRegularTaxation,
   type IbsCbsSupplier,
+  type MunicipalNfseReference,
   type MunicipalTax,
   NATIONAL_NFSE_NAMESPACE,
+  type NationalFiscalDocumentReference,
+  type NonFiscalDocumentReference,
+  type OtherFiscalDocumentReference,
+  type PaperInvoiceReference,
   type Person,
   type PisCofins,
   type Provider,
@@ -265,8 +272,8 @@ function serializeDeductionDocument(document: DeductionDocument) {
   return {
     chNFSe: "chNFSe" in document ? document.chNFSe : undefined,
     chNFe: "chNFe" in document ? document.chNFe : undefined,
-    NFSeMun: "NFSeMun" in document ? document.NFSeMun : undefined,
-    NFNFS: "NFNFS" in document ? document.NFNFS : undefined,
+    NFSeMun: "NFSeMun" in document ? serializeMunicipalNfseReference(document.NFSeMun) : undefined,
+    NFNFS: "NFNFS" in document ? serializePaperInvoiceReference(document.NFNFS) : undefined,
     nDocFisc: "nDocFisc" in document ? document.nDocFisc : undefined,
     nDoc: "nDoc" in document ? document.nDoc : undefined,
     tpDedRed: document.tpDedRed,
@@ -275,6 +282,22 @@ function serializeDeductionDocument(document: DeductionDocument) {
     vDedutivelRedutivel: document.vDedutivelRedutivel,
     vDeducaoReducao: document.vDeducaoReducao,
     fornec: document.fornec ? serializePerson(document.fornec) : undefined,
+  };
+}
+
+function serializeMunicipalNfseReference(reference: MunicipalNfseReference) {
+  return {
+    cMunNFSeMun: reference.cMunNFSeMun,
+    nNFSeMun: reference.nNFSeMun,
+    cVerifNFSeMun: reference.cVerifNFSeMun,
+  };
+}
+
+function serializePaperInvoiceReference(reference: PaperInvoiceReference) {
+  return {
+    nNFS: reference.nNFS,
+    modNFS: reference.modNFS,
+    serieNFS: reference.serieNFS,
   };
 }
 
@@ -377,8 +400,12 @@ function serializeIbsCbs(ibsCbs: IbsCbs) {
           CST: ibsCbs.valores.trib.gIBSCBS.CST,
           cClassTrib: ibsCbs.valores.trib.gIBSCBS.cClassTrib,
           cCredPres: ibsCbs.valores.trib.gIBSCBS.cCredPres,
-          gTribRegular: ibsCbs.valores.trib.gIBSCBS.gTribRegular,
-          gDif: ibsCbs.valores.trib.gIBSCBS.gDif,
+          gTribRegular: ibsCbs.valores.trib.gIBSCBS.gTribRegular
+            ? serializeIbsCbsRegularTaxation(ibsCbs.valores.trib.gIBSCBS.gTribRegular)
+            : undefined,
+          gDif: ibsCbs.valores.trib.gIBSCBS.gDif
+            ? serializeIbsCbsDeferral(ibsCbs.valores.trib.gIBSCBS.gDif)
+            : undefined,
         },
       },
     },
@@ -405,9 +432,16 @@ function serializeIbsCbsProperty(property: IbsCbsProperty) {
 
 function serializeReimbursementDocument(document: ReimbursementDocument) {
   return {
-    dFeNacional: "dFeNacional" in document ? document.dFeNacional : undefined,
-    docFiscalOutro: "docFiscalOutro" in document ? document.docFiscalOutro : undefined,
-    docOutro: "docOutro" in document ? document.docOutro : undefined,
+    dFeNacional:
+      "dFeNacional" in document
+        ? serializeNationalFiscalDocumentReference(document.dFeNacional)
+        : undefined,
+    docFiscalOutro:
+      "docFiscalOutro" in document
+        ? serializeOtherFiscalDocumentReference(document.docFiscalOutro)
+        : undefined,
+    docOutro:
+      "docOutro" in document ? serializeNonFiscalDocumentReference(document.docOutro) : undefined,
     fornec: document.fornec ? serializeIbsCbsSupplier(document.fornec) : undefined,
     dtEmiDoc: document.dtEmiDoc,
     dtCompDoc: document.dtCompDoc,
@@ -417,9 +451,47 @@ function serializeReimbursementDocument(document: ReimbursementDocument) {
   };
 }
 
+function serializeNationalFiscalDocumentReference(reference: NationalFiscalDocumentReference) {
+  return {
+    tipoChaveDFe: reference.tipoChaveDFe,
+    xTipoChaveDFe: reference.xTipoChaveDFe,
+    chaveDFe: reference.chaveDFe,
+  };
+}
+
+function serializeOtherFiscalDocumentReference(reference: OtherFiscalDocumentReference) {
+  return {
+    cMunDocFiscal: reference.cMunDocFiscal,
+    nDocFiscal: reference.nDocFiscal,
+    xDocFiscal: reference.xDocFiscal,
+  };
+}
+
+function serializeNonFiscalDocumentReference(reference: NonFiscalDocumentReference) {
+  return {
+    nDoc: reference.nDoc,
+    xDoc: reference.xDoc,
+  };
+}
+
 function serializeIbsCbsSupplier(supplier: IbsCbsSupplier) {
   return {
     ...serializeFederalTaxId(supplier),
     xNome: supplier.xNome,
+  };
+}
+
+function serializeIbsCbsRegularTaxation(taxation: IbsCbsRegularTaxation) {
+  return {
+    CSTReg: taxation.CSTReg,
+    cClassTribReg: taxation.cClassTribReg,
+  };
+}
+
+function serializeIbsCbsDeferral(deferral: IbsCbsDeferral) {
+  return {
+    pDifUF: deferral.pDifUF,
+    pDifMun: deferral.pDifMun,
+    pDifCBS: deferral.pDifCBS,
   };
 }

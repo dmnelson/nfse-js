@@ -15,15 +15,37 @@ import { omitUndefined, parseXmlRoot } from "./xml.js";
 
 const DEFAULT_MAX_BYTES = 5 * 1024 * 1024;
 const DEFAULT_MAX_DEPTH = 100;
+const DEFAULT_MAX_DOCUMENTS = 32;
+const MAX_CONFIGURED_DEPTH = 1_000;
 const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-const NATIONAL_XML_ROOT =
-  /^(?:<\?xml[^>]*>\s*)?<(?:[A-Za-z_][\w.-]*:)?(?:DPS|NFSe|pedRegEvento|evento)(?:\s|>)/;
+const NATIONAL_XML_ROOT = /^(?:[A-Za-z_][\w.-]*:)?(?:DPS|NFSe|pedRegEvento|evento)(?:\s|\/?>)/;
+
+interface CollectionState {
+  readonly documents: SefinResponseDocument[];
+  readonly options: SefinResponseParseOptions;
+  readonly maxBytes: number;
+  readonly maxDecompressedBytes: number;
+  readonly maxDocuments: number;
+  decompressedBytes: number;
+}
 
 export function parseSefinDocumentResponse(
   body: string,
   options: SefinResponseParseOptions = {},
 ): ParsedSefinResponse {
-  const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
+  const maxBytes = responseLimit(options.maxBytes, DEFAULT_MAX_BYTES, "maxBytes");
+  const maxDepth = responseLimit(
+    options.maxDepth,
+    DEFAULT_MAX_DEPTH,
+    "maxDepth",
+    MAX_CONFIGURED_DEPTH,
+  );
+  const maxDecompressedBytes = responseLimit(
+    options.maxDecompressedBytes,
+    maxBytes,
+    "maxDecompressedBytes",
+  );
+  const maxDocuments = responseLimit(options.maxDocuments, DEFAULT_MAX_DOCUMENTS, "maxDocuments");
   const byteLength = Buffer.byteLength(body, "utf8");
   if (byteLength > maxBytes) {
     throw new SefinResponseParseError(
@@ -34,36 +56,49 @@ export function parseSefinDocumentResponse(
   }
 
   const trimmed = body.trim();
-  const raw: JsonValue | string = trimmed.startsWith("<")
-    ? body
-    : parseJson(body, options.maxDepth ?? DEFAULT_MAX_DEPTH);
-  const documents: SefinResponseDocument[] = [];
-
-  if (typeof raw === "string") {
-    collectStringDocument(raw, "$", documents, options, maxBytes);
-  } else {
-    collectJsonDocuments(raw, "$", 0, documents, options, maxBytes);
-  }
-
+  const raw: JsonValue | string =
+    trimmed.startsWith("<") || trimmed.startsWith("\uFEFF<") ? body : parseJson(body, maxDepth);
   const metadata = {
     status: options.status,
     contentType: options.contentType,
     originalBody: body,
     raw,
   };
-  if (documents.length > 0) {
+
+  if (options.status !== undefined && options.status >= 400) {
+    return omitUndefined<ParsedSefinResponse>({
+      kind: "rejection",
+      ...metadata,
+      reason: "remote-rejection",
+    });
+  }
+
+  const state: CollectionState = {
+    documents: [],
+    options: { ...options, maxBytes, maxDepth },
+    maxBytes,
+    maxDecompressedBytes,
+    maxDocuments,
+    decompressedBytes: 0,
+  };
+  if (typeof raw === "string") {
+    collectStringDocument(raw, "$", state);
+  } else {
+    collectJsonDocuments(raw, "$", state);
+  }
+
+  if (state.documents.length > 0) {
     return omitUndefined<ParsedSefinResponse>({
       kind: "success",
       ...metadata,
-      documents,
+      documents: state.documents,
     });
   }
 
   return omitUndefined<ParsedSefinResponse>({
     kind: "rejection",
     ...metadata,
-    reason:
-      options.status !== undefined && options.status >= 400 ? "remote-rejection" : "no-document",
+    reason: "no-document",
   });
 }
 
@@ -112,44 +147,28 @@ function assertJsonValue(
   throw new SefinResponseParseError("invalid-json", path, "unsupported JSON value");
 }
 
-function collectJsonDocuments(
-  value: JsonValue,
-  path: string,
-  depth: number,
-  documents: SefinResponseDocument[],
-  options: SefinResponseParseOptions,
-  maxBytes: number,
-): void {
+function collectJsonDocuments(value: JsonValue, path: string, state: CollectionState): void {
   if (typeof value === "string") {
-    collectStringDocument(value, path, documents, options, maxBytes);
+    collectStringDocument(value, path, state);
     return;
   }
   if (Array.isArray(value)) {
     value.forEach((entry, index) => {
-      collectJsonDocuments(entry, `${path}[${index}]`, depth + 1, documents, options, maxBytes);
+      collectJsonDocuments(entry, `${path}[${index}]`, state);
     });
     return;
   }
   if (value !== null && typeof value === "object") {
     for (const [name, entry] of Object.entries(value)) {
-      collectJsonDocuments(entry, `${path}.${name}`, depth + 1, documents, options, maxBytes);
+      collectJsonDocuments(entry, `${path}.${name}`, state);
     }
   }
 }
 
-function collectStringDocument(
-  value: string,
-  path: string,
-  documents: SefinResponseDocument[],
-  options: SefinResponseParseOptions,
-  maxBytes: number,
-): void {
+function collectStringDocument(value: string, path: string, state: CollectionState): void {
   const trimmed = value.trim();
-  if (NATIONAL_XML_ROOT.test(trimmed)) {
-    const parsed = parseNationalDocument(value, options);
-    if (parsed) {
-      documents.push({ path, encoding: "xml", parsed });
-    }
+  if (looksLikeNationalXml(trimmed)) {
+    addDocument(value, path, "xml", state);
     return;
   }
 
@@ -161,20 +180,80 @@ function collectStringDocument(
     return;
   }
 
-  let xml: string;
+  const remaining = state.maxDecompressedBytes - state.decompressedBytes;
+  if (remaining <= 0) {
+    throw new SefinResponseParseError(
+      "document-too-large",
+      path,
+      `cumulative decompressed documents exceed ${state.maxDecompressedBytes} bytes`,
+    );
+  }
+
+  if (compressed.byteLength >= 4) {
+    const declaredSize = compressed.readUInt32LE(compressed.byteLength - 4);
+    if (declaredSize > remaining) {
+      throw new SefinResponseParseError(
+        "document-too-large",
+        path,
+        `cumulative decompressed documents exceed ${state.maxDecompressedBytes} bytes`,
+      );
+    }
+  }
+
+  let decoded: Buffer;
   try {
-    xml = gunzipSync(compressed, { maxOutputLength: maxBytes }).toString("utf8");
+    decoded = gunzipSync(compressed, {
+      maxOutputLength: Math.min(state.maxBytes, remaining),
+    });
   } catch (error) {
     throw new SefinResponseParseError(
       "invalid-compressed-document",
       path,
-      "gzip/base64 document could not be decoded within the configured limit",
+      "gzip/base64 document could not be decoded within the configured limits",
       { cause: error },
     );
   }
-  const parsed = parseNationalDocument(xml, options);
+  if (decoded.byteLength > remaining) {
+    throw new SefinResponseParseError(
+      "document-too-large",
+      path,
+      `cumulative decompressed documents exceed ${state.maxDecompressedBytes} bytes`,
+    );
+  }
+  state.decompressedBytes += decoded.byteLength;
+  const xml = decoded.toString("utf8");
+  if (!looksLikeNationalXml(xml.trim())) {
+    return;
+  }
+  addDocument(xml, path, "gzip-base64", state);
+}
+
+function addDocument(
+  xml: string,
+  path: string,
+  encoding: SefinResponseDocument["encoding"],
+  state: CollectionState,
+): void {
+  let parsed: ParsedNationalDocument | undefined;
+  try {
+    parsed = parseNationalDocument(xml, state.options);
+  } catch (error) {
+    throw new SefinResponseParseError(
+      "invalid-document",
+      path,
+      `${encoding === "gzip-base64" ? "decoded" : "embedded"} XML document is invalid`,
+      { cause: error },
+    );
+  }
   if (parsed) {
-    documents.push({ path, encoding: "gzip-base64", parsed });
+    if (state.documents.length >= state.maxDocuments) {
+      throw new SefinResponseParseError(
+        "document-too-large",
+        path,
+        `response contains more than ${state.maxDocuments} documents`,
+      );
+    }
+    state.documents.push({ path, encoding, parsed });
   }
 }
 
@@ -195,4 +274,38 @@ function parseNationalDocument(
     default:
       return undefined;
   }
+}
+
+function looksLikeNationalXml(value: string): boolean {
+  let remaining = value.startsWith("\uFEFF") ? value.slice(1).trimStart() : value;
+  while (remaining.startsWith("<?") || remaining.startsWith("<!--")) {
+    const closing = remaining.startsWith("<!--")
+      ? remaining.indexOf("-->") + 3
+      : remaining.indexOf("?>") + 2;
+    if (closing < 2) {
+      return false;
+    }
+    remaining = remaining.slice(closing).trimStart();
+  }
+  if (!remaining.startsWith("<")) {
+    return false;
+  }
+  return NATIONAL_XML_ROOT.test(remaining.slice(1));
+}
+
+function responseLimit(
+  value: number | undefined,
+  defaultValue: number,
+  name: string,
+  maximum = Number.MAX_SAFE_INTEGER,
+): number {
+  const resolved = value ?? defaultValue;
+  if (!Number.isSafeInteger(resolved) || resolved <= 0 || resolved > maximum) {
+    throw new SefinResponseParseError(
+      name === "maxDepth" ? "nesting-too-deep" : "document-too-large",
+      `$options.${name}`,
+      `${name} must be a positive safe integer no greater than ${maximum}`,
+    );
+  }
+  return resolved;
 }

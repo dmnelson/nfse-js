@@ -35,6 +35,8 @@ Use `{ bypassCache: true }` for an authoritative refresh, `invalidate(query)`
 after known configuration changes, and `clear()` when replacing mapper or
 environment configuration.
 
-Feed the result to `validateDpsWithMunicipalParameters`. Keep mapper versions
-and sanitized response fixtures together: a Swagger response change should
-fail mapper tests before it changes issuance decisions.
+Feed the result to `validateDpsWithMunicipalParameters`. Production adapters
+should keep mapper versions and sanitized response fixtures together so a
+Swagger response change fails mapper tests before it changes issuance
+decisions. The repository does not currently include sanitized municipal
+parameter responses from restricted production.

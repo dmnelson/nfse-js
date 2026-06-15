@@ -172,10 +172,12 @@ function validateProcess(value: string, issues: ValidationIssue[]): void {
 
 function validateReason(value: string, path: string, issues: ValidationIssue[]): void {
   check(
-    value.length >= 15 && value.length <= 255,
+    value.length >= 15 &&
+      value.length <= 255 &&
+      /^(?:[!-\u00ff]|[!-\u00ff][ -\u00ff]*[!-\u00ff])$/.test(value),
     path,
     "event.reason",
-    "must contain between 15 and 255 characters",
+    "must contain between 15 and 255 TSString characters without leading or trailing whitespace",
     issues,
   );
 }

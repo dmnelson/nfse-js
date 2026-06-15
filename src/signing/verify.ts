@@ -1,13 +1,13 @@
 import { X509Certificate } from "node:crypto";
 import { SignedXml } from "xml-crypto";
 import { XmlSignatureError } from "../errors.js";
-import { certificateInfo, isCertificateTrusted, isCertificateValidAt } from "./certificates.js";
+import { analyzeCertificateChain, certificateInfo, isCertificateValidAt } from "./certificates.js";
 import { inspectNationalDocument } from "./document.js";
+import { inspectXmlSignatureStructure, matchesSignatureProfile } from "./structure.js";
 import {
   NATIONAL_NFSE_XMLDSIG_PROFILE,
   type VerifyXmlSignatureOptions,
   type VerifyXmlSignatureResult,
-  XMLDSIG_NAMESPACE,
   type XmlSignatureIssue,
 } from "./types.js";
 
@@ -23,25 +23,16 @@ export function verifyNationalXmlSignature(
     );
   }
 
-  const certificateNodes = descriptor.signature.getElementsByTagNameNS(
-    XMLDSIG_NAMESPACE,
-    "X509Certificate",
-  );
-  if (certificateNodes.length === 0) {
-    throw new XmlSignatureError(
-      "invalid-credentials",
-      "signature KeyInfo does not contain an X509 certificate",
-    );
-  }
+  const structure = inspectXmlSignatureStructure(descriptor.signature);
   let certificateChain: X509Certificate[];
+  let trustedCertificates: X509Certificate[];
   try {
-    certificateChain = Array.from({ length: certificateNodes.length }, (_, index) => {
-      const value = certificateNodes.item(index)?.textContent?.replace(/\s+/g, "");
-      if (!value) {
-        throw new Error("signature contains an empty X509 certificate");
-      }
-      return new X509Certificate(Buffer.from(value, "base64"));
-    });
+    certificateChain = structure.certificateValues.map(
+      (value) => new X509Certificate(Buffer.from(value, "base64")),
+    );
+    trustedCertificates = (options.trustedCertificates ?? []).map(
+      (certificate) => new X509Certificate(Buffer.from(certificate)),
+    );
   } catch (error) {
     throw new XmlSignatureError(
       "invalid-credentials",
@@ -50,54 +41,31 @@ export function verifyNationalXmlSignature(
     );
   }
   const leaf = certificateChain[0] as X509Certificate;
-  const trustedCertificates = (options.trustedCertificates ?? []).map(
-    (certificate) => new X509Certificate(Buffer.from(certificate)),
-  );
   const verificationTime = options.now ?? new Date();
   const certificateTimeValid = certificateChain.every((certificate) =>
     isCertificateValidAt(certificate, verificationTime),
   );
-  const certificateTrusted = isCertificateTrusted(certificateChain, trustedCertificates);
+  const chainAnalysis = analyzeCertificateChain(certificateChain, trustedCertificates);
+  const certificateTrusted = chainAnalysis.trusted;
   const issues: XmlSignatureIssue[] = [];
+  const expectedProfile = options.profile ?? NATIONAL_NFSE_XMLDSIG_PROFILE;
 
-  const verifier = new SignedXml({
-    publicCert: leaf.toString(),
-    getCertFromKeyInfo: () => null,
-  });
-  try {
-    verifier.loadSignature(descriptor.signature);
-  } catch (error) {
-    throw new XmlSignatureError("verification-failed", "could not load XML signature", {
-      cause: error,
-    });
-  }
-
-  let cryptographicallyValid = false;
-  let signatureFailureReported = false;
-  try {
-    cryptographicallyValid = verifier.checkSignature(xml);
-  } catch (error) {
-    signatureFailureReported = true;
+  if (!matchesSignatureProfile(structure, expectedProfile)) {
     issues.push({
-      code: "invalid-signature",
-      message: error instanceof Error ? error.message : "signature verification failed",
+      code: "unexpected-profile",
+      message: "signature algorithms do not match the expected XMLDSig profile",
     });
   }
-  if (!cryptographicallyValid && !signatureFailureReported) {
-    issues.push({ code: "invalid-signature", message: "signature or reference digest is invalid" });
-  }
-
-  const references = verifier.getReferences();
-  const reference = references[0];
-  const signedReferences = cryptographicallyValid ? verifier.getSignedReferences() : [];
-  if (
-    references.length !== 1 ||
-    reference?.uri !== `#${descriptor.targetId}` ||
-    signedReferences.length !== 1
-  ) {
+  if (structure.referenceUri !== `#${descriptor.targetId}`) {
     issues.push({
       code: "invalid-reference",
       message: `signature must authenticate only #${descriptor.targetId}`,
+    });
+  }
+  if (!chainAnalysis.valid) {
+    issues.push({
+      code: "invalid-certificate-chain",
+      message: chainAnalysis.error ?? "signing certificate chain is invalid",
     });
   }
   if (options.validateCertificateTime !== false && !certificateTimeValid) {
@@ -113,56 +81,52 @@ export function verifyNationalXmlSignature(
     });
   }
 
-  const signatureAlgorithm = childAlgorithm(descriptor.signature, "SignatureMethod");
-  const canonicalizationAlgorithm = childAlgorithm(descriptor.signature, "CanonicalizationMethod");
-  const digestAlgorithm = childAlgorithm(descriptor.signature, "DigestMethod");
-  const transforms = childAlgorithms(descriptor.signature, "Transform");
-  const expectedProfile = options.profile ?? NATIONAL_NFSE_XMLDSIG_PROFILE;
-  if (
-    signatureAlgorithm !== expectedProfile.signatureAlgorithm ||
-    canonicalizationAlgorithm !== expectedProfile.canonicalizationAlgorithm ||
-    digestAlgorithm !== expectedProfile.digestAlgorithm ||
-    transforms.length !== expectedProfile.transforms.length ||
-    transforms.some((transform, index) => transform !== expectedProfile.transforms[index])
-  ) {
-    issues.push({
-      code: "unexpected-profile",
-      message: "signature algorithms do not match the expected XMLDSig profile",
+  let authenticatedXml: string | undefined;
+  if (issues.length === 0) {
+    const verifier = new SignedXml({
+      publicCert: leaf.toString(),
+      getCertFromKeyInfo: () => null,
     });
+    try {
+      verifier.loadSignature(descriptor.signature);
+      const cryptographicallyValid = verifier.checkSignature(xml);
+      const references = verifier.getReferences();
+      const signedReferences = cryptographicallyValid ? verifier.getSignedReferences() : [];
+      if (
+        !cryptographicallyValid ||
+        references.length !== 1 ||
+        references[0]?.uri !== `#${descriptor.targetId}` ||
+        signedReferences.length !== 1
+      ) {
+        issues.push({
+          code: cryptographicallyValid ? "invalid-reference" : "invalid-signature",
+          message: cryptographicallyValid
+            ? `signature must authenticate only #${descriptor.targetId}`
+            : "signature or reference digest is invalid",
+        });
+      } else {
+        authenticatedXml = signedReferences[0];
+      }
+    } catch (error) {
+      issues.push({
+        code: "invalid-signature",
+        message: error instanceof Error ? error.message : "signature verification failed",
+      });
+    }
   }
-  const authenticatedXml = signedReferences[0];
+  const valid = issues.length === 0;
 
   return {
-    valid: issues.length === 0,
+    valid,
     documentKind: descriptor.kind,
     targetId: descriptor.targetId,
-    signatureAlgorithm,
-    digestAlgorithm,
-    canonicalizationAlgorithm,
+    signatureAlgorithm: structure.signatureAlgorithm,
+    digestAlgorithm: structure.digestAlgorithm,
+    canonicalizationAlgorithm: structure.canonicalizationAlgorithm,
     certificate: certificateInfo(leaf),
     certificateTimeValid,
     certificateTrusted,
-    ...(authenticatedXml ? { authenticatedXml } : {}),
+    ...(valid && authenticatedXml ? { authenticatedXml } : {}),
     issues,
   };
-}
-
-function childAlgorithm(signature: Element, name: string): string {
-  const nodes = signature.getElementsByTagNameNS(XMLDSIG_NAMESPACE, name);
-  const algorithm = nodes.item(0)?.getAttribute("Algorithm");
-  if (!algorithm) {
-    throw new XmlSignatureError("verification-failed", `signature is missing ${name}/@Algorithm`);
-  }
-  return algorithm;
-}
-
-function childAlgorithms(signature: Element, name: string): string[] {
-  const nodes = signature.getElementsByTagNameNS(XMLDSIG_NAMESPACE, name);
-  return Array.from({ length: nodes.length }, (_, index) => {
-    const algorithm = nodes.item(index)?.getAttribute("Algorithm");
-    if (!algorithm) {
-      throw new XmlSignatureError("verification-failed", `signature is missing ${name}/@Algorithm`);
-    }
-    return algorithm;
-  });
 }

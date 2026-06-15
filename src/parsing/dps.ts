@@ -30,16 +30,25 @@ import {
 import { XmlParseError } from "../errors.js";
 import type { DpsParseOptions, ParsedDps, XmlElement } from "./types.js";
 import {
+  cnpjValue,
+  cpfValue,
+  enumValue,
+  facetValue,
+  optionalEnumValue,
+  optionalFacetValue,
+} from "./validation.js";
+import {
   assertNationalRoot,
-  element,
+  elementValues,
   omitUndefined,
   optionalElement,
+  optionalSignatureElement,
   optionalString,
   parseXmlRoot,
   requiredAttribute,
   requiredElement,
   requiredString,
-  values,
+  stringValues,
 } from "./xml.js";
 
 export function parseDpsXml(xml: string, options: DpsParseOptions = {}): ParsedDps {
@@ -54,7 +63,7 @@ export function parseDpsXml(xml: string, options: DpsParseOptions = {}): ParsedD
     document,
     originalXml: xml,
     raw: root.value,
-    signature: optionalElement(root.value, "Signature", "DPS"),
+    signature: optionalSignatureElement(root.value, "DPS"),
   });
 }
 
@@ -75,18 +84,23 @@ export function parseDpsElement(
 }
 
 function parseDpsInfo(info: XmlElement): DpsInfo {
+  const path = "DPS.infDPS";
   return omitUndefined<DpsInfo>({
-    Id: requiredAttribute(info, "Id", "DPS.infDPS"),
-    tpAmb: requiredString(info, "tpAmb", "DPS.infDPS") as DpsInfo["tpAmb"],
-    dhEmi: requiredString(info, "dhEmi", "DPS.infDPS"),
-    verAplic: requiredString(info, "verAplic", "DPS.infDPS"),
-    serie: requiredString(info, "serie", "DPS.infDPS"),
-    nDPS: requiredString(info, "nDPS", "DPS.infDPS"),
-    dCompet: requiredString(info, "dCompet", "DPS.infDPS"),
-    tpEmit: requiredString(info, "tpEmit", "DPS.infDPS") as DpsInfo["tpEmit"],
-    cMotivoEmisTI: optionalString(info, "cMotivoEmisTI", "DPS.infDPS") as DpsInfo["cMotivoEmisTI"],
-    chNFSeRej: optionalString(info, "chNFSeRej", "DPS.infDPS"),
-    cLocEmi: requiredString(info, "cLocEmi", "DPS.infDPS"),
+    Id: requiredAttribute(info, "Id", path),
+    tpAmb: enumValue(requiredString(info, "tpAmb", path), ["1", "2"], `${path}.tpAmb`),
+    dhEmi: requiredString(info, "dhEmi", path),
+    verAplic: requiredString(info, "verAplic", path),
+    serie: requiredString(info, "serie", path),
+    nDPS: requiredString(info, "nDPS", path),
+    dCompet: requiredString(info, "dCompet", path),
+    tpEmit: enumValue(requiredString(info, "tpEmit", path), ["1", "2", "3"], `${path}.tpEmit`),
+    cMotivoEmisTI: optionalEnumValue(
+      optionalString(info, "cMotivoEmisTI", path),
+      ["1", "2", "3", "4"],
+      `${path}.cMotivoEmisTI`,
+    ),
+    chNFSeRej: optionalString(info, "chNFSeRej", path),
+    cLocEmi: requiredString(info, "cLocEmi", path),
     subst: parseOptionalSubstitution(info),
     prest: parseProvider(requiredElement(info, "prest", "DPS.infDPS")),
     toma: parseOptionalPerson(info, "toma"),
@@ -102,9 +116,11 @@ function parseOptionalSubstitution(info: XmlElement): DpsInfo["subst"] {
   return substitution
     ? omitUndefined<NonNullable<DpsInfo["subst"]>>({
         chSubstda: requiredString(substitution, "chSubstda", "DPS.infDPS.subst"),
-        cMotivo: requiredString(substitution, "cMotivo", "DPS.infDPS.subst") as NonNullable<
-          DpsInfo["subst"]
-        >["cMotivo"],
+        cMotivo: enumValue(
+          requiredString(substitution, "cMotivo", "DPS.infDPS.subst"),
+          ["01", "02", "03", "04", "05", "99"],
+          "DPS.infDPS.subst.cMotivo",
+        ),
         xMotivo: optionalString(substitution, "xMotivo", "DPS.infDPS.subst"),
       })
     : undefined;
@@ -124,22 +140,23 @@ function parseProvider(provider: XmlElement): Provider {
 }
 
 function parseTaxRegime(regime: XmlElement): Provider["regTrib"] {
+  const path = "DPS.infDPS.prest.regTrib";
   return omitUndefined<Provider["regTrib"]>({
-    opSimpNac: requiredString(
-      regime,
-      "opSimpNac",
-      "DPS.infDPS.prest.regTrib",
-    ) as Provider["regTrib"]["opSimpNac"],
-    regApTribSN: optionalString(
-      regime,
-      "regApTribSN",
-      "DPS.infDPS.prest.regTrib",
-    ) as Provider["regTrib"]["regApTribSN"],
-    regEspTrib: requiredString(
-      regime,
-      "regEspTrib",
-      "DPS.infDPS.prest.regTrib",
-    ) as Provider["regTrib"]["regEspTrib"],
+    opSimpNac: enumValue(
+      requiredString(regime, "opSimpNac", path),
+      ["1", "2", "3"],
+      `${path}.opSimpNac`,
+    ),
+    regApTribSN: optionalEnumValue(
+      optionalString(regime, "regApTribSN", path),
+      ["1", "2", "3"],
+      `${path}.regApTribSN`,
+    ),
+    regEspTrib: enumValue(
+      requiredString(regime, "regEspTrib", path),
+      ["0", "1", "2", "3", "4", "5", "6", "9"],
+      `${path}.regEspTrib`,
+    ),
   });
 }
 
@@ -181,15 +198,15 @@ function parseFederalTaxId(subject: XmlElement, path: string): FederalTaxId {
     throw new XmlParseError("missing-value", path, "federal identity is missing");
   }
   if (name === "CNPJ") {
-    return { CNPJ: value };
+    return { CNPJ: cnpjValue(value, `${path}.CNPJ`) };
   }
   if (name === "CPF") {
-    return { CPF: value };
+    return { CPF: cpfValue(value, `${path}.CPF`) };
   }
   if (name === "NIF") {
     return { NIF: value };
   }
-  return { cNaoNIF: value as "0" | "1" | "2" };
+  return { cNaoNIF: enumValue(value, ["0", "1", "2"], `${path}.cNaoNIF`) };
 }
 
 function parseOptionalAddress(parent: XmlElement, path: string): Address | undefined {
@@ -289,16 +306,68 @@ function parseOptionalForeignTrade(service: XmlElement): ForeignTrade | undefine
   const path = "DPS.infDPS.serv.comExt";
   return value
     ? omitUndefined<ForeignTrade>({
-        mdPrestacao: requiredString(value, "mdPrestacao", path) as ForeignTrade["mdPrestacao"],
-        vincPrest: requiredString(value, "vincPrest", path) as ForeignTrade["vincPrest"],
+        mdPrestacao: enumValue(
+          requiredString(value, "mdPrestacao", path),
+          ["0", "1", "2", "3", "4"],
+          `${path}.mdPrestacao`,
+        ),
+        vincPrest: enumValue(
+          requiredString(value, "vincPrest", path),
+          ["0", "1", "2", "3", "4", "5", "6", "9"],
+          `${path}.vincPrest`,
+        ),
         tpMoeda: requiredString(value, "tpMoeda", path),
-        vServMoeda: requiredString(value, "vServMoeda", path) as ForeignTrade["vServMoeda"],
-        mecAFComexP: requiredString(value, "mecAFComexP", path) as ForeignTrade["mecAFComexP"],
-        mecAFComexT: requiredString(value, "mecAFComexT", path) as ForeignTrade["mecAFComexT"],
-        movTempBens: requiredString(value, "movTempBens", path) as ForeignTrade["movTempBens"],
+        vServMoeda: facetValue(
+          requiredString(value, "vServMoeda", path),
+          "TSDec15V2",
+          `${path}.vServMoeda`,
+        ) as ForeignTrade["vServMoeda"],
+        mecAFComexP: enumValue(
+          requiredString(value, "mecAFComexP", path),
+          ["00", "01", "02", "03", "04", "05", "06", "07", "08"],
+          `${path}.mecAFComexP`,
+        ),
+        mecAFComexT: enumValue(
+          requiredString(value, "mecAFComexT", path),
+          [
+            "00",
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+          ],
+          `${path}.mecAFComexT`,
+        ),
+        movTempBens: enumValue(
+          requiredString(value, "movTempBens", path),
+          ["0", "1", "2", "3"],
+          `${path}.movTempBens`,
+        ),
         nDI: optionalString(value, "nDI", path),
         nRE: optionalString(value, "nRE", path),
-        mdic: requiredString(value, "mdic", path) as ForeignTrade["mdic"],
+        mdic: enumValue(requiredString(value, "mdic", path), ["0", "1"], `${path}.mdic`),
       })
     : undefined;
 }
@@ -362,9 +431,7 @@ function parseOptionalComplementaryInformation(service: XmlElement): Service["in
     xPed: optionalString(value, "xPed", path),
     gItemPed: items
       ? {
-          xItemPed: values(items.xItemPed).map((item, index) =>
-            text(item, `${path}.gItemPed.xItemPed[${index}]`),
-          ),
+          xItemPed: stringValues(items, "xItemPed", `${path}.gItemPed`),
         }
       : undefined,
     xInfComp: optionalString(value, "xInfComp", path),
@@ -378,28 +445,28 @@ function parseValues(value: XmlElement): Values {
   const deduction = optionalElement(value, "vDedRed", path);
   return omitUndefined<Values>({
     vServPrest: {
-      vReceb: optionalString(
-        service,
-        "vReceb",
-        `${path}.vServPrest`,
+      vReceb: optionalFacetValue(
+        optionalString(service, "vReceb", `${path}.vServPrest`),
+        "TSDec15V2",
+        `${path}.vServPrest.vReceb`,
       ) as Values["vServPrest"]["vReceb"],
-      vServ: requiredString(
-        service,
-        "vServ",
-        `${path}.vServPrest`,
+      vServ: facetValue(
+        requiredString(service, "vServ", `${path}.vServPrest`),
+        "TSDec15V2",
+        `${path}.vServPrest.vServ`,
       ) as Values["vServPrest"]["vServ"],
     },
     vDescCondIncond: discounts
       ? {
-          vDescIncond: optionalString(
-            discounts,
-            "vDescIncond",
-            `${path}.vDescCondIncond`,
+          vDescIncond: optionalFacetValue(
+            optionalString(discounts, "vDescIncond", `${path}.vDescCondIncond`),
+            "TSDec15V2",
+            `${path}.vDescCondIncond.vDescIncond`,
           ) as NonNullable<Values["vDescCondIncond"]>["vDescIncond"],
-          vDescCond: optionalString(
-            discounts,
-            "vDescCond",
-            `${path}.vDescCondIncond`,
+          vDescCond: optionalFacetValue(
+            optionalString(discounts, "vDescCond", `${path}.vDescCondIncond`),
+            "TSDec15V2",
+            `${path}.vDescCondIncond.vDescCond`,
           ) as NonNullable<Values["vDescCondIncond"]>["vDescCond"],
         }
       : undefined,
@@ -417,15 +484,25 @@ function parseDeductionReduction(value: XmlElement): DeductionReduction {
     throw new XmlParseError("invalid-value", path, "expected one deduction method");
   }
   if (percentage) {
-    return { pDR: percentage as Extract<DeductionReduction, { pDR: unknown }>["pDR"] };
+    return {
+      pDR: facetValue(percentage, "TSDec3V2", `${path}.pDR`) as Extract<
+        DeductionReduction,
+        { pDR: unknown }
+      >["pDR"],
+    };
   }
   if (amount) {
-    return { vDR: amount as Extract<DeductionReduction, { vDR: unknown }>["vDR"] };
+    return {
+      vDR: facetValue(amount, "TSDec15V2", `${path}.vDR`) as Extract<
+        DeductionReduction,
+        { vDR: unknown }
+      >["vDR"],
+    };
   }
   return {
     documentos: {
-      docDedRed: values((documents as XmlElement).docDedRed).map((document, index) =>
-        parseDeductionDocument(element(document, `${path}.documentos.docDedRed[${index}]`), index),
+      docDedRed: elementValues(documents as XmlElement, "docDedRed", `${path}.documentos`).map(
+        parseDeductionDocument,
       ),
     },
   };
@@ -437,18 +514,22 @@ function parseDeductionDocument(value: XmlElement, index: number): DeductionDocu
   const supplier = optionalElement(value, "fornec", path);
   return {
     ...reference,
-    tpDedRed: requiredString(value, "tpDedRed", path) as DeductionDocument["tpDedRed"],
+    tpDedRed: enumValue(
+      requiredString(value, "tpDedRed", path),
+      ["1", "2", "3", "4", "5", "6", "7", "8", "9", "99"],
+      `${path}.tpDedRed`,
+    ),
     xDescOutDed: optionalString(value, "xDescOutDed", path),
     dtEmiDoc: requiredString(value, "dtEmiDoc", path),
-    vDedutivelRedutivel: requiredString(
-      value,
-      "vDedutivelRedutivel",
-      path,
+    vDedutivelRedutivel: facetValue(
+      requiredString(value, "vDedutivelRedutivel", path),
+      "TSDec15V2",
+      `${path}.vDedutivelRedutivel`,
     ) as DeductionDocument["vDedutivelRedutivel"],
-    vDeducaoReducao: requiredString(
-      value,
-      "vDeducaoReducao",
-      path,
+    vDeducaoReducao: facetValue(
+      requiredString(value, "vDeducaoReducao", path),
+      "TSDec15V2",
+      `${path}.vDeducaoReducao`,
     ) as DeductionDocument["vDeducaoReducao"],
     fornec: supplier ? parsePerson(supplier, `${path}.fornec`) : undefined,
   } as DeductionDocument;
@@ -511,20 +592,38 @@ function parseMunicipalTax(value: XmlElement): MunicipalTax {
   const suspension = optionalElement(value, "exigSusp", path);
   const benefit = optionalElement(value, "BM", path);
   return omitUndefined<MunicipalTax>({
-    tribISSQN: requiredString(value, "tribISSQN", path) as MunicipalTax["tribISSQN"],
+    tribISSQN: enumValue(
+      requiredString(value, "tribISSQN", path),
+      ["1", "2", "3", "4"],
+      `${path}.tribISSQN`,
+    ),
     cPaisResult: optionalString(value, "cPaisResult", path),
-    tpImunidade: optionalString(value, "tpImunidade", path) as MunicipalTax["tpImunidade"],
+    tpImunidade: optionalEnumValue(
+      optionalString(value, "tpImunidade", path),
+      ["0", "1", "2", "3", "4", "5"],
+      `${path}.tpImunidade`,
+    ),
     exigSusp: suspension
       ? {
-          tpSusp: requiredString(suspension, "tpSusp", `${path}.exigSusp`) as NonNullable<
-            MunicipalTax["exigSusp"]
-          >["tpSusp"],
+          tpSusp: enumValue(
+            requiredString(suspension, "tpSusp", `${path}.exigSusp`),
+            ["1", "2"],
+            `${path}.exigSusp.tpSusp`,
+          ),
           nProcesso: requiredString(suspension, "nProcesso", `${path}.exigSusp`),
         }
       : undefined,
     BM: benefit ? parseMunicipalBenefit(benefit) : undefined,
-    tpRetISSQN: requiredString(value, "tpRetISSQN", path) as MunicipalTax["tpRetISSQN"],
-    pAliq: optionalString(value, "pAliq", path) as MunicipalTax["pAliq"],
+    tpRetISSQN: enumValue(
+      requiredString(value, "tpRetISSQN", path),
+      ["1", "2", "3"],
+      `${path}.tpRetISSQN`,
+    ),
+    pAliq: optionalFacetValue(
+      optionalString(value, "pAliq", path),
+      "TSDec1V2",
+      `${path}.pAliq`,
+    ) as MunicipalTax["pAliq"],
   });
 }
 
@@ -539,13 +638,19 @@ function parseMunicipalBenefit(value: XmlElement): MunicipalBenefit {
   if (amount) {
     return {
       ...common,
-      vRedBCBM: amount as Extract<MunicipalBenefit, { vRedBCBM: unknown }>["vRedBCBM"],
+      vRedBCBM: facetValue(amount, "TSDec15V2", `${path}.vRedBCBM`) as Extract<
+        MunicipalBenefit,
+        { vRedBCBM: unknown }
+      >["vRedBCBM"],
     };
   }
   if (percentage) {
     return {
       ...common,
-      pRedBCBM: percentage as Extract<MunicipalBenefit, { pRedBCBM: unknown }>["pRedBCBM"],
+      pRedBCBM: facetValue(percentage, "TSDec3V2", `${path}.pRedBCBM`) as Extract<
+        MunicipalBenefit,
+        { pRedBCBM: unknown }
+      >["pRedBCBM"],
     };
   }
   return common;
@@ -560,9 +665,21 @@ function parseOptionalFederalTax(value: XmlElement): FederalTax | undefined {
   const pisCofins = optionalElement(federal, "piscofins", path);
   return omitUndefined<FederalTax>({
     piscofins: pisCofins ? parsePisCofins(pisCofins) : undefined,
-    vRetCP: optionalString(federal, "vRetCP", path) as FederalTax["vRetCP"],
-    vRetIRRF: optionalString(federal, "vRetIRRF", path) as FederalTax["vRetIRRF"],
-    vRetCSLL: optionalString(federal, "vRetCSLL", path) as FederalTax["vRetCSLL"],
+    vRetCP: optionalFacetValue(
+      optionalString(federal, "vRetCP", path),
+      "TSDec15V2",
+      `${path}.vRetCP`,
+    ) as FederalTax["vRetCP"],
+    vRetIRRF: optionalFacetValue(
+      optionalString(federal, "vRetIRRF", path),
+      "TSDec15V2",
+      `${path}.vRetIRRF`,
+    ) as FederalTax["vRetIRRF"],
+    vRetCSLL: optionalFacetValue(
+      optionalString(federal, "vRetCSLL", path),
+      "TSDec15V2",
+      `${path}.vRetCSLL`,
+    ) as FederalTax["vRetCSLL"],
   });
 }
 
@@ -570,12 +687,36 @@ function parsePisCofins(value: XmlElement): PisCofins {
   const path = "DPS.infDPS.valores.trib.tribFed.piscofins";
   return omitUndefined<PisCofins>({
     CST: requiredString(value, "CST", path),
-    vBCPisCofins: optionalString(value, "vBCPisCofins", path) as PisCofins["vBCPisCofins"],
-    pAliqPis: optionalString(value, "pAliqPis", path) as PisCofins["pAliqPis"],
-    pAliqCofins: optionalString(value, "pAliqCofins", path) as PisCofins["pAliqCofins"],
-    vPis: optionalString(value, "vPis", path) as PisCofins["vPis"],
-    vCofins: optionalString(value, "vCofins", path) as PisCofins["vCofins"],
-    tpRetPisCofins: optionalString(value, "tpRetPisCofins", path) as PisCofins["tpRetPisCofins"],
+    vBCPisCofins: optionalFacetValue(
+      optionalString(value, "vBCPisCofins", path),
+      "TSDec15V2",
+      `${path}.vBCPisCofins`,
+    ) as PisCofins["vBCPisCofins"],
+    pAliqPis: optionalFacetValue(
+      optionalString(value, "pAliqPis", path),
+      "TSDec2V2",
+      `${path}.pAliqPis`,
+    ) as PisCofins["pAliqPis"],
+    pAliqCofins: optionalFacetValue(
+      optionalString(value, "pAliqCofins", path),
+      "TSDec2V2",
+      `${path}.pAliqCofins`,
+    ) as PisCofins["pAliqCofins"],
+    vPis: optionalFacetValue(
+      optionalString(value, "vPis", path),
+      "TSDec15V2",
+      `${path}.vPis`,
+    ) as PisCofins["vPis"],
+    vCofins: optionalFacetValue(
+      optionalString(value, "vCofins", path),
+      "TSDec15V2",
+      `${path}.vCofins`,
+    ) as PisCofins["vCofins"],
+    tpRetPisCofins: optionalEnumValue(
+      optionalString(value, "tpRetPisCofins", path),
+      ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      `${path}.tpRetPisCofins`,
+    ),
   });
 }
 
@@ -591,42 +732,53 @@ function parseTotalTax(value: XmlElement): TotalTax {
   if (amounts) {
     return {
       vTotTrib: {
-        vTotTribFed: requiredString(amounts, "vTotTribFed", `${path}.vTotTrib`) as Extract<
-          TotalTax,
-          { vTotTrib: unknown }
-        >["vTotTrib"]["vTotTribFed"],
-        vTotTribEst: requiredString(amounts, "vTotTribEst", `${path}.vTotTrib`) as Extract<
-          TotalTax,
-          { vTotTrib: unknown }
-        >["vTotTrib"]["vTotTribEst"],
-        vTotTribMun: requiredString(amounts, "vTotTribMun", `${path}.vTotTrib`) as Extract<
-          TotalTax,
-          { vTotTrib: unknown }
-        >["vTotTrib"]["vTotTribMun"],
+        vTotTribFed: facetValue(
+          requiredString(amounts, "vTotTribFed", `${path}.vTotTrib`),
+          "TSDec15V2",
+          `${path}.vTotTrib.vTotTribFed`,
+        ) as Extract<TotalTax, { vTotTrib: unknown }>["vTotTrib"]["vTotTribFed"],
+        vTotTribEst: facetValue(
+          requiredString(amounts, "vTotTribEst", `${path}.vTotTrib`),
+          "TSDec15V2",
+          `${path}.vTotTrib.vTotTribEst`,
+        ) as Extract<TotalTax, { vTotTrib: unknown }>["vTotTrib"]["vTotTribEst"],
+        vTotTribMun: facetValue(
+          requiredString(amounts, "vTotTribMun", `${path}.vTotTrib`),
+          "TSDec15V2",
+          `${path}.vTotTrib.vTotTribMun`,
+        ) as Extract<TotalTax, { vTotTrib: unknown }>["vTotTrib"]["vTotTribMun"],
       },
     };
   }
   if (percentages) {
     return {
       pTotTrib: {
-        pTotTribFed: requiredString(percentages, "pTotTribFed", `${path}.pTotTrib`) as Extract<
-          TotalTax,
-          { pTotTrib: unknown }
-        >["pTotTrib"]["pTotTribFed"],
-        pTotTribEst: requiredString(percentages, "pTotTribEst", `${path}.pTotTrib`) as Extract<
-          TotalTax,
-          { pTotTrib: unknown }
-        >["pTotTrib"]["pTotTribEst"],
-        pTotTribMun: requiredString(percentages, "pTotTribMun", `${path}.pTotTrib`) as Extract<
-          TotalTax,
-          { pTotTrib: unknown }
-        >["pTotTrib"]["pTotTribMun"],
+        pTotTribFed: facetValue(
+          requiredString(percentages, "pTotTribFed", `${path}.pTotTrib`),
+          "TSDec3V2",
+          `${path}.pTotTrib.pTotTribFed`,
+        ) as Extract<TotalTax, { pTotTrib: unknown }>["pTotTrib"]["pTotTribFed"],
+        pTotTribEst: facetValue(
+          requiredString(percentages, "pTotTribEst", `${path}.pTotTrib`),
+          "TSDec3V2",
+          `${path}.pTotTrib.pTotTribEst`,
+        ) as Extract<TotalTax, { pTotTrib: unknown }>["pTotTrib"]["pTotTribEst"],
+        pTotTribMun: facetValue(
+          requiredString(percentages, "pTotTribMun", `${path}.pTotTrib`),
+          "TSDec3V2",
+          `${path}.pTotTrib.pTotTribMun`,
+        ) as Extract<TotalTax, { pTotTrib: unknown }>["pTotTrib"]["pTotTribMun"],
       },
     };
   }
   return indicator
-    ? { indTotTrib: indicator as "0" }
-    : { pTotTribSN: simples as Extract<TotalTax, { pTotTribSN: unknown }>["pTotTribSN"] };
+    ? { indTotTrib: enumValue(indicator, ["0"], `${path}.indTotTrib`) }
+    : {
+        pTotTribSN: facetValue(simples as string, "TSDec2V2", `${path}.pTotTribSN`) as Extract<
+          TotalTax,
+          { pTotTribSN: unknown }
+        >["pTotTribSN"],
+      };
 }
 
 function parseOptionalIbsCbs(info: XmlElement): IbsCbs | undefined {
@@ -644,30 +796,39 @@ function parseOptionalIbsCbs(info: XmlElement): IbsCbs | undefined {
   const classification = requiredElement(taxes, "gIBSCBS", `${path}.valores.trib`);
 
   return omitUndefined<IbsCbs>({
-    finNFSe: requiredString(value, "finNFSe", path) as "0",
-    indFinal: optionalString(value, "indFinal", path) as IbsCbs["indFinal"],
+    finNFSe: enumValue(requiredString(value, "finNFSe", path), ["0"], `${path}.finNFSe`),
+    indFinal: optionalEnumValue(
+      optionalString(value, "indFinal", path),
+      ["0", "1"],
+      `${path}.indFinal`,
+    ),
     cIndOp: requiredString(value, "cIndOp", path),
-    tpOper: optionalString(value, "tpOper", path) as IbsCbs["tpOper"],
+    tpOper: optionalEnumValue(
+      optionalString(value, "tpOper", path),
+      ["1", "2", "3", "4", "5"],
+      `${path}.tpOper`,
+    ),
     gRefNFSe: references
       ? {
-          refNFSe: values(references.refNFSe).map((entry, index) =>
-            text(entry, `${path}.gRefNFSe.refNFSe[${index}]`),
-          ),
+          refNFSe: stringValues(references, "refNFSe", `${path}.gRefNFSe`),
         }
       : undefined,
-    tpEnteGov: optionalString(value, "tpEnteGov", path) as IbsCbs["tpEnteGov"],
-    indDest: requiredString(value, "indDest", path) as IbsCbs["indDest"],
+    tpEnteGov: optionalEnumValue(
+      optionalString(value, "tpEnteGov", path),
+      ["1", "2", "3", "4"],
+      `${path}.tpEnteGov`,
+    ),
+    indDest: enumValue(requiredString(value, "indDest", path), ["0", "1"], `${path}.indDest`),
     dest: destination ? parseIbsCbsDestination(destination) : undefined,
     imovel: property ? parseIbsCbsProperty(property) : undefined,
     valores: {
       gReeRepRes: reimbursements
         ? {
-            documentos: values(reimbursements.documentos).map((document, index) =>
-              parseReimbursementDocument(
-                element(document, `${path}.valores.gReeRepRes.documentos[${index}]`),
-                index,
-              ),
-            ),
+            documentos: elementValues(
+              reimbursements,
+              "documentos",
+              `${path}.valores.gReeRepRes`,
+            ).map(parseReimbursementDocument),
           }
         : undefined,
       trib: {
@@ -719,12 +880,16 @@ function parseReimbursementDocument(value: XmlElement, index: number): Reimburse
     fornec: supplier ? parseIbsCbsSupplier(supplier, `${path}.fornec`) : undefined,
     dtEmiDoc: requiredString(value, "dtEmiDoc", path),
     dtCompDoc: requiredString(value, "dtCompDoc", path),
-    tpReeRepRes: requiredString(value, "tpReeRepRes", path) as ReimbursementDocument["tpReeRepRes"],
+    tpReeRepRes: enumValue(
+      requiredString(value, "tpReeRepRes", path),
+      ["01", "02", "03", "04", "99"],
+      `${path}.tpReeRepRes`,
+    ),
     xTpReeRepRes: optionalString(value, "xTpReeRepRes", path),
-    vlrReeRepRes: requiredString(
-      value,
-      "vlrReeRepRes",
-      path,
+    vlrReeRepRes: facetValue(
+      requiredString(value, "vlrReeRepRes", path),
+      "TSDec15V2",
+      `${path}.vlrReeRepRes`,
     ) as ReimbursementDocument["vlrReeRepRes"],
   } as ReimbursementDocument;
 }
@@ -739,11 +904,11 @@ function parseReimbursementReference(value: XmlElement, path: string) {
   if (national) {
     return {
       dFeNacional: {
-        tipoChaveDFe: requiredString(national, "tipoChaveDFe", `${path}.dFeNacional`) as
-          | "1"
-          | "2"
-          | "3"
-          | "9",
+        tipoChaveDFe: enumValue(
+          requiredString(national, "tipoChaveDFe", `${path}.dFeNacional`),
+          ["1", "2", "3", "9"],
+          `${path}.dFeNacional.tipoChaveDFe`,
+        ),
         xTipoChaveDFe: optionalString(national, "xTipoChaveDFe", `${path}.dFeNacional`),
         chaveDFe: requiredString(national, "chaveDFe", `${path}.dFeNacional`),
       },
@@ -799,22 +964,21 @@ function parseOptionalDeferral(value: XmlElement): IbsCbs["valores"]["trib"]["gI
   const path = "DPS.infDPS.IBSCBS.valores.trib.gIBSCBS.gDif";
   return deferral
     ? {
-        pDifUF: requiredString(deferral, "pDifUF", path) as NonNullable<
-          IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]
-        >["pDifUF"],
-        pDifMun: requiredString(deferral, "pDifMun", path) as NonNullable<
-          IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]
-        >["pDifMun"],
-        pDifCBS: requiredString(deferral, "pDifCBS", path) as NonNullable<
-          IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]
-        >["pDifCBS"],
+        pDifUF: facetValue(
+          requiredString(deferral, "pDifUF", path),
+          "TSDec3V2",
+          `${path}.pDifUF`,
+        ) as NonNullable<IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]>["pDifUF"],
+        pDifMun: facetValue(
+          requiredString(deferral, "pDifMun", path),
+          "TSDec3V2",
+          `${path}.pDifMun`,
+        ) as NonNullable<IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]>["pDifMun"],
+        pDifCBS: facetValue(
+          requiredString(deferral, "pDifCBS", path),
+          "TSDec3V2",
+          `${path}.pDifCBS`,
+        ) as NonNullable<IbsCbs["valores"]["trib"]["gIBSCBS"]["gDif"]>["pDifCBS"],
       }
     : undefined;
-}
-
-function text(value: unknown, path: string): string {
-  if (typeof value !== "string") {
-    throw new XmlParseError("invalid-value", path, "expected text content");
-  }
-  return value;
 }

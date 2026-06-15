@@ -7,6 +7,10 @@ on:
         description: Official schema ZIP URL
         required: true
         type: string
+      sha256:
+        description: Independently verified SHA-256 digest of the ZIP
+        required: true
+        type: string
       version:
         description: National schema version
         required: true
@@ -22,17 +26,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.x
           cache: npm
       - run: npm ci
-      - run: npm run schema:stage -- --source "$SCHEMA_SOURCE" --version "$SCHEMA_VERSION" --output .schema-staging/review
+      - run: npm run schema:stage -- --source "$SCHEMA_SOURCE" --sha256 "$SCHEMA_SHA256" --version "$SCHEMA_VERSION" --output .schema-staging/review
         env:
           SCHEMA_SOURCE: ${{ inputs.source }}
+          SCHEMA_SHA256: ${{ inputs.sha256 }}
           SCHEMA_VERSION: ${{ inputs.version }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: national-nfse-schema-${{ inputs.version }}
           path: .schema-staging/review

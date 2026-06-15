@@ -13,6 +13,10 @@ const QUERY: MunicipalParameterQuery = {
   serviceCode: "010101",
   contributorTaxId: "12345678000195",
 };
+const QUERY_WITHOUT_CONTRIBUTOR: MunicipalParameterQuery = {
+  municipality: "3550308",
+  serviceCode: "010101",
+};
 
 describe("municipal parameter resolver", () => {
   it("maps lossless API snapshots into the pure validation contract", async () => {
@@ -100,6 +104,122 @@ describe("municipal parameter resolver", () => {
     expect(resolver.invalidate(QUERY)).toBe(false);
   });
 
+  it("gives shared waiters independent abort and timeout behavior", async () => {
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const client = new ParameterClient(gate);
+    const resolver = createMunicipalParameterResolver({
+      client,
+      map: () => ({ source: "shared" }),
+    });
+    const first = resolver.resolve(QUERY);
+    const controller = new AbortController();
+    const aborted = resolver.resolve(QUERY, { signal: controller.signal });
+    const timedOut = resolver.resolve(QUERY, { timeoutMs: 5 });
+    controller.abort();
+
+    await expect(aborted).rejects.toEqual(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "aborted" }),
+    );
+    await expect(timedOut).rejects.toEqual(
+      expect.objectContaining<Partial<SefinTransportError>>({ code: "timeout" }),
+    );
+    expect(client.calls).toEqual(["convention", "service", "contributor"]);
+
+    release?.();
+    await expect(first).resolves.toEqual(expect.objectContaining({ source: "shared" }));
+    expect(resolver.size).toBe(1);
+  });
+
+  it("does not share or cache calls carrying per-call headers", async () => {
+    const client = new ParameterClient();
+    const resolver = createMunicipalParameterResolver({
+      client,
+      map: () => ({ source: "private" }),
+    });
+
+    await resolver.resolve(QUERY, { headers: { authorization: "Bearer tenant-a" } });
+    await resolver.resolve(QUERY, { headers: { authorization: "Bearer tenant-b" } });
+
+    expect(client.calls).toHaveLength(6);
+    expect(resolver.size).toBe(0);
+    expect(client.options.filter((value) => value?.headers)).toEqual([
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-a" } }),
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-a" } }),
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-a" } }),
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-b" } }),
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-b" } }),
+      expect.objectContaining({ headers: { authorization: "Bearer tenant-b" } }),
+    ]);
+  });
+
+  it("starts TTL at completion rather than request start", async () => {
+    let now = 1_000;
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const client = new ParameterClient(gate);
+    const resolver = createMunicipalParameterResolver({
+      client,
+      ttlMs: 100,
+      now: () => now,
+      map: () => ({}),
+    });
+
+    const pending = resolver.resolve(QUERY);
+    now = 5_000;
+    release?.();
+    const completed = await pending;
+    expect(completed.resolvedAt).toBe(new Date(5_000).toISOString());
+
+    now = 5_099;
+    expect(await resolver.resolve(QUERY)).toBe(completed);
+    expect(client.calls).toHaveLength(3);
+
+    now = 5_101;
+    await resolver.resolve(QUERY);
+    expect(client.calls).toHaveLength(6);
+  });
+
+  it("prevents invalidated, cleared, and older refreshes from repopulating cache", async () => {
+    const invalidationRounds = [deferredRound(1), deferredRound(2)];
+    const invalidationClient = new VersionedParameterClient(invalidationRounds);
+    const invalidationResolver = versionedResolver(invalidationClient);
+    const invalidated = invalidationResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR);
+    expect(invalidationResolver.invalidate(QUERY_WITHOUT_CONTRIBUTOR)).toBe(true);
+    const current = invalidationResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR);
+    invalidationRounds[1]?.release();
+    const currentValue = await current;
+    invalidationRounds[0]?.release();
+    await invalidated;
+    expect(await invalidationResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR)).toBe(currentValue);
+    expect(currentValue.source).toBe("version-2");
+
+    const refreshRounds = [deferredRound(1), deferredRound(2)];
+    const refreshClient = new VersionedParameterClient(refreshRounds);
+    const refreshResolver = versionedResolver(refreshClient);
+    const older = refreshResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR);
+    const newer = refreshResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR, { bypassCache: true });
+    refreshRounds[1]?.release();
+    const newerValue = await newer;
+    refreshRounds[0]?.release();
+    await older;
+    expect(await refreshResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR)).toBe(newerValue);
+    expect(newerValue.source).toBe("version-2");
+
+    const clearRound = deferredRound(1);
+    const clearClient = new VersionedParameterClient([clearRound]);
+    const clearResolver = versionedResolver(clearClient);
+    const stale = clearResolver.resolve(QUERY_WITHOUT_CONTRIBUTOR);
+    clearResolver.clear();
+    clearRound.release();
+    await stale;
+    expect(clearResolver.size).toBe(0);
+  });
+
   it("passes call controls through and rejects invalid cache/query configuration", async () => {
     const client = new ParameterClient();
     const resolver = createMunicipalParameterResolver({
@@ -175,6 +295,65 @@ class ParameterClient implements MunicipalParameterClient {
     await this.gate;
     return valueResponse("get-municipal-contributor", { withholding: ["1", "2"] });
   }
+}
+
+interface DeferredRound {
+  readonly gate: Promise<void>;
+  readonly version: number;
+  release(): void;
+}
+
+class VersionedParameterClient implements MunicipalParameterClient {
+  private conventionIndex = 0;
+  private serviceIndex = 0;
+
+  constructor(private readonly rounds: readonly DeferredRound[]) {}
+
+  async getMunicipalConvention(): Promise<SefinValueResponse> {
+    const round = this.rounds[this.conventionIndex++];
+    if (!round) {
+      throw new Error("missing convention round");
+    }
+    await round.gate;
+    return valueResponse("get-municipal-convention", { version: round.version });
+  }
+
+  async getMunicipalServiceParameters(): Promise<SefinValueResponse> {
+    const round = this.rounds[this.serviceIndex++];
+    if (!round) {
+      throw new Error("missing service round");
+    }
+    await round.gate;
+    return valueResponse("get-municipal-service", { version: round.version });
+  }
+
+  async getMunicipalContributorParameters(): Promise<SefinValueResponse> {
+    throw new Error("contributor lookup was not expected");
+  }
+}
+
+function deferredRound(version: number): DeferredRound {
+  let release: (() => void) | undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return {
+    gate,
+    version,
+    release() {
+      release?.();
+    },
+  };
+}
+
+function versionedResolver(client: MunicipalParameterClient) {
+  return createMunicipalParameterResolver({
+    client,
+    map(snapshot) {
+      const service = snapshot.service.value as { readonly version: number };
+      return { source: `version-${service.version}` };
+    },
+  });
 }
 
 function valueResponse(

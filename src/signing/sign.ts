@@ -1,8 +1,13 @@
 import type { BinaryLike, KeyLike } from "node:crypto";
-import { X509Certificate } from "node:crypto";
+import { verify as verifyBytes, type X509Certificate } from "node:crypto";
 import { type ErrorFirstCallback, type SignatureAlgorithm, SignedXml } from "xml-crypto";
 import { XmlSignatureError } from "../errors.js";
-import { isCertificateValidAt } from "./certificates.js";
+import {
+  assertCertificateChainValid,
+  isCertificateValidAt,
+  parseCertificateChain,
+} from "./certificates.js";
+import { nodeSignatureAlgorithm } from "./credentials.js";
 import { documentRootXPath, inspectNationalDocument, signedTargetXPath } from "./document.js";
 import {
   NATIONAL_NFSE_XMLDSIG_PROFILE,
@@ -104,10 +109,21 @@ async function signDescriptor(
     );
   }
 
-  const leaf = new X509Certificate(signer.certificateChainPem[0]);
+  let certificateChain: X509Certificate[];
+  try {
+    certificateChain = parseCertificateChain(signer.certificateChainPem);
+    assertCertificateChainValid(certificateChain);
+  } catch (error) {
+    throw new XmlSignatureError("invalid-credentials", "signer certificate chain is invalid", {
+      cause: error,
+    });
+  }
+  const leaf = certificateChain[0] as X509Certificate;
   if (
     options.validateCertificateTime !== false &&
-    !isCertificateValidAt(leaf, options.now ?? new Date())
+    certificateChain.some(
+      (certificate) => !isCertificateValidAt(certificate, options.now ?? new Date()),
+    )
   ) {
     throw new XmlSignatureError(
       "certificate-expired",
@@ -127,6 +143,7 @@ async function signDescriptor(
     profile,
     kind,
     targetId,
+    leaf,
   );
   signedXml.addReference({
     xpath: signedTargetXPath(kind),
@@ -169,6 +186,7 @@ function externalAlgorithm(
   profile: XmlSignatureProfile,
   documentKind: NationalXmlDocumentKind,
   targetId: string,
+  certificate: X509Certificate,
 ): new () => SignatureAlgorithm {
   class ExternalSignatureAlgorithm {
     getSignature(
@@ -184,7 +202,23 @@ function externalAlgorithm(
       }
       signer
         .sign(binaryLikeToBuffer(signedInfo), { documentKind, targetId, profile })
-        .then((signature) => callback(null, Buffer.from(signature).toString("base64")))
+        .then((signature) => {
+          const signatureBytes = Buffer.from(signature);
+          if (
+            !verifyBytes(
+              nodeSignatureAlgorithm(profile),
+              binaryLikeToBuffer(signedInfo),
+              certificate.publicKey,
+              signatureBytes,
+            )
+          ) {
+            throw new XmlSignatureError(
+              "signing-failed",
+              "external signer returned a signature that does not match its certificate",
+            );
+          }
+          callback(null, signatureBytes.toString("base64"));
+        })
         .catch((error: unknown) =>
           callback(
             error instanceof Error ? error : new Error("external signer rejected the digest"),

@@ -1,6 +1,8 @@
 import { createPrivateKey, sign as signBytes } from "node:crypto";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as forge from "node-forge";
 import { beforeAll, describe, expect, it } from "vitest";
+import { SignedXml } from "xml-crypto";
 import {
   createDps,
   serializeDps,
@@ -106,6 +108,7 @@ describe("National XML signatures", () => {
     expect(result.issues).toContainEqual(
       expect.objectContaining({ code: "certificate-untrusted" }),
     );
+    expect(result.authenticatedXml).toBeUndefined();
   });
 
   it("rejects XMLDSig algorithm profiles other than the configured profile", async () => {
@@ -128,6 +131,39 @@ describe("National XML signatures", () => {
 
     expect(result.valid).toBe(false);
     expect(result.issues).toContainEqual(expect.objectContaining({ code: "unexpected-profile" }));
+    expect(result.authenticatedXml).toBeUndefined();
+  });
+
+  it("rejects namespace-confused SignedInfo before accepting decoy SHA-256 policy elements", async () => {
+    const signer = createPemSigner({
+      privateKey: credentials.privateKeyPem,
+      certificateChain: [credentials.certificatePem],
+    });
+    const weakProfile = {
+      ...NATIONAL_NFSE_XMLDSIG_PROFILE,
+      signatureAlgorithm: "http://www.w3.org/2000/09/xmldsig#rsa-sha1",
+      digestAlgorithm: "http://www.w3.org/2000/09/xmldsig#sha1",
+    };
+    let signed = await signDpsXml(serializeDps(validDpsInput()), signer, {
+      profile: weakProfile,
+      now: VERIFICATION_TIME,
+    });
+    signed = signed.replace("<SignedInfo>", '<SignedInfo xmlns="">');
+    signed = signed.replace(
+      "</Signature>",
+      `<Object><CanonicalizationMethod Algorithm="${NATIONAL_NFSE_XMLDSIG_PROFILE.canonicalizationAlgorithm}"/><SignatureMethod Algorithm="${NATIONAL_NFSE_XMLDSIG_PROFILE.signatureAlgorithm}"/><DigestMethod Algorithm="${NATIONAL_NFSE_XMLDSIG_PROFILE.digestAlgorithm}"/><Transform Algorithm="${NATIONAL_NFSE_XMLDSIG_PROFILE.transforms[0]}"/><Transform Algorithm="${NATIONAL_NFSE_XMLDSIG_PROFILE.transforms[1]}"/></Object></Signature>`,
+    );
+    signed = resignSignedInfo(signed, credentials.privateKeyPem, credentials.certificatePem);
+
+    expect(() =>
+      verifyNationalXmlSignature(signed, {
+        trustedCertificates: [credentials.certificatePem],
+        requireTrustedCertificate: true,
+        now: VERIFICATION_TIME,
+      }),
+    ).toThrowError(
+      expect.objectContaining<Partial<XmlSignatureError>>({ code: "verification-failed" }),
+    );
   });
 
   it("loads PKCS#12 credentials and signs an event request in schema order", async () => {
@@ -170,6 +206,137 @@ describe("National XML signatures", () => {
         now: VERIFICATION_TIME,
       }).valid,
     ).toBe(true);
+  });
+
+  it("rejects garbage and wrong-key external signer output", async () => {
+    const other = createTestCredentials();
+    const wrongPrivateKey = createPrivateKey(other.privateKeyPem);
+    const cases: XmlSigner[] = [
+      {
+        certificateChainPem: [credentials.certificatePem],
+        async sign() {
+          return Uint8Array.of(0);
+        },
+      },
+      {
+        certificateChainPem: [credentials.certificatePem],
+        async sign(data) {
+          return signBytes("RSA-SHA256", data, wrongPrivateKey);
+        },
+      },
+    ];
+
+    for (const externalSigner of cases) {
+      await expect(
+        signDpsXml(serializeDps(validDpsInput()), externalSigner, {
+          now: VERIFICATION_TIME,
+        }),
+      ).rejects.toEqual(
+        expect.objectContaining<Partial<XmlSignatureError>>({ code: "signing-failed" }),
+      );
+    }
+  });
+
+  it("rejects a certificate path through a non-CA intermediate", async () => {
+    const hierarchy = createIntermediateHierarchy(false);
+    const signer = createPemSigner({
+      privateKey: hierarchy.leafPrivateKeyPem,
+      certificateChain: [hierarchy.leafCertificatePem],
+    });
+    const signed = await signDpsXml(serializeDps(validDpsInput()), signer, {
+      now: VERIFICATION_TIME,
+    });
+    const withIntermediate = appendCertificate(signed, hierarchy.intermediateCertificatePem);
+    const result = verifyNationalXmlSignature(withIntermediate, {
+      trustedCertificates: [hierarchy.rootCertificatePem],
+      requireTrustedCertificate: true,
+      now: VERIFICATION_TIME,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.certificateTrusted).toBe(false);
+    expect(result.authenticatedXml).toBeUndefined();
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: "invalid-certificate-chain" }),
+    );
+  });
+
+  it("accepts a valid CA intermediate path to a configured trust anchor", async () => {
+    const hierarchy = createIntermediateHierarchy(true);
+    const signer = createPemSigner({
+      privateKey: hierarchy.leafPrivateKeyPem,
+      certificateChain: [hierarchy.leafCertificatePem, hierarchy.intermediateCertificatePem],
+    });
+    const signed = await signDpsXml(serializeDps(validDpsInput()), signer, {
+      now: VERIFICATION_TIME,
+    });
+    const result = verifyNationalXmlSignature(signed, {
+      trustedCertificates: [hierarchy.rootCertificatePem],
+      requireTrustedCertificate: true,
+      now: VERIFICATION_TIME,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        valid: true,
+        certificateTrusted: true,
+        authenticatedXml: expect.any(String),
+      }),
+    );
+  });
+
+  it("rejects RSA keys below 2048 bits for signing and verification", () => {
+    const weak = createTestCredentials(1024);
+    expect(() =>
+      createPemSigner({
+        privateKey: weak.privateKeyPem,
+        certificateChain: [weak.certificatePem],
+      }),
+    ).toThrowError(
+      expect.objectContaining<Partial<XmlSignatureError>>({ code: "invalid-credentials" }),
+    );
+
+    const weaklySigned = signWithoutHardening(
+      `<DPS xmlns="${NAMESPACE}" versao="1.01"><infDPS Id="DPS1"><marker>weak</marker></infDPS></DPS>`,
+      weak,
+    );
+    const result = verifyNationalXmlSignature(weaklySigned, {
+      trustedCertificates: [weak.certificatePem],
+      requireTrustedCertificate: true,
+      now: VERIFICATION_TIME,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.authenticatedXml).toBeUndefined();
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: "invalid-certificate-chain" }),
+    );
+  });
+
+  it("rejects unsupported critical certificate extensions", () => {
+    const unsupported = createTestCredentials(2048, true);
+    expect(() =>
+      createPemSigner({
+        privateKey: unsupported.privateKeyPem,
+        certificateChain: [unsupported.certificatePem],
+      }),
+    ).toThrowError(
+      expect.objectContaining<Partial<XmlSignatureError>>({ code: "invalid-credentials" }),
+    );
+
+    const signed = signWithoutHardening(
+      `<DPS xmlns="${NAMESPACE}" versao="1.01"><infDPS Id="DPS1"><marker>critical</marker></infDPS></DPS>`,
+      unsupported,
+    );
+    const result = verifyNationalXmlSignature(signed, {
+      trustedCertificates: [unsupported.certificatePem],
+      requireTrustedCertificate: true,
+      now: VERIFICATION_TIME,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.authenticatedXml).toBeUndefined();
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: "invalid-certificate-chain" }),
+    );
   });
 
   it("signs generated NFS-e and registered-event document roots", async () => {
@@ -261,6 +428,14 @@ describe("National XML signatures", () => {
     ).rejects.toEqual(
       expect.objectContaining<Partial<XmlSignatureError>>({ code: "certificate-expired" }),
     );
+    const signed = await signDpsXml(serializeDps(validDpsInput()), signer, {
+      now: VERIFICATION_TIME,
+    });
+    const expiredResult = verifyNationalXmlSignature(signed, {
+      now: new Date("2031-01-01T00:00:00Z"),
+    });
+    expect(expiredResult.valid).toBe(false);
+    expect(expiredResult.authenticatedXml).toBeUndefined();
     expect(() => verifyNationalXmlSignature(serializeDps(validDpsInput()))).toThrowError(
       expect.objectContaining<Partial<XmlSignatureError>>({ code: "missing-signature" }),
     );
@@ -350,8 +525,8 @@ function eventRequestXml(): string {
   return `<?xml version="1.0" encoding="UTF-8"?><pedRegEvento xmlns="${NAMESPACE}" versao="1.01"><infPedReg Id="${EVENT_REQUEST_ID}"><tpAmb>2</tpAmb><verAplic>nfse-js-test</verAplic><dhEvento>2026-06-11T11:00:00+01:00</dhEvento><CNPJAutor>12345678000195</CNPJAutor><chNFSe>${NFSE_KEY}</chNFSe><e101101><xDesc>Cancelamento de NFS-e</xDesc><cMotivo>1</cMotivo><xMotivo>Documento emitido incorretamente</xMotivo></e101101></infPedReg></pedRegEvento>`;
 }
 
-function createTestCredentials(): TestCredentials {
-  const keys = forge.pki.rsa.generateKeyPair(1024);
+function createTestCredentials(bits = 2048, unsupportedCriticalExtension = false): TestCredentials {
+  const keys = forge.pki.rsa.generateKeyPair(bits);
   const certificate = forge.pki.createCertificate();
   certificate.publicKey = keys.publicKey;
   certificate.serialNumber = "01";
@@ -360,14 +535,22 @@ function createTestCredentials(): TestCredentials {
   const attributes = [{ name: "commonName", value: "nfse-js test signer" }];
   certificate.setSubject(attributes);
   certificate.setIssuer(attributes);
-  certificate.setExtensions([
+  const extensions: object[] = [
     { name: "basicConstraints", cA: false },
     {
       name: "keyUsage",
       digitalSignature: true,
       nonRepudiation: true,
     },
-  ]);
+  ];
+  if (unsupportedCriticalExtension) {
+    extensions.push({
+      name: "subjectAltName",
+      critical: true,
+      altNames: [{ type: 2, value: "unsupported.example" }],
+    });
+  }
+  certificate.setExtensions(extensions);
   certificate.sign(keys.privateKey, forge.md.sha256.create());
 
   const privateKeyPem = forge.pki.privateKeyToPem(keys.privateKey);
@@ -377,4 +560,128 @@ function createTestCredentials(): TestCredentials {
   });
   const pkcs12 = Buffer.from(forge.asn1.toDer(pfx).getBytes(), "binary");
   return { privateKeyPem, certificatePem, pkcs12 };
+}
+
+function resignSignedInfo(xml: string, privateKeyPem: string, certificatePem: string): string {
+  const document = new DOMParser().parseFromString(xml, "application/xml");
+  const signature = document
+    .getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature")
+    .item(0);
+  if (!signature) {
+    throw new Error("test signature is missing");
+  }
+  const loader = new SignedXml({
+    publicCert: certificatePem,
+    getCertFromKeyInfo: () => null,
+  });
+  loader.loadSignature(signature as unknown as Node);
+  const canonicalizer = loader as unknown as {
+    getCanonSignedInfoXml(document: Document): string;
+  };
+  const canonicalized = canonicalizer.getCanonSignedInfoXml(document as unknown as Document);
+  const signatureValue = signature
+    .getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "SignatureValue")
+    .item(0);
+  if (!signatureValue) {
+    throw new Error("test signature value is missing");
+  }
+  signatureValue.textContent = signBytes(
+    "RSA-SHA1",
+    Buffer.from(canonicalized),
+    createPrivateKey(privateKeyPem),
+  ).toString("base64");
+  return new XMLSerializer().serializeToString(document);
+}
+
+function appendCertificate(xml: string, certificatePem: string): string {
+  const certificateValue = certificatePem.replace(
+    /-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s+/g,
+    "",
+  );
+  return xml.replace(
+    "</X509Data>",
+    `<X509Certificate>${certificateValue}</X509Certificate></X509Data>`,
+  );
+}
+
+function signWithoutHardening(xml: string, weak: TestCredentials): string {
+  const signer = new SignedXml({
+    privateKey: weak.privateKeyPem,
+    publicCert: weak.certificatePem,
+    signatureAlgorithm: NATIONAL_NFSE_XMLDSIG_PROFILE.signatureAlgorithm,
+    canonicalizationAlgorithm: NATIONAL_NFSE_XMLDSIG_PROFILE.canonicalizationAlgorithm,
+  });
+  signer.addReference({
+    xpath: `/*[local-name(.)='DPS' and namespace-uri(.)='${NAMESPACE}']/*[local-name(.)='infDPS' and namespace-uri(.)='${NAMESPACE}']`,
+    transforms: NATIONAL_NFSE_XMLDSIG_PROFILE.transforms,
+    digestAlgorithm: NATIONAL_NFSE_XMLDSIG_PROFILE.digestAlgorithm,
+  });
+  signer.computeSignature(xml, {
+    location: {
+      reference: `/*[local-name(.)='DPS' and namespace-uri(.)='${NAMESPACE}']`,
+      action: "append",
+    },
+  });
+  return signer.getSignedXml();
+}
+
+function createIntermediateHierarchy(intermediateCa: boolean): {
+  readonly leafPrivateKeyPem: string;
+  readonly leafCertificatePem: string;
+  readonly intermediateCertificatePem: string;
+  readonly rootCertificatePem: string;
+} {
+  const rootKeys = forge.pki.rsa.generateKeyPair(2048);
+  const root = createIssuedCertificate("root", rootKeys, undefined, undefined, true);
+  const intermediateKeys = forge.pki.rsa.generateKeyPair(2048);
+  const intermediate = createIssuedCertificate(
+    "not-a-ca",
+    intermediateKeys,
+    root,
+    rootKeys.privateKey,
+    intermediateCa,
+  );
+  const leafKeys = forge.pki.rsa.generateKeyPair(2048);
+  const leaf = createIssuedCertificate(
+    "leaf",
+    leafKeys,
+    intermediate,
+    intermediateKeys.privateKey,
+    false,
+  );
+  return {
+    leafPrivateKeyPem: forge.pki.privateKeyToPem(leafKeys.privateKey),
+    leafCertificatePem: forge.pki.certificateToPem(leaf),
+    intermediateCertificatePem: forge.pki.certificateToPem(intermediate),
+    rootCertificatePem: forge.pki.certificateToPem(root),
+  };
+}
+
+function createIssuedCertificate(
+  commonName: string,
+  keys: forge.pki.rsa.KeyPair,
+  issuer?: forge.pki.Certificate,
+  issuerKey?: forge.pki.rsa.PrivateKey,
+  cA = false,
+): forge.pki.Certificate {
+  const certificate = forge.pki.createCertificate();
+  certificate.publicKey = keys.publicKey;
+  certificate.serialNumber = Math.floor(Math.random() * 1_000_000_000).toString(16);
+  certificate.validity.notBefore = new Date("2025-01-01T00:00:00Z");
+  certificate.validity.notAfter = new Date("2030-01-01T00:00:00Z");
+  const subject = [{ name: "commonName", value: commonName }];
+  certificate.setSubject(subject);
+  certificate.setIssuer(issuer?.subject.attributes ?? subject);
+  certificate.setExtensions([
+    { name: "basicConstraints", critical: true, cA },
+    {
+      name: "keyUsage",
+      critical: true,
+      digitalSignature: !cA,
+      keyCertSign: cA,
+      cRLSign: cA,
+    },
+  ]);
+  certificate.sign(issuerKey ?? keys.privateKey, forge.md.sha256.create());
+  return certificate;
 }

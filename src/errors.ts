@@ -82,7 +82,8 @@ export type SefinResponseParseErrorCode =
   | "document-too-large"
   | "invalid-json"
   | "nesting-too-deep"
-  | "invalid-compressed-document";
+  | "invalid-compressed-document"
+  | "invalid-document";
 
 export class SefinResponseParseError extends NfseError {
   constructor(

@@ -2,12 +2,12 @@ import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import {
   createDps,
-  type SefinResponseParseError,
+  SefinResponseParseError,
   serializeDps,
   validateEventRequestXml,
   validateEventXml,
   validateNfseXml,
-  type XmlParseError,
+  XmlParseError,
 } from "../src/index.js";
 import {
   parseDpsXml,
@@ -73,6 +73,55 @@ describe("XML parsing", () => {
     );
   });
 
+  it("rejects namespace spoofing for National roots, modeled elements, and XMLDSIG content", () => {
+    const xml = serializeDps(validDpsInput());
+    expect(() => parseDpsXml(xml.replace(` xmlns="${NAMESPACE}"`, ""))).toThrowError(
+      expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }),
+    );
+    expect(() =>
+      parseDpsXml(xml.replace(`xmlns="${NAMESPACE}"`, 'xmlns="urn:attacker"')),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+
+    expect(() =>
+      parseDpsXml(
+        xml
+          .replace("<infDPS ", '<evil:infDPS xmlns:evil="urn:attacker" ')
+          .replace("</infDPS>", "</evil:infDPS>"),
+      ),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+
+    const signed = xml.replace("</DPS>", `${signatureXml("DPS-test")}</DPS>`);
+    expect(() =>
+      parseDpsXml(
+        signed
+          .replace("<ds:SignedInfo>", '<evil:SignedInfo xmlns:evil="urn:attacker">')
+          .replace("</ds:SignedInfo>", "</evil:SignedInfo>"),
+      ),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+
+    const input = validDpsInput();
+    const repeated = serializeDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        serv: {
+          ...input.infDPS.serv,
+          infoCompl: {
+            gItemPed: {
+              xItemPed: ["line-1", "line-2"],
+            },
+          },
+        },
+      },
+    }).replace(
+      "<xItemPed>line-2</xItemPed>",
+      '<evil:xItemPed xmlns:evil="urn:attacker">line-2</evil:xItemPed>',
+    );
+    expect(() => parseDpsXml(repeated)).toThrowError(
+      expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }),
+    );
+  });
+
   it.each([
     ["DOCTYPE", '<!DOCTYPE DPS [<!ENTITY x "expanded">]><DPS versao="1.01">&x;</DPS>'],
     ["ENTITY", '<!ENTITY x "expanded"><DPS versao="1.01"/>'],
@@ -109,6 +158,22 @@ describe("XML parsing", () => {
 
     expect(() => parseDpsXml(xml)).toThrow();
     expect(parseDpsXml(xml, { validate: false }).document.infDPS.dCompet).toBe("2026-02-29");
+  });
+
+  it("preserves significant whitespace and rejects whitespace in narrow values", () => {
+    const xml = serializeDps(validDpsInput());
+    const spacedDescription = xml.replace(
+      "<xDescServ>Software consulting</xDescServ>",
+      "<xDescServ>  Software consulting  </xDescServ>",
+    );
+    expect(
+      parseDpsXml(spacedDescription, { validate: false }).document.infDPS.serv.cServ.xDescServ,
+    ).toBe("  Software consulting  ");
+
+    const spacedEnvironment = xml.replace("<tpAmb>2</tpAmb>", "<tpAmb> 2 </tpAmb>");
+    expect(() => parseDpsXml(spacedEnvironment, { validate: false })).toThrowError(
+      expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }),
+    );
   });
 
   it("parses an issued NFS-e, its signature, and its embedded complete DPS", async () => {
@@ -188,6 +253,26 @@ describe("XML parsing", () => {
     ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
   });
 
+  it("rejects malformed narrow and branded values before returning typed documents", () => {
+    expect(() =>
+      parseNfseXml(nfseXml().replace("<cStat>100</cStat>", "<cStat>999</cStat>")),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+    expect(() =>
+      parseNfseXml(nfseXml().replace("<vLiq>100.00</vLiq>", "<vLiq>100.0</vLiq>")),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+    expect(() =>
+      parseEventRequestXml(eventRequestXml(false).replace("<tpAmb>2</tpAmb>", "<tpAmb>9</tpAmb>")),
+    ).toThrowError(expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }));
+
+    const malformedDps = serializeDps(validDpsInput()).replace(
+      "<vServ>100.00</vServ>",
+      "<vServ>100.0</vServ>",
+    );
+    expect(() => parseDpsXml(malformedDps, { validate: false })).toThrowError(
+      expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }),
+    );
+  });
+
   it("parses SEFIN JSON success envelopes without depending on property names", () => {
     const xml = nfseXml();
     const response = parseSefinDocumentResponse(
@@ -238,6 +323,72 @@ describe("XML parsing", () => {
     });
   });
 
+  it("treats HTTP error status as authoritative even when the body echoes a document", () => {
+    const body = JSON.stringify({ error: "rejected", submittedDocument: nfseXml() });
+    const response = parseSefinDocumentResponse(body, { status: 422 });
+
+    expect(response).toEqual({
+      kind: "rejection",
+      status: 422,
+      originalBody: body,
+      raw: { error: "rejected", submittedDocument: nfseXml() },
+      reason: "remote-rejection",
+    });
+  });
+
+  it("enforces cumulative decompression and document-count limits", () => {
+    const xml = registeredEventXml();
+    const encoded = gzipSync(xml).toString("base64");
+    const body = JSON.stringify({ documents: [encoded, encoded] });
+
+    expect(() =>
+      parseSefinDocumentResponse(body, {
+        maxBytes: Math.max(Buffer.byteLength(body, "utf8") + 1, Buffer.byteLength(xml, "utf8") + 1),
+        maxDecompressedBytes: Buffer.byteLength(xml, "utf8") + 1,
+      }),
+    ).toThrowError(
+      expect.objectContaining<Partial<SefinResponseParseError>>({ code: "document-too-large" }),
+    );
+
+    expect(() =>
+      parseSefinDocumentResponse(JSON.stringify({ documents: [nfseXml(), nfseXml()] }), {
+        maxDocuments: 1,
+      }),
+    ).toThrowError(
+      expect.objectContaining<Partial<SefinResponseParseError>>({ code: "document-too-large" }),
+    );
+  });
+
+  it("normalizes nested document parsing failures as SEFIN response errors", () => {
+    const body = JSON.stringify({
+      document: `<DPS xmlns="${NAMESPACE}" versao="1.01"><infDPS>`,
+    });
+
+    try {
+      parseSefinDocumentResponse(body);
+      throw new Error("expected parsing to fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(SefinResponseParseError);
+      expect(error).toEqual(
+        expect.objectContaining<Partial<SefinResponseParseError>>({
+          code: "invalid-document",
+          path: "$.document",
+        }),
+      );
+      expect((error as Error).cause).toBeInstanceOf(XmlParseError);
+    }
+  });
+
+  it("ignores unrelated compressed strings that are not National XML", () => {
+    const unrelated = gzipSync("<not-national").toString("base64");
+    expect(parseSefinDocumentResponse(JSON.stringify({ diagnostic: unrelated }))).toEqual(
+      expect.objectContaining({
+        kind: "rejection",
+        reason: "no-document",
+      }),
+    );
+  });
+
   it("bounds malformed, oversized, and deeply nested SEFIN responses", () => {
     expect(() => parseSefinDocumentResponse("{")).toThrowError(
       expect.objectContaining<Partial<SefinResponseParseError>>({ code: "invalid-json" }),
@@ -255,6 +406,12 @@ describe("XML parsing", () => {
       }),
     ).toThrowError(
       expect.objectContaining<Partial<SefinResponseParseError>>({ code: "nesting-too-deep" }),
+    );
+    expect(() => parseSefinDocumentResponse("{}", { maxDocuments: 0 })).toThrowError(
+      expect.objectContaining<Partial<SefinResponseParseError>>({ code: "document-too-large" }),
+    );
+    expect(() => parseXmlRoot("<DPS/>", { maxDepth: Number.POSITIVE_INFINITY })).toThrowError(
+      expect.objectContaining<Partial<XmlParseError>>({ code: "invalid-value" }),
     );
   });
 });

@@ -67,7 +67,7 @@ export function createPkcs12Signer(
   }
 }
 
-function nodeSignatureAlgorithm(profile: XmlSignatureProfile): string {
+export function nodeSignatureAlgorithm(profile: XmlSignatureProfile): string {
   switch (profile.signatureAlgorithm) {
     case "http://www.w3.org/2000/09/xmldsig#rsa-sha1":
       return "RSA-SHA1";

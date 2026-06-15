@@ -1,6 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
@@ -34,15 +42,61 @@ describe("schema and version lifecycle", () => {
     expect(() => getNationalNfseSchemas("2.00" as never)).toThrowError(RangeError);
   });
 
-  it("keeps committed official schema hashes aligned with the manifest", () => {
+  it("exposes deeply immutable schema collections", () => {
+    const schemas = getNationalNfseSchemas();
+    const schemaSet = getNationalNfseSchemaSet();
+
+    expect(Object.isFrozen(SUPPORTED_NATIONAL_NFSE_VERSIONS)).toBe(true);
+    expect(Object.isFrozen(schemas)).toBe(true);
+    expect(schemas.every((schema) => Object.isFrozen(schema))).toBe(true);
+    expect(Object.isFrozen(schemaSet)).toBe(true);
+    expect(() => {
+      (schemas as SchemaFileForMutation[]).push({ fileName: "extra.xsd", contents: "" });
+    }).toThrow(TypeError);
+    expect(() => {
+      (schemas[0] as { fileName: string }).fileName = "changed.xsd";
+    }).toThrow(TypeError);
+  });
+
+  it("keeps official and runtime schema hashes aligned with an exact manifest file set", () => {
     const manifest = JSON.parse(
       readFileSync(new URL("../schemas/manifest.json", import.meta.url), "utf8"),
-    ) as { readonly version: string; readonly files: Readonly<Record<string, string>> };
+    ) as SchemaManifest;
+    const directoryFiles = readdirSync(new URL("../schemas/1.01", import.meta.url))
+      .filter((fileName) => fileName.endsWith(".xsd"))
+      .sort();
+    const officialFiles = Object.keys(manifest.files).sort();
+    const runtimeFiles = Object.keys(manifest.runtimeFiles).sort();
 
     expect(manifest.version).toBe("1.01");
+    expect(officialFiles).toEqual(directoryFiles);
+    expect(runtimeFiles).toEqual(directoryFiles);
     for (const [fileName, expectedHash] of Object.entries(manifest.files)) {
       const contents = readFileSync(new URL(`../schemas/1.01/${fileName}`, import.meta.url));
       expect(createHash("sha256").update(contents).digest("hex")).toBe(expectedHash);
+    }
+    for (const schema of getNationalNfseSchemas()) {
+      expect(createHash("sha256").update(schema.contents).digest("hex")).toBe(
+        manifest.runtimeFiles[schema.fileName],
+      );
+    }
+  });
+
+  it("records deterministic compatibility patches with exact match counts", () => {
+    const manifest = JSON.parse(
+      readFileSync(new URL("../schemas/manifest.json", import.meta.url), "utf8"),
+    ) as SchemaManifest;
+
+    expect(manifest.compatibilityPatches).not.toHaveLength(0);
+    for (const patch of manifest.compatibilityPatches) {
+      const official = readFileSync(
+        new URL(`../schemas/1.01/${patch.file}`, import.meta.url),
+        "utf8",
+      );
+      for (const replacement of patch.replacements) {
+        expect(replacement.search).not.toBe("");
+        expect(official.split(replacement.search).length - 1).toBe(replacement.expectedCount);
+      }
     }
   });
 
@@ -93,6 +147,25 @@ interface SchemaUpdateReport {
     readonly file: string;
     readonly status: "added" | "changed" | "unchanged" | "removed";
   }[];
+}
+
+interface SchemaFileForMutation {
+  fileName: string;
+  contents: string;
+}
+
+interface SchemaManifest {
+  readonly version: string;
+  readonly compatibilityPatches: readonly {
+    readonly file: string;
+    readonly replacements: readonly {
+      readonly search: string;
+      readonly replace: string;
+      readonly expectedCount: number;
+    }[];
+  }[];
+  readonly files: Readonly<Record<string, string>>;
+  readonly runtimeFiles: Readonly<Record<string, string>>;
 }
 
 function runStage(source: URL | string, output: string): void {

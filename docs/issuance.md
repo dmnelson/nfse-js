@@ -78,10 +78,32 @@ bytes may have reached SEFIN, query by DPS identifier before resubmitting:
 
 ```ts
 const existence = await sefin.hasNfseForDps(dps.infDPS.Id);
-const accessKey = existence.exists
+const accessKeyResponse = existence.exists
   ? await sefin.getDpsAccessKey(dps.infDPS.Id)
   : undefined;
+const accessKey = accessKeyResponse
+  ? readAccessKey(accessKeyResponse.value)
+  : undefined;
+
+function readAccessKey(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return /^\d{50}$/.test(value) ? value : undefined;
+  }
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return undefined;
+  }
+  const candidate = (value as Record<string, unknown>).chaveAcesso;
+  return typeof candidate === "string" && /^\d{50}$/.test(candidate)
+    ? candidate
+    : undefined;
+}
 ```
+
+`getDpsAccessKey` returns response metadata plus a lossless `value`, not the
+access key directly. Depending on the response content type, `value` can be
+parsed JSON or plain text. Validate the active Swagger response shape before
+using it; `chaveAcesso` above is the JSON field exercised by the transport
+contract test.
 
 Do not treat a timeout as proof that SEFIN did not process the document.
 

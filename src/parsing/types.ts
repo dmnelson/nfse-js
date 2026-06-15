@@ -20,6 +20,8 @@ export type EventParseOptions = XmlParseOptions;
 export interface SefinResponseParseOptions extends DpsParseOptions {
   readonly status?: number;
   readonly contentType?: string;
+  readonly maxDecompressedBytes?: number;
+  readonly maxDocuments?: number;
 }
 
 export interface ParsedDps {

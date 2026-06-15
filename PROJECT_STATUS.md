@@ -1,6 +1,6 @@
 # Project Status and Completion Roadmap
 
-Last reviewed: 2026-06-12
+Last reviewed: 2026-06-15
 
 This document is the engineering handoff for continuing `nfse-js` in a future
 session. It describes what exists, what has actually been verified, what the
@@ -35,29 +35,45 @@ The package should eventually cover the complete lifecycle:
 
 ## Current State
 
-The repository is a feature-complete `0.1.0` implementation candidate for the
-documented National lifecycle. It can represent and
-deterministically serialize every complex type reachable from `TCInfDPS`, and
-securely parse DPS, issued NFS-e, event, and SEFIN document-response payloads.
-It can sign and verify DPS, NFS-e, and event XML through PEM, PKCS#12, or
-external signing providers. It also has an injectable SEFIN/ADN client with a
-Node HTTP/mTLS adapter. It has not yet completed a live restricted-production
-issuance, so it must not be presented as operationally proven.
+The repository is a `0.2.0` implementation candidate for the documented
+National lifecycle. Package and lock metadata report `0.2.0`, and the
+changelog contains a dated `0.2.0` section; the release is not yet published.
+The implementation can represent and deterministically serialize every complex
+type reachable from `TCInfDPS`, and parse DPS, issued NFS-e, event, and SEFIN
+document-response payloads with bounded XML/JSON front ends. It can sign and
+verify DPS, NFS-e, and event XML through PEM, PKCS#12, or external signing
+providers. It also has an injectable SEFIN/ADN client with a Node HTTP/mTLS
+adapter.
+
+This is broad implementation coverage, not complete conformance coverage.
+Local validation covers a documented subset of facets and business rules, all
+received-document and cryptographic fixtures are currently synthetic, and no
+live restricted-production issuance has completed. The package must not be
+presented as operationally proven.
 
 At this handoff:
 
-- Git is initialized on `main` with an initial project baseline commit.
 - Dependencies are installed locally.
-- `npm run verify` passes.
-- 155 tests pass, including 15 canonical DPS XML snapshots, parser round trips,
-  received-document fixtures, and XSD validation for every named
-  schema-coverage fixture.
-- `npm run test:coverage` reports 90.53% statements, 100% functions, 90.45%
-  lines, and 83.62% branch coverage for the current code.
-- `npm audit --audit-level=high` reports no known vulnerabilities.
-- The actual npm tarball is unpacked and exercised in isolated ESM and
-  CommonJS consumer projects by `npm run package:check`.
-- The current package-size baseline is 1,131,845 bytes packed across 95 files.
+- The test suite includes canonical DPS XML snapshots, generated DPS parser
+  round trips, synthetic received-document fixtures, and XSD validation for
+  named schema-coverage fixtures.
+- `npm run package:check` inspects and unpacks the npm tarball, exercises ESM
+  and CommonJS runtime consumers, and compiles strict TypeScript ESM/CommonJS
+  consumers against the packed declarations.
+- `npm run package:check:install`, Node.js 22 CI, and the release workflow
+  additionally install the tarball and dependency graph through npm in a clean
+  consumer.
+- The June 15, 2026 restricted-sandbox run passed 182 tests and skipped the
+  three loopback HTTP/mTLS tests that require socket binding. CI runs those
+  tests without the sandbox opt-out.
+- The sandbox coverage run reported 85.99% statements, 93.77% functions,
+  85.88% lines, and 79.55% branches; Node transport coverage is understated
+  because its three socket tests were skipped locally.
+- The offline package smoke check produced a 1,099,568-byte tarball with
+  SHA-256 `e2c53071fb38f2492e3ee99398a8163dc5dc05db8cd55deaf7b7a46b50f6ce99`.
+- Registry-dependent clean-install and audit reruns were blocked by sandbox
+  DNS. The release and Node.js 22 CI jobs enforce those checks with network
+  access.
 
 ## Implemented Functionality
 
@@ -124,10 +140,12 @@ All XSD choices are represented by discriminated unions, repeated groups use
 readonly arrays with runtime cardinality checks, and no raw XML-shaped
 extension group remains in the public DPS API.
 
-`schemas/1.01/dps-coverage.json` maps every reachable XSD complex type to its
-TypeScript symbol, serializer, current validation status, and fixtures. A test
-derives the graph from the official XSD and fails if this manifest becomes
-incomplete.
+`schemas/1.01/dps-coverage.json` maps every reachable XSD complex type to a
+claimed TypeScript symbol, serializer, current validation status, and named
+fixtures. A test derives the complex-type graph from the official XSD, resolves
+the claimed TypeScript and serializer declarations, and verifies that each
+named fixture serializes an XSD element associated with the mapped complex
+type. It does not yet prove every optional element or choice arm.
 
 Official XML element names are retained in the object model. This minimizes
 translation ambiguity and makes comparison with the XSD and manuals easier.
@@ -150,17 +168,17 @@ serialized as supplied, avoiding JavaScript floating-point changes.
 ### Semantic Validation
 
 `validateDps` and `assertValidDps` use centralized v1.01 simple-type facets and
-check:
+currently check:
 
 - DPS identifier shape and consistency with the selected issuer fields;
 - CPF and CNPJ check digits;
 - real Gregorian dates and the official timestamp offset profile;
-- municipality, CEP, country, service, series, DPS number, key, text-length,
-  and decimal facets used by the modeled DPS tree;
-- cardinality for every repeated DPS group;
+- selected municipality, CEP, country, service, series, DPS number, key,
+  text-length, and decimal facets used by the modeled DPS tree;
+- cardinality for the repeated groups currently covered by runtime checks;
 - issuer, substitution, rejected-NFS-e, tax-regime, foreign-trade,
   construction, event, deduction, ISSQN, federal-tax, total-tax, and IBS/CBS
-  dependencies that can be decided from the document alone;
+  dependencies implemented from the current rule set;
 - exact decimal arithmetic for PIS/COFINS and monetary comparison rules.
 
 Validation can collect all issues or stop at the first issue. Structured
@@ -170,6 +188,12 @@ sheet row and official URL for implemented rejection rules.
 
 `validateDpsWithMunicipalParameters` adds deterministic checks against
 already-resolved municipal parameters without coupling the core to networking.
+
+This validator is not a complete implementation of every XSD facet or every
+locally decidable National rule. The coverage manifest explicitly records
+remaining field facets, cross-field rules, and IBS/CBS rules as pending.
+Callers requiring complete structural validation must also use XSD validation,
+and local success must not be treated as proof of SEFIN acceptance.
 
 ### XML Serialization
 
@@ -184,8 +208,10 @@ already-resolved municipal parameters without coupling the core to networking.
 - optionally omits the XML declaration.
 
 Serialization is split into explicit functions for each schema group. Fifteen
-canonical output snapshots cover every XSD choice branch, and every named
-fixture validates against the bundled official DPS v1.01 XSD.
+canonical output snapshots cover the named schema-coverage scenarios, and
+every named fixture validates against the bundled official DPS v1.01 XSD.
+The current manifest test does not independently prove exhaustive optional
+element or choice-arm coverage.
 
 ### XSD Validation
 
@@ -227,9 +253,11 @@ The parsing entry point:
   envelopes;
 - returns typed rejection results while preserving the complete JSON payload.
 
-All parsing failures use structured error codes and paths. Fifteen canonical
-DPS fixtures round-trip through parse and serialize, and representative issued
-NFS-e/event fixtures validate against the bundled official schemas.
+All parsing failures use structured error codes and paths. Fifteen generated
+DPS fixtures round-trip through parse and serialize. Representative issued
+NFS-e and event documents are synthetic inline fixtures that validate against
+the bundled schemas; no official or sanitized restricted-production document
+fixture is retained yet.
 
 ### XML Signing and Verification
 
@@ -241,10 +269,14 @@ The signing entry point:
 - loads RSA credentials from in-memory PKCS#12/PFX containers;
 - supports asynchronous HSM, cloud KMS, and remote signers without private-key
   export;
+- requires RSA keys of at least 2048 bits and verifies external-signer output
+  against the leaf certificate before emitting XML;
 - verifies digest and signature integrity without exposing unauthenticated XML;
 - requires exactly one reference to the expected information element;
 - validates certificate dates and optionally requires a configured trust
   anchor;
+- validates CA constraints, certificate-signing key usage, path length, leaf
+  signing usage, and supported critical extensions across certificate paths;
 - enforces an explicit canonicalization, signature, digest, and transform
   profile to prevent algorithm downgrade.
 
@@ -267,7 +299,8 @@ The transport entry point:
 - submits DPS payloads and parses generated documents or remote rejections;
 - queries NFS-e by access key and reconciles DPS identifiers through GET/HEAD;
 - registers and queries events through the documented routes;
-- queries contributor ADN documents by NSU and events by NFS-e access key;
+- queries contributor ADN documents by NSU, including the optional CNPJ
+  selector, and events by NFS-e access key;
 - supports per-call abort signals and timeouts;
 - retries transient GET/HEAD failures with bounded backoff and `Retry-After`;
 - never retries POST operations automatically;
@@ -298,9 +331,11 @@ The events entry point:
 - produces unsigned event requests that validate against the official schema;
 - composes with the signing module and transport event operations.
 
-All 16 variants have XSD and parser round-trip tests. Rules depending on an
-existing NFS-e, prior event state, author role, or receiving environment remain
-remote rules and are not guessed locally.
+All 16 variants have generated XML and XSD tests. The parser matrix checks the
+event discriminant, generated description, and every event-specific payload
+field for each variant.
+Rules depending on an existing NFS-e, prior event state, author role, or
+receiving environment remain remote rules and are not guessed locally.
 
 ### Municipal Parameter Resolution
 
@@ -332,7 +367,21 @@ the XSD. It does not prove that:
 - a signed version is correct;
 - production or homologation submission works.
 
-Do not advertise the current version as able to issue NFS-e.
+Do not advertise the current version as proven to issue accepted NFS-e in
+restricted production.
+
+### Local semantic validation remains partial
+
+The local validator implements important identity, date, identifier, selected
+facet, cardinality, tax, deduction, and IBS/CBS checks, but it is not an
+exhaustive pre-submission oracle. `schemas/1.01/dps-coverage.json` records
+pending field facets and cross-field rules across addresses, construction,
+foreign trade, deductions, federal and municipal taxes, totals, and IBS/CBS.
+
+Until those entries are completed with positive and negative tests, describe
+`validateDps` as deterministic partial validation. Pair it with
+`validateDpsXml` for structural validation and with current municipal and
+restricted-production checks for operational decisions.
 
 ### Some validation requires resolved or remote state
 
@@ -408,7 +457,18 @@ for the small implementation, but conformance coverage is currently shallow.
 
 Repository infrastructure now includes a configured remote, CI, schema review,
 generated API documentation, task guides, benchmarks, compatibility/security
-policies, and provenance-enabled tag releases. The remaining release gaps are:
+policies, and a tag-triggered npm publish workflow with npm provenance. The
+workflow requires the tagged commit to be on `origin/main`, verifies that the
+tag matches the package version, runs `npm run verify`, requires generated
+files to remain unchanged, verifies the packed-artifact digest, and publishes
+that artifact through npm trusted publishing with provenance.
+
+The workflow also runs coverage and dependency-audit checks and performs a
+clean npm installation of the package and its dependencies. It does not
+execute benchmarks or independently verify the external conformance criteria
+below. Stable major tags require the protected environment variable
+`STABLE_RELEASE_APPROVED` to equal the exact tag, making that evidence an
+explicit reviewer attestation. The remaining release gaps are:
 
 - an actually published release candidate;
 - exercise by more than one real consuming application;
@@ -471,23 +531,26 @@ Exit criteria:
 - [x] Model repeated elements as bounded arrays where appropriate.
 - [x] Implement field-specific decimal types or constructors.
 - [x] Split serialization into explicit functions per schema group.
-- [x] Add fixtures for every optional group and every union branch.
+- [x] Add named fixtures for the modeled optional groups and union branches.
 - [x] Compare generated XML against canonical expected fixtures.
+- [ ] Make the coverage test prove every optional element and choice arm is
+  exercised rather than trusting manifest labels.
 
 Exit criteria:
 
 - the public stable DPS API contains no raw extension groups;
 - every DPS v1.01 element can be represented and serialized;
 - every generated fixture validates against the XSD;
-- all official choice and sequence structures are covered by tests.
+- all official choice and sequence structures are demonstrably covered by
+  tests.
 
 ### Phase 2: Build a Validation Rule Engine
 
 - [x] Generate or centralize XSD facet validation metadata.
 - [x] Add CPF/CNPJ validation and complete date/time validation.
 - [x] Check generated/supplied DPS IDs for field consistency.
-- [x] Implement cross-field National business rules from manuals and technical
-  notes.
+- [ ] Complete all locally decidable cross-field National business rules from
+  manuals and technical notes. A documented subset is implemented.
 - [x] Assign official rule/rejection codes where documented.
 - [x] Distinguish format, schema, business, municipal-parameter, and remote
   errors.
@@ -512,13 +575,16 @@ Exit criteria:
 - [x] Preserve relevant signature material and unknown future fields where
   possible.
 - [x] Reject unsafe XML constructs and external entity resolution.
-- [x] Add round-trip and official/sanitized fixture tests.
+- [x] Add generated DPS round-trip and synthetic received-document fixture
+  tests.
+- [ ] Add official or sanitized restricted-production document fixtures.
 
 Exit criteria:
 
 - callers can consume every document the library creates or receives;
 - parsing failures are structured and secure;
-- representative real documents round-trip without semantic loss.
+- representative official or sanitized documents round-trip without semantic
+  loss.
 
 ### Phase 4: Implement Signing and Verification
 
@@ -581,8 +647,15 @@ Exit criteria:
 
 ### Phase 7: Schema and Version Lifecycle
 
-- [x] Add an update command that downloads a new official schema bundle to a
-  staging location, verifies provenance, computes hashes, and reports diffs.
+- [x] Add an update command that downloads or reads a candidate schema bundle,
+  computes hashes, and reports diffs in a staging location.
+- [x] Restrict remote staging to HTTPS `gov.br` sources, revalidate redirects,
+  require an independently supplied SHA-256 digest, and record the final URL
+  and verified archive digest.
+- [ ] Add publisher-signed provenance or a documented authenticated channel for
+  obtaining the expected digest. A matching operator-supplied hash proves byte
+  identity, but the staging command cannot prove how that expected hash was
+  authenticated.
 - [x] Never silently replace a supported schema version.
 - [x] Prepare version-aware schema APIs for multiple National versions; only
   v1.01 is currently published and supported by this package.
@@ -592,7 +665,10 @@ Exit criteria:
 
 Exit criteria:
 
-- [x] schema updates are reviewable and reproducible;
+- [x] schema candidates are reviewable through staged files and hash diffs;
+- [x] remote candidates are constrained to the official host and an expected
+  digest;
+- [ ] publisher-authenticated schema provenance is retained and verifiable;
 - [x] existing applications can pin a supported standard version;
 - [x] compatibility patches are minimal, explicit, and tested.
 
@@ -604,14 +680,25 @@ Exit criteria:
 - [x] Publish an explicit support matrix.
 - [x] Audit dependencies and XML/cryptographic attack surfaces.
 - [x] Add benchmarks for schema validation, signing, parsing, and batch issuance.
-- [x] Test package installation in clean ESM and CommonJS consumer projects.
+- [x] Exercise the packed artifact through ESM and CommonJS runtime smoke
+  tests.
+- [x] Compile strict TypeScript ESM and CommonJS consumers against declarations
+  unpacked from the tarball.
+- [ ] Install the tarball and dependencies with npm in a clean isolated
+  consumer rather than linking repository dependencies.
 - [x] Define semantic-versioning rules for types and emitted XML.
 - [ ] Publish release candidates before declaring `1.0.0`.
 
 Exit criteria:
 
 - [x] documentation is sufficient without reading source;
-- [x] release automation is reproducible and provenance-enabled;
+- [x] tag publishing reruns `npm run verify` and requests npm provenance;
+- [x] tag ancestry, version equality, generated-file cleanliness, and package
+  digest are enforced by the release workflow;
+- [x] coverage, dependency audit, and clean installation gates are enforced;
+- [ ] benchmark execution is enforced automatically;
+- [x] stable major releases require an exact-tag protected-environment
+  conformance attestation;
 - [ ] package behavior has been exercised by more than one real consuming
   application;
 - [x] security and compatibility policies are explicit.
@@ -639,13 +726,26 @@ definition.
 
 ## Recommended Next Session
 
-The remaining roadmap is external conformance and release evidence:
+The next release is `0.2.0` because this branch changes public types,
+validation behavior, and emitted-data expectations relative to `0.1.0`.
+Package and lock metadata are already set to `0.2.0`. Before `1.0.0`, such
+breaking changes are permitted in a minor release but must be documented as
+migrations.
 
-1. confirm the XMLDSig profile and independently verify a generated fixture;
-2. capture sanitized accepted and rejected restricted-production issuance;
-3. capture event and municipal-parameter fixtures from the active Swagger;
-4. publish an npm release candidate through the tag workflow;
-5. exercise that candidate in at least two real consumer applications.
+The remaining roadmap combines `0.2.0` release hardening with external
+conformance evidence:
+
+1. review the prepared `0.2.0` migration notes and changelog against the final
+   release diff;
+2. install the packed tarball and its dependencies in clean JavaScript and
+   TypeScript consumers;
+3. manually attest the coverage, audit, benchmark, and clean-installation
+   gates before tagging;
+4. publish `0.2.0-rc.1` first if prerelease exercise is still required;
+   otherwise tag the reviewed `origin/main` commit as `v0.2.0`;
+5. confirm the XMLDSig profile and independently verify a generated fixture;
+6. capture sanitized accepted and rejected restricted-production issuance;
+7. capture event and municipal-parameter fixtures from the active Swagger.
 
 ## Working Commands
 
@@ -667,6 +767,16 @@ supported files:
 
 ```sh
 npm run schema:stage -- --source /path/to/schemas.zip --version 1.01
+```
+
+For a remote bundle, use an HTTPS `gov.br` URL and an independently verified
+digest:
+
+```sh
+npm run schema:stage -- \
+  --source https://www.gov.br/path/to/official-schemas.zip \
+  --sha256 <verified-archive-sha256> \
+  --version 1.01
 ```
 
 Inspect the publish artifact without using a potentially misconfigured global
@@ -709,10 +819,10 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 | `src/validation/xsd.ts` | libxml2/WASM XSD validation |
 | `src/schemas/index.ts` | Bundled-schema public API |
 | `scripts/generate-schema-module.mjs` | XSD embedding and compatibility patch |
-| `scripts/stage-schema-update.mjs` | Candidate schema staging and hash diff |
+| `scripts/stage-schema-update.mjs` | Official-host/digest-constrained schema staging and hash diff |
 | `scripts/generate-api-reference.mjs` | Deterministic public export documentation |
 | `scripts/benchmark.mjs` | Release performance and public-API smoke benchmark |
-| `schemas/manifest.json` | Schema provenance, hashes, and patch record |
+| `schemas/manifest.json` | Recorded source URL, schema hashes, and patch record |
 | `schemas/technical-notes.json` | Technical-note review state |
 | `docs/` | Generated API reference and task-oriented guides |
 | `SUPPORT.md` | Runtime, schema, and feature support matrix |
@@ -725,7 +835,12 @@ npm_config_cache=/tmp/nfse-js-npm-cache npm pack --dry-run
 ## Source of Truth
 
 The XSDs and official National NFS-e manuals/technical notes are the source of
-truth. The schema provenance URL is recorded in `schemas/manifest.json`.
+truth. `schemas/manifest.json` records the source URL used for the current
+bundle, official-file hashes, runtime-file hashes, and deterministic
+compatibility patches. Remote candidate staging requires an official HTTPS
+host and independently supplied digest, but the repository does not retain a
+publisher signature or evidence showing how that expected digest was
+authenticated.
 
 Because endpoints, technical notes, business rules, and schema versions can
 change, a future session must check the current official documentation before

@@ -3,6 +3,7 @@ import {
   createDps,
   decimal1v2,
   decimal2v2,
+  decimal3v2,
   decimal15v2,
   isValidCnpj,
   isValidCpf,
@@ -77,6 +78,167 @@ describe("semantic validation", () => {
     });
 
     expect(dps.infDPS.Id).toContain("212345678000195");
+  });
+
+  it("applies the federal-tax CPF rule to the selected DPS issuer", () => {
+    const input = validDpsInput();
+    const federalTax = { vRetCP: decimal15v2("1.00") };
+    const cpfCustomerIssuer = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        tpEmit: "2",
+        cMotivoEmisTI: "1",
+        toma: {
+          CPF: "12345678909",
+          xNome: "Individual customer issuer",
+        },
+        valores: {
+          ...input.infDPS.valores,
+          trib: {
+            ...input.infDPS.valores.trib,
+            tribFed: federalTax,
+          },
+        },
+      },
+    });
+    expect(validateDps(cpfCustomerIssuer).issues).toContainEqual(
+      expect.objectContaining({ code: "E0675", path: "infDPS.valores.trib.tribFed" }),
+    );
+
+    const cnpjCustomerIssuer = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        tpEmit: "2",
+        cMotivoEmisTI: "1",
+        prest: {
+          CPF: "12345678909",
+          regTrib: input.infDPS.prest.regTrib,
+        },
+        toma: {
+          CNPJ: "12345678000195",
+          xNome: "Corporate customer issuer",
+        },
+        valores: {
+          ...input.infDPS.valores,
+          trib: {
+            ...input.infDPS.valores.trib,
+            tribFed: federalTax,
+          },
+        },
+      },
+    });
+    expect(validateDps(cnpjCustomerIssuer).issues).not.toContainEqual(
+      expect.objectContaining({ code: "E0675" }),
+    );
+
+    const cpfIntermediaryIssuer = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        tpEmit: "3",
+        cMotivoEmisTI: "1",
+        interm: {
+          CPF: "12345678909",
+          xNome: "Individual intermediary issuer",
+        },
+        valores: {
+          ...input.infDPS.valores,
+          vServPrest: {
+            ...input.infDPS.valores.vServPrest,
+            vReceb: decimal15v2("100.00"),
+          },
+          trib: {
+            ...input.infDPS.valores.trib,
+            tribFed: federalTax,
+          },
+        },
+      },
+    });
+    expect(validateDps(cpfIntermediaryIssuer).issues).toContainEqual(
+      expect.objectContaining({ code: "E0675", path: "infDPS.valores.trib.tribFed" }),
+    );
+  });
+
+  it("includes percentage deductions in the aggregate reduction cap", () => {
+    const input = validDpsInput();
+    const invalid = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        valores: {
+          ...input.infDPS.valores,
+          vDedRed: { pDR: decimal3v2("80.00") },
+          vDescCondIncond: {
+            vDescIncond: decimal15v2("20.00"),
+          },
+          trib: {
+            ...input.infDPS.valores.trib,
+            tribMun: {
+              ...input.infDPS.valores.trib.tribMun,
+              BM: {
+                nBM: "35503080400001",
+                vRedBCBM: decimal15v2("1.00"),
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateDps(invalid).issues).toContainEqual(
+      expect.objectContaining({ code: "E0427", path: "infDPS.valores.vServPrest.vServ" }),
+    );
+  });
+
+  it("validates full and simple address string facets", () => {
+    const input = validDpsInput();
+    const invalid = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        prest: {
+          ...input.infDPS.prest,
+          end: {
+            endNac: {
+              cMun: "3550308",
+              CEP: "01001000",
+            },
+            xLgr: "x".repeat(256),
+            nro: " ",
+            xCpl: " leading whitespace",
+            xBairro: "x".repeat(61),
+          },
+        },
+        serv: {
+          ...input.infDPS.serv,
+          obra: {
+            end: {
+              endExt: {
+                cEndPost: "SW1A1AA",
+                xCidade: "x".repeat(61),
+                xEstProvReg: "x".repeat(61),
+              },
+              xLgr: "Road",
+              nro: "1",
+              xBairro: "District",
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateDps(invalid).issues.map((issue) => issue.path)).toEqual(
+      expect.arrayContaining([
+        "infDPS.prest.end.xLgr",
+        "infDPS.prest.end.nro",
+        "infDPS.prest.end.xCpl",
+        "infDPS.prest.end.xBairro",
+        "infDPS.serv.obra.end.endExt.xCidade",
+        "infDPS.serv.obra.end.endExt.xEstProvReg",
+      ]),
+    );
   });
 
   it("supports fail-fast validation", () => {
