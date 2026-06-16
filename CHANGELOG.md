@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Completed source-linked semantic validation for provider-issued
+  foreign-service exports, including customer identity and address, NBS,
+  foreign-trade, and result-country dependencies.
+
 ### Documentation
 
 - Clarified the distinction between complete DPS model coverage, partial local

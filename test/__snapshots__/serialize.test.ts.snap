@@ -455,6 +455,151 @@ exports[`DPS documents > matches the canonical 'event domestic address' XML fixt
 "
 `;
 
+exports[`DPS documents > matches the canonical 'foreign service export with NIF' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <NIF>GB123</NIF>
+      <xNome>Example Foreign Customer</xNome>
+      <end>
+        <endExt>
+          <cPais>GB</cPais>
+          <cEndPost>SW1A1AA</cEndPost>
+          <xCidade>London</xCidade>
+          <xEstProvReg>London</xEstProvReg>
+        </endExt>
+        <xLgr>Parliament Square</xLgr>
+        <nro>1</nro>
+        <xBairro>Westminster</xBairro>
+      </end>
+    </toma>
+    <serv>
+      <locPrest>
+        <cPaisPrestacao>GB</cPaisPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting supplied to a foreign customer</xDescServ>
+        <cNBS>123456789</cNBS>
+      </cServ>
+      <comExt>
+        <mdPrestacao>1</mdPrestacao>
+        <vincPrest>0</vincPrest>
+        <tpMoeda>826</tpMoeda>
+        <vServMoeda>7000.00</vServMoeda>
+        <mecAFComexP>01</mecAFComexP>
+        <mecAFComexT>01</mecAFComexT>
+        <movTempBens>1</movTempBens>
+        <mdic>1</mdic>
+      </comExt>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>40000.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>3</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
+exports[`DPS documents > matches the canonical 'foreign service export without NIF' XML fixture 1`] = `
+"<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+  <infDPS Id="DPS355030821234567800019500001000000000000001">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2026-06-11T10:30:00+01:00</dhEmi>
+    <verAplic>nfse-js-test</verAplic>
+    <serie>1</serie>
+    <nDPS>1</nDPS>
+    <dCompet>2026-06-11</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <regTrib>
+        <opSimpNac>1</opSimpNac>
+        <regEspTrib>0</regEspTrib>
+      </regTrib>
+    </prest>
+    <toma>
+      <cNaoNIF>2</cNaoNIF>
+      <xNome>Example Foreign Customer Without NIF</xNome>
+      <end>
+        <endExt>
+          <cPais>GB</cPais>
+          <cEndPost>SW1A1AA</cEndPost>
+          <xCidade>London</xCidade>
+          <xEstProvReg>London</xEstProvReg>
+        </endExt>
+        <xLgr>Parliament Square</xLgr>
+        <nro>1</nro>
+        <xBairro>Westminster</xBairro>
+      </end>
+    </toma>
+    <serv>
+      <locPrest>
+        <cPaisPrestacao>GB</cPaisPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>010101</cTribNac>
+        <xDescServ>Software consulting supplied to a foreign customer</xDescServ>
+        <cNBS>123456789</cNBS>
+      </cServ>
+      <comExt>
+        <mdPrestacao>1</mdPrestacao>
+        <vincPrest>0</vincPrest>
+        <tpMoeda>826</tpMoeda>
+        <vServMoeda>7000.00</vServMoeda>
+        <mecAFComexP>01</mecAFComexP>
+        <mecAFComexT>01</mecAFComexT>
+        <movTempBens>3</movTempBens>
+        <nRE>RE123</nRE>
+        <mdic>1</mdic>
+      </comExt>
+    </serv>
+    <valores>
+      <vServPrest>
+        <vServ>40000.00</vServ>
+      </vServPrest>
+      <trib>
+        <tribMun>
+          <tribISSQN>3</tribISSQN>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+        <totTrib>
+          <indTotTrib>0</indTotTrib>
+        </totTrib>
+      </trib>
+    </valores>
+  </infDPS>
+</DPS>
+"
+`;
+
 exports[`DPS documents > matches the canonical 'monetary approximate taxes' XML fixture 1`] = `
 "<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
   <infDPS Id="DPS355030821234567800019500001000000000000001">
@@ -799,9 +944,8 @@ exports[`DPS documents > matches the canonical 'specialized groups' XML fixture 
         <vServMoeda>100.00</vServMoeda>
         <mecAFComexP>01</mecAFComexP>
         <mecAFComexT>01</mecAFComexT>
-        <movTempBens>1</movTempBens>
+        <movTempBens>2</movTempBens>
         <nDI>DI123</nDI>
-        <nRE>RE123</nRE>
         <mdic>1</mdic>
       </comExt>
       <obra>

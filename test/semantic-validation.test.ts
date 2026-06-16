@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createDps,
+  type DpsInput,
   decimal1v2,
   decimal2v2,
   decimal3v2,
@@ -8,10 +9,17 @@ import {
   isValidCnpj,
   isValidCpf,
   NATIONAL_DPS_RULES,
+  serializeDps,
   validateDps,
   validateDpsWithMunicipalParameters,
+  validateDpsXml,
 } from "../src/index.js";
-import { validDpsInput } from "./fixtures.js";
+import { parseDpsXml } from "../src/parsing/index.js";
+import {
+  type ForeignCustomerIdentity,
+  foreignServiceExportInput,
+  validDpsInput,
+} from "./fixtures.js";
 
 describe("semantic validation", () => {
   it("validates CPF and CNPJ check digits", () => {
@@ -377,6 +385,118 @@ describe("semantic validation", () => {
     );
   });
 
+  it.each([
+    "NIF",
+    "cNaoNIF",
+  ] as const)("round-trips a valid foreign-service export with %s customer identity", async (identity) => {
+    const dps = createDps(foreignServiceExportInput(identity));
+
+    expect(validateDps(dps)).toEqual({ valid: true, issues: [] });
+
+    const xml = serializeDps(dps);
+    await expect(validateDpsXml(xml)).resolves.toEqual({ valid: true, violations: [] });
+    expect(parseDpsXml(xml).document).toEqual(dps);
+  });
+
+  it.each(foreignServiceRuleCases())("enforces foreign-service rule $code for $name", ({
+    identity,
+    mutate,
+    code,
+    path,
+    row,
+  }) => {
+    const invalid = createDps(mutate(foreignServiceExportInput(identity)));
+
+    expect(validateDps(invalid).issues).toContainEqual(
+      expect.objectContaining({
+        code,
+        officialCode: code,
+        path,
+        category: "business",
+        source: expect.objectContaining({ row }),
+      }),
+    );
+  });
+
+  it.each([
+    { name: "provider incidence", serviceCode: "010101" },
+    { name: "foreign-customer incidence", serviceCode: "170501" },
+  ])("accepts cPaisResult for a domestic-location export with $name", ({ serviceCode }) => {
+    const input = foreignServiceExportInput("NIF");
+    const domesticExport = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        serv: {
+          ...input.infDPS.serv,
+          locPrest: { cLocPrestacao: "3550308" },
+          cServ: {
+            ...input.infDPS.serv.cServ,
+            cTribNac: serviceCode,
+          },
+        },
+        valores: {
+          ...input.infDPS.valores,
+          trib: {
+            ...input.infDPS.valores.trib,
+            tribMun: {
+              ...input.infDPS.valores.trib.tribMun,
+              cPaisResult: "GB",
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateDps(domesticExport)).toEqual({ valid: true, issues: [] });
+  });
+
+  it("does not require cPaisResult for service-location incidence", () => {
+    const input = foreignServiceExportInput("NIF");
+    const domesticExport = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        serv: {
+          ...input.infDPS.serv,
+          locPrest: { cLocPrestacao: "3550308" },
+          cServ: {
+            ...input.infDPS.serv.cServ,
+            cTribNac: "030401",
+          },
+        },
+      },
+    });
+
+    expect(validateDps(domesticExport)).toEqual({ valid: true, issues: [] });
+  });
+
+  it("validates foreign declaration number facets", () => {
+    const input = foreignServiceExportInput("NIF");
+    const invalid = createDps({
+      ...input,
+      infDPS: {
+        ...input.infDPS,
+        serv: {
+          ...input.infDPS.serv,
+          comExt: {
+            ...requiredForeignTrade(input),
+            movTempBens: "3",
+            nRE: " leading",
+          },
+        },
+      },
+    });
+
+    expect(validateDps(invalid).issues).toContainEqual(
+      expect.objectContaining({
+        code: "facet",
+        category: "schema",
+        path: "infDPS.serv.comExt.nRE",
+      }),
+    );
+  });
+
   it("validates IBS/CBS dependencies and effective dates", () => {
     const input = validDpsInput();
     const invalid = createDps({
@@ -441,3 +561,247 @@ describe("semantic validation", () => {
     );
   });
 });
+
+interface ForeignServiceRuleCase {
+  readonly name: string;
+  readonly identity: ForeignCustomerIdentity;
+  readonly mutate: (input: DpsInput) => DpsInput;
+  readonly code: string;
+  readonly path: string;
+  readonly row: number;
+}
+
+function foreignServiceRuleCases(): readonly ForeignServiceRuleCase[] {
+  return [
+    {
+      name: "foreign address without foreign identity",
+      identity: "NIF",
+      mutate: (input) => {
+        const customer = requiredForeignCustomer(input);
+        return {
+          ...input,
+          infDPS: {
+            ...input.infDPS,
+            toma: {
+              CPF: "12345678909",
+              xNome: customer.xNome,
+              end: customer.end,
+            },
+          },
+        };
+      },
+      code: "E0223",
+      path: "infDPS.toma.NIF",
+      row: 245,
+    },
+    {
+      name: "unsupported no-NIF reason",
+      identity: "cNaoNIF",
+      mutate: (input) => {
+        const customer = requiredForeignCustomer(input);
+        return {
+          ...input,
+          infDPS: {
+            ...input.infDPS,
+            toma: {
+              cNaoNIF: "0",
+              xNome: customer.xNome,
+              end: customer.end,
+            },
+          },
+        };
+      },
+      code: "E0226",
+      path: "infDPS.toma.cNaoNIF",
+      row: 248,
+    },
+    {
+      name: "NIF customer without foreign address",
+      identity: "NIF",
+      mutate: (input) => {
+        const customer = requiredForeignCustomer(input);
+        return {
+          ...input,
+          infDPS: {
+            ...input.infDPS,
+            toma: {
+              NIF: "GB123",
+              xNome: customer.xNome,
+            },
+          },
+        };
+      },
+      code: "E0242",
+      path: "infDPS.toma.end.endExt",
+      row: 261,
+    },
+    {
+      name: "export without NBS",
+      identity: "NIF",
+      mutate: (input) => {
+        const { cNBS: _cNBS, ...cServ } = input.infDPS.serv.cServ;
+        return {
+          ...input,
+          infDPS: {
+            ...input.infDPS,
+            serv: {
+              ...input.infDPS.serv,
+              cServ,
+            },
+          },
+        };
+      },
+      code: "E0318",
+      path: "infDPS.serv.cServ.cNBS",
+      row: 322,
+    },
+    {
+      name: "unknown service mode",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          mdPrestacao: "0",
+        }),
+      code: "E0333",
+      path: "infDPS.serv.comExt.mdPrestacao",
+      row: 328,
+    },
+    {
+      name: "unknown provider support mechanism",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          mecAFComexP: "00",
+        }),
+      code: "E0341",
+      path: "infDPS.serv.comExt.mecAFComexP",
+      row: 332,
+    },
+    {
+      name: "unknown customer support mechanism",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          mecAFComexT: "00",
+        }),
+      code: "E0343",
+      path: "infDPS.serv.comExt.mecAFComexT",
+      row: 333,
+    },
+    {
+      name: "unknown temporary-goods movement",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          movTempBens: "0",
+        }),
+      code: "E0345",
+      path: "infDPS.serv.comExt.movTempBens",
+      row: 334,
+    },
+    {
+      name: "declaration supplied without temporary movement",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          movTempBens: "1",
+          nDI: "DI123",
+        }),
+      code: "E0354",
+      path: "infDPS.serv.comExt.nDI",
+      row: 336,
+    },
+    {
+      name: "temporary export without registration",
+      identity: "NIF",
+      mutate: (input) =>
+        withForeignTrade(input, {
+          ...requiredForeignTrade(input),
+          movTempBens: "3",
+        }),
+      code: "E0356",
+      path: "infDPS.serv.comExt.nRE",
+      row: 338,
+    },
+    {
+      name: "domestic-location export without result country",
+      identity: "NIF",
+      mutate: (input) => ({
+        ...input,
+        infDPS: {
+          ...input.infDPS,
+          serv: {
+            ...input.infDPS.serv,
+            locPrest: { cLocPrestacao: "3550308" },
+          },
+        },
+      }),
+      code: "E0590",
+      path: "infDPS.valores.trib.tribMun.cPaisResult",
+      row: 466,
+    },
+    {
+      name: "foreign-location export with result country",
+      identity: "NIF",
+      mutate: (input) => ({
+        ...input,
+        infDPS: {
+          ...input.infDPS,
+          valores: {
+            ...input.infDPS.valores,
+            trib: {
+              ...input.infDPS.valores.trib,
+              tribMun: {
+                ...input.infDPS.valores.trib.tribMun,
+                cPaisResult: "GB",
+              },
+            },
+          },
+        },
+      }),
+      code: "E0591",
+      path: "infDPS.valores.trib.tribMun.cPaisResult",
+      row: 467,
+    },
+  ];
+}
+
+function withForeignTrade(
+  input: DpsInput,
+  comExt: NonNullable<DpsInput["infDPS"]["serv"]["comExt"]>,
+): DpsInput {
+  return {
+    ...input,
+    infDPS: {
+      ...input.infDPS,
+      serv: {
+        ...input.infDPS.serv,
+        comExt,
+      },
+    },
+  };
+}
+
+function requiredForeignTrade(input: DpsInput): NonNullable<DpsInput["infDPS"]["serv"]["comExt"]> {
+  const foreignTrade = input.infDPS.serv.comExt;
+  if (!foreignTrade) {
+    throw new Error("foreign-service fixture must include foreign-trade data");
+  }
+  return foreignTrade;
+}
+
+function requiredForeignCustomer(input: DpsInput): {
+  readonly xNome: string;
+  readonly end: NonNullable<NonNullable<DpsInput["infDPS"]["toma"]>["end"]>;
+} {
+  const customer = input.infDPS.toma;
+  if (!customer?.xNome || !customer.end) {
+    throw new Error("foreign-service fixture must include a named customer with an address");
+  }
+  return { xNome: customer.xNome, end: customer.end };
+}

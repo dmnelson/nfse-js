@@ -21,15 +21,23 @@
     "xsdType": "TCCServ",
     "typescript": "ServiceCode",
     "serializer": "serializeService",
-    "validation": "cTribNac format only",
-    "fixtures": ["specialized groups"]
+    "validation": "service-code fields formatted; export NBS dependency validated",
+    "fixtures": [
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCComExterior",
     "typescript": "ForeignTrade",
     "serializer": "serializeForeignTrade",
-    "validation": "enumerations encoded; remaining facets pending",
-    "fixtures": ["specialized groups"]
+    "validation": "enumerations encoded; currency, amount, declaration facets, and profile dependencies validated",
+    "fixtures": [
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCDocDedRed",
@@ -57,7 +65,11 @@
     "typescript": "ForeignAddressDetails",
     "serializer": "serializeAddress",
     "validation": "field facets pending",
-    "fixtures": ["specialized groups"]
+    "fixtures": [
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCEnderExtSimples",
@@ -84,8 +96,12 @@
     "xsdType": "TCEndereco",
     "typescript": "Address",
     "serializer": "serializeAddress",
-    "validation": "address choice encoded; provider domestic fields partially validated",
-    "fixtures": ["specialized groups"]
+    "validation": "address choice encoded; selected domestic and foreign-customer dependencies validated",
+    "fixtures": [
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCEnderecoSimples",
@@ -140,8 +156,13 @@
     "xsdType": "TCInfoPessoa",
     "typescript": "Person",
     "serializer": "serializePerson",
-    "validation": "identity choice encoded; top-level CPF/CNPJ formats only",
-    "fixtures": ["common", "specialized groups"]
+    "validation": "identity choice encoded; CPF/CNPJ formats and selected foreign-customer dependencies validated",
+    "fixtures": [
+      "common",
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCInfoPrestador",
@@ -183,7 +204,12 @@
     "typescript": "ServiceLocation",
     "serializer": "serializeService",
     "validation": "choice encoded; municipality/country format validated",
-    "fixtures": ["common", "specialized groups"]
+    "fixtures": [
+      "common",
+      "specialized groups",
+      "foreign service export with NIF",
+      "foreign service export without NIF"
+    ]
   },
   {
     "xsdType": "TCRTCInfoDest",
@@ -294,7 +320,7 @@
     "xsdType": "TCServ",
     "typescript": "Service",
     "serializer": "serializeService",
-    "validation": "structure typed; group business rules pending",
+    "validation": "structure typed; foreign-service profile dependencies validated; other group rules pending",
     "fixtures": ["all schema coverage fixtures"]
   },
   {
@@ -315,7 +341,7 @@
     "xsdType": "TCTribMunicipal",
     "typescript": "MunicipalTax",
     "serializer": "serializeMunicipalTax",
-    "validation": "enumerations encoded; cross-field rules pending",
+    "validation": "enumerations encoded; selected export result-country and withholding rules validated",
     "fixtures": ["all schema coverage fixtures"]
   },
   {

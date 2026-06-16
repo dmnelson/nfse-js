@@ -65,6 +65,47 @@ const IBS_PROPERTY_FORBIDDEN_SERVICE_CODES = new Set(
   [...CONSTRUCTION_SERVICE_CODES].filter((code) => !code.startsWith("1414")),
 );
 const IBS_OPERATION_TYPE_SERVICE_CODES = new Set(["250500", "150900", "171200", "100500"]);
+// Incidence categories from the v1.01 MUN.INCID_INFO.SERV. annex table.
+const SERVICE_LOCATION_INCIDENCE_SUBITEMS = new Set([
+  "0304",
+  "0305",
+  "0702",
+  "0704",
+  "0705",
+  "0709",
+  "0710",
+  "0711",
+  "0712",
+  "0716",
+  "0717",
+  "0718",
+  "0719",
+  "1101",
+  "1102",
+  "1104",
+  "1201",
+  "1202",
+  "1203",
+  "1204",
+  "1205",
+  "1206",
+  "1207",
+  "1208",
+  "1209",
+  "1210",
+  "1211",
+  "1212",
+  "1214",
+  "1215",
+  "1216",
+  "1217",
+  "1414",
+  "1710",
+  "2002",
+  "2003",
+  "2201",
+]);
+const CUSTOMER_INCIDENCE_SUBITEMS = new Set(["1705"]);
 
 export interface ValidationResult {
   readonly valid: boolean;
@@ -284,6 +325,12 @@ function validateService(collector: IssueCollector, dps: DpsDocument): void {
   if (serv.comExt) {
     facet(collector, serv.comExt.tpMoeda, "TSCodMoeda", "infDPS.serv.comExt.tpMoeda");
     decimalFacet(collector, serv.comExt.vServMoeda, "TSDec15V2", "infDPS.serv.comExt.vServMoeda");
+    if (serv.comExt.nDI !== undefined) {
+      xsdString(collector, serv.comExt.nDI, 1, 12, "infDPS.serv.comExt.nDI", "TSNumDocImport");
+    }
+    if (serv.comExt.nRE !== undefined) {
+      xsdString(collector, serv.comExt.nRE, 1, 12, "infDPS.serv.comExt.nRE", "TSNumRegExport");
+    }
   }
 
   if (serv.obra) {
@@ -788,21 +835,64 @@ function validateDocumentRules(
   ) {
     national(collector, "E0235", "infDPS.toma.end.endNac");
   }
+  if (
+    info.toma &&
+    isForeignAddress(info.toma.end) &&
+    !("NIF" in info.toma) &&
+    !("cNaoNIF" in info.toma)
+  ) {
+    national(collector, "E0223", "infDPS.toma.NIF");
+  }
+  if (info.toma && "cNaoNIF" in info.toma && info.toma.cNaoNIF === "0") {
+    national(collector, "E0226", "infDPS.toma.cNaoNIF");
+  }
+  if (info.tpEmit === "1" && info.toma && "NIF" in info.toma && !isForeignAddress(info.toma.end)) {
+    national(collector, "E0242", "infDPS.toma.end.endExt");
+  }
 
   if ("cPaisPrestacao" in info.serv.locPrest && info.serv.locPrest.cPaisPrestacao === "BR") {
     national(collector, "E0304", "infDPS.serv.locPrest.cPaisPrestacao");
   }
 
-  const exportScenario =
+  const foreignLocationScenario =
     isForeignAddress(info.toma?.end) ||
     isForeignAddress(info.interm?.end) ||
-    "cPaisPrestacao" in info.serv.locPrest ||
-    info.valores.trib.tribMun.tribISSQN === "3";
+    "cPaisPrestacao" in info.serv.locPrest;
+  if (info.tpEmit === "1" && foreignLocationScenario && info.serv.cServ.cNBS === undefined) {
+    national(collector, "E0318", "infDPS.serv.cServ.cNBS");
+  }
+
+  const exportScenario = foreignLocationScenario || info.valores.trib.tribMun.tribISSQN === "3";
   if (info.tpEmit === "1" && exportScenario && !info.serv.comExt) {
     national(collector, "E0330", "infDPS.serv.comExt");
   }
-  if (info.serv.comExt?.movTempBens === "2" && !info.serv.comExt.nDI) {
-    national(collector, "E0352", "infDPS.serv.comExt.nDI");
+  const foreignTrade = info.serv.comExt;
+  if (foreignTrade) {
+    if (foreignTrade.mdPrestacao === "0") {
+      national(collector, "E0333", "infDPS.serv.comExt.mdPrestacao");
+    }
+    if (foreignTrade.mecAFComexP === "00") {
+      national(collector, "E0341", "infDPS.serv.comExt.mecAFComexP");
+    }
+    if (foreignTrade.mecAFComexT === "00") {
+      national(collector, "E0343", "infDPS.serv.comExt.mecAFComexT");
+    }
+    if (foreignTrade.movTempBens === "0") {
+      national(collector, "E0345", "infDPS.serv.comExt.movTempBens");
+    }
+    if (foreignTrade.movTempBens === "2" && !foreignTrade.nDI) {
+      national(collector, "E0352", "infDPS.serv.comExt.nDI");
+    }
+    if (foreignTrade.movTempBens === "1" && (foreignTrade.nDI || foreignTrade.nRE)) {
+      national(
+        collector,
+        "E0354",
+        foreignTrade.nDI ? "infDPS.serv.comExt.nDI" : "infDPS.serv.comExt.nRE",
+      );
+    }
+    if (foreignTrade.movTempBens === "3" && !foreignTrade.nRE) {
+      national(collector, "E0356", "infDPS.serv.comExt.nRE");
+    }
   }
   if (CONSTRUCTION_SERVICE_CODES.has(info.serv.cServ.cTribNac) && info.serv.obra === undefined) {
     national(collector, "E0370", "infDPS.serv.obra");
@@ -866,6 +956,7 @@ function validateValueRules(collector: IssueCollector, dps: DpsDocument): void {
   if (municipal.tribISSQN !== "1" && municipal.tpRetISSQN !== "1") {
     national(collector, "E0580", "infDPS.valores.trib.tribMun.tpRetISSQN");
   }
+  validateResultCountryRules(collector, dps);
   if (municipal.pAliq !== undefined && greaterThan(municipal.pAliq, "5.00")) {
     national(collector, "E0595", "infDPS.valores.trib.tribMun.pAliq");
   }
@@ -1234,6 +1325,44 @@ function matchesPercentageCalculation(base: string, rate: string, result: string
 
 function isForeignAddress(address: Address | undefined): boolean {
   return address !== undefined && "endExt" in address;
+}
+
+function isDomesticAddress(address: Address | undefined): boolean {
+  return address !== undefined && "endNac" in address;
+}
+
+function validateResultCountryRules(collector: IssueCollector, dps: DpsDocument): void {
+  const info = dps.infDPS;
+  const municipal = info.valores.trib.tribMun;
+  const incidence = serviceIncidence(info.serv.cServ.cTribNac);
+  const domesticServiceLocation = "cLocPrestacao" in info.serv.locPrest;
+  const customerIsDomestic = isDomesticAddress(info.toma?.end);
+  const resultCountryRequired =
+    municipal.tribISSQN === "3" &&
+    domesticServiceLocation &&
+    (incidence === "provider" || (incidence === "customer" && !customerIsDomestic));
+
+  if (resultCountryRequired && municipal.cPaisResult === undefined) {
+    national(collector, "E0590", "infDPS.valores.trib.tribMun.cPaisResult");
+  } else if (!resultCountryRequired && municipal.cPaisResult !== undefined) {
+    national(collector, "E0591", "infDPS.valores.trib.tribMun.cPaisResult");
+  }
+}
+
+function serviceIncidence(
+  serviceCode: string,
+): "provider" | "customer" | "service-location" | undefined {
+  if (!/^\d{6}$/.test(serviceCode) || serviceCode === "990101") {
+    return undefined;
+  }
+  const subitem = serviceCode.slice(0, 4);
+  if (SERVICE_LOCATION_INCIDENCE_SUBITEMS.has(subitem)) {
+    return "service-location";
+  }
+  if (CUSTOMER_INCIDENCE_SUBITEMS.has(subitem)) {
+    return "customer";
+  }
+  return "provider";
 }
 
 function facet(

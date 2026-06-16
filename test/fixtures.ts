@@ -64,6 +64,67 @@ export function validDps(): DpsDocument {
   return createDps(validDpsInput());
 }
 
+export type ForeignCustomerIdentity = "NIF" | "cNaoNIF";
+
+export function foreignServiceExportInput(identity: ForeignCustomerIdentity): DpsInput {
+  const base = validDpsInput();
+  const movement =
+    identity === "NIF"
+      ? { movTempBens: "1" as const }
+      : { movTempBens: "3" as const, nRE: "RE123" };
+
+  return {
+    ...base,
+    infDPS: {
+      ...base.infDPS,
+      toma:
+        identity === "NIF"
+          ? {
+              NIF: "GB123",
+              xNome: "Example Foreign Customer",
+              end: foreignAddress(),
+            }
+          : {
+              cNaoNIF: "2",
+              xNome: "Example Foreign Customer Without NIF",
+              end: foreignAddress(),
+            },
+      serv: {
+        locPrest: { cPaisPrestacao: "GB" },
+        cServ: {
+          cTribNac: "010101",
+          cNBS: "123456789",
+          xDescServ: "Software consulting supplied to a foreign customer",
+        },
+        comExt: {
+          mdPrestacao: "1",
+          vincPrest: "0",
+          tpMoeda: "826",
+          vServMoeda: decimal15v2("7000.00"),
+          mecAFComexP: "01",
+          mecAFComexT: "01",
+          ...movement,
+          mdic: "1",
+        },
+      },
+      valores: {
+        vServPrest: {
+          vServ: decimal15v2("40000.00"),
+        },
+        trib: {
+          tribMun: {
+            tribISSQN: "3",
+            tpRetISSQN: "1",
+          },
+          totTrib: {
+            indTotTrib: "0",
+          },
+        },
+      },
+    },
+  };
+}
+
 export interface NamedDpsFixture {
   readonly name: string;
   readonly input: DpsInput;
@@ -74,6 +135,11 @@ export function schemaCoverageDpsInputs(): readonly NamedDpsFixture[] {
 
   return [
     { name: "common", input: base },
+    { name: "foreign service export with NIF", input: foreignServiceExportInput("NIF") },
+    {
+      name: "foreign service export without NIF",
+      input: foreignServiceExportInput("cNaoNIF"),
+    },
     { name: "specialized groups", input: specializedGroupsInput(base) },
     {
       name: "construction CIB",
@@ -274,9 +340,8 @@ function specializedGroupsInput(base: DpsInput): DpsInput {
           vServMoeda: decimal15v2("100.00"),
           mecAFComexP: "01",
           mecAFComexT: "01",
-          movTempBens: "1",
+          movTempBens: "2",
           nDI: "DI123",
-          nRE: "RE123",
           mdic: "1",
         },
         obra: {
@@ -511,6 +576,20 @@ function domesticSimpleAddress() {
 function foreignSimpleAddress() {
   return {
     endExt: {
+      cEndPost: "SW1A1AA",
+      xCidade: "London",
+      xEstProvReg: "London",
+    },
+    xLgr: "Parliament Square",
+    nro: "1",
+    xBairro: "Westminster",
+  } as const;
+}
+
+function foreignAddress() {
+  return {
+    endExt: {
+      cPais: "GB",
       cEndPost: "SW1A1AA",
       xCidade: "London",
       xEstProvReg: "London",
