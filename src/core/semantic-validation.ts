@@ -12,6 +12,15 @@ import {
   isValidXsdDateTime,
   validateFacet,
 } from "./facets.js";
+import {
+  type DpsReferenceCodeRecord,
+  type DpsReferenceCodeSet,
+  type DpsReferenceDataProvider,
+  type DpsReferenceDataSetId,
+  type DpsReferenceDataValidationOptions,
+  type DpsReferenceLookupResult,
+  getDpsReferenceDataSetDefinition,
+} from "./reference-data.js";
 import { getNationalDpsRule } from "./rules.js";
 import { isValidCnpj, isValidCpf } from "./tax-id.js";
 import type {
@@ -22,6 +31,7 @@ import type {
   FederalTaxId,
   IbsCbsDestination,
   IbsCbsSupplier,
+  IbsCbsTaxClassification,
   Person,
   Provider,
   ReimbursementDocument,
@@ -115,6 +125,8 @@ export interface ValidationResult {
 export interface DpsValidationOptions {
   readonly mode?: "collect" | "fail-fast";
   readonly issuanceChannel?: "own-application" | "mobile" | "web" | "manual-web";
+  readonly referenceData?: DpsReferenceDataProvider;
+  readonly referenceDataOptions?: DpsReferenceDataValidationOptions;
 }
 
 export interface ResolvedMunicipalParameters {
@@ -137,6 +149,9 @@ export function validateDps(
 
   try {
     validateDocument(collector, dps, options);
+    if (options.referenceData) {
+      validateReferenceData(collector, dps, options.referenceData, options.referenceDataOptions);
+    }
   } catch (error) {
     if (error !== FAIL_FAST) {
       throw error;
@@ -156,6 +171,9 @@ export function validateDpsWithMunicipalParameters(
   try {
     validateDocument(collector, dps, options);
     validateMunicipalParameters(collector, dps, parameters);
+    if (options.referenceData) {
+      validateReferenceData(collector, dps, options.referenceData, options.referenceDataOptions);
+    }
   } catch (error) {
     if (error !== FAIL_FAST) {
       throw error;
@@ -163,6 +181,14 @@ export function validateDpsWithMunicipalParameters(
   }
 
   return { valid: collector.issues.length === 0, issues: collector.issues };
+}
+
+export function validateDpsWithReferenceData(
+  dps: DpsDocument,
+  referenceData: DpsReferenceDataProvider,
+  options: Omit<DpsValidationOptions, "referenceData"> = {},
+): ValidationResult {
+  return validateDps(dps, { ...options, referenceData });
 }
 
 export function assertValidDps(dps: DpsDocument, options?: DpsValidationOptions): void {
@@ -656,6 +682,31 @@ function validateIbsCbs(collector: IssueCollector, dps: DpsDocument): void {
     "infDPS.IBSCBS.valores.trib.gIBSCBS.cClassTrib",
     "TSRTCCodClassTrib",
   );
+  if (classification.cCredPres !== undefined) {
+    pattern(
+      collector,
+      classification.cCredPres,
+      /^\d{2}$/,
+      "infDPS.IBSCBS.valores.trib.gIBSCBS.cCredPres",
+      "TSRTCCodCredPres",
+    );
+  }
+  if (classification.gTribRegular !== undefined) {
+    pattern(
+      collector,
+      classification.gTribRegular.CSTReg,
+      /^\d{3}$/,
+      "infDPS.IBSCBS.valores.trib.gIBSCBS.gTribRegular.CSTReg",
+      "TSRTCCodSitTrib",
+    );
+    pattern(
+      collector,
+      classification.gTribRegular.cClassTribReg,
+      /^\d{6}$/,
+      "infDPS.IBSCBS.valores.trib.gIBSCBS.gTribRegular.cClassTribReg",
+      "TSRTCCodClassTrib",
+    );
+  }
   if (classification.gDif) {
     for (const [field, value] of Object.entries(classification.gDif)) {
       decimalFacet(
@@ -1083,6 +1134,368 @@ function validateIbsCbsRules(collector: IssueCollector, dps: DpsDocument): void 
   ) {
     national(collector, "E0931", "infDPS.IBSCBS.imovel");
   }
+}
+
+function validateReferenceData(
+  collector: IssueCollector,
+  dps: DpsDocument,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions = {},
+): void {
+  const info = dps.infDPS;
+
+  reference(collector, provider, options, "location-codes", "infDPS.cLocEmi", info.cLocEmi);
+  validatePersonReferenceData(collector, provider, options, info.prest, "infDPS.prest");
+  if (info.toma) {
+    validatePersonReferenceData(collector, provider, options, info.toma, "infDPS.toma");
+  }
+  if (info.interm) {
+    validatePersonReferenceData(collector, provider, options, info.interm, "infDPS.interm");
+  }
+
+  if ("cLocPrestacao" in info.serv.locPrest) {
+    reference(
+      collector,
+      provider,
+      options,
+      "location-codes",
+      "infDPS.serv.locPrest.cLocPrestacao",
+      info.serv.locPrest.cLocPrestacao,
+    );
+  } else {
+    reference(
+      collector,
+      provider,
+      options,
+      "country-codes",
+      "infDPS.serv.locPrest.cPaisPrestacao",
+      info.serv.locPrest.cPaisPrestacao,
+    );
+  }
+
+  reference(
+    collector,
+    provider,
+    options,
+    "national-service-codes",
+    "infDPS.serv.cServ.cTribNac",
+    info.serv.cServ.cTribNac,
+  );
+  if (info.serv.cServ.cNBS !== undefined) {
+    reference(
+      collector,
+      provider,
+      options,
+      "nbs-codes",
+      "infDPS.serv.cServ.cNBS",
+      info.serv.cServ.cNBS,
+    );
+  }
+  if (info.serv.comExt !== undefined) {
+    reference(
+      collector,
+      provider,
+      options,
+      "currency-codes",
+      "infDPS.serv.comExt.tpMoeda",
+      info.serv.comExt.tpMoeda,
+    );
+  }
+
+  validateDeductionReferenceData(collector, provider, options, info.valores.vDedRed);
+
+  const municipal = info.valores.trib.tribMun;
+  if (municipal.cPaisResult !== undefined) {
+    reference(
+      collector,
+      provider,
+      options,
+      "country-codes",
+      "infDPS.valores.trib.tribMun.cPaisResult",
+      municipal.cPaisResult,
+    );
+  }
+
+  validateIbsCbsReferenceData(collector, provider, options, dps);
+}
+
+function validatePersonReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  person: Provider | Person | IbsCbsDestination,
+  path: string,
+): void {
+  if (person.end) {
+    validateAddressReferenceData(collector, provider, options, person.end, `${path}.end`);
+  }
+}
+
+function validateAddressReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  address: Address,
+  path: string,
+): void {
+  if ("endNac" in address) {
+    reference(
+      collector,
+      provider,
+      options,
+      "location-codes",
+      `${path}.endNac.cMun`,
+      address.endNac.cMun,
+    );
+  } else {
+    reference(
+      collector,
+      provider,
+      options,
+      "country-codes",
+      `${path}.endExt.cPais`,
+      address.endExt.cPais,
+    );
+  }
+}
+
+function validateDeductionReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  deduction: DpsDocument["infDPS"]["valores"]["vDedRed"],
+): void {
+  if (!deduction || !("documentos" in deduction)) {
+    return;
+  }
+
+  deduction.documentos.docDedRed.forEach((document, index) => {
+    const path = `infDPS.valores.vDedRed.documentos.docDedRed[${index}]`;
+    if ("NFSeMun" in document && document.NFSeMun !== undefined) {
+      reference(
+        collector,
+        provider,
+        options,
+        "location-codes",
+        `${path}.NFSeMun.cMunNFSeMun`,
+        document.NFSeMun.cMunNFSeMun,
+      );
+    }
+  });
+}
+
+function validateIbsCbsReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  dps: DpsDocument,
+): void {
+  const ibs = dps.infDPS.IBSCBS;
+  if (!ibs) {
+    return;
+  }
+
+  reference(
+    collector,
+    provider,
+    options,
+    "ibs-cbs-operation-codes",
+    "infDPS.IBSCBS.cIndOp",
+    ibs.cIndOp,
+  );
+
+  if (ibs.dest) {
+    validatePersonReferenceData(collector, provider, options, ibs.dest, "infDPS.IBSCBS.dest");
+  }
+
+  ibs.valores.gReeRepRes?.documentos.forEach((document, index) => {
+    validateReimbursementReferenceData(
+      collector,
+      provider,
+      options,
+      document,
+      `infDPS.IBSCBS.valores.gReeRepRes.documentos[${index}]`,
+    );
+  });
+
+  validateIbsCbsTaxClassificationReferenceData(
+    collector,
+    provider,
+    options,
+    ibs.valores.trib.gIBSCBS,
+    "infDPS.IBSCBS.valores.trib.gIBSCBS",
+  );
+}
+
+function validateReimbursementReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  document: ReimbursementDocument,
+  path: string,
+): void {
+  if ("docFiscalOutro" in document) {
+    reference(
+      collector,
+      provider,
+      options,
+      "location-codes",
+      `${path}.docFiscalOutro.cMunDocFiscal`,
+      document.docFiscalOutro.cMunDocFiscal,
+    );
+  }
+}
+
+function validateIbsCbsTaxClassificationReferenceData(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  classification: IbsCbsTaxClassification,
+  path: string,
+): void {
+  reference(
+    collector,
+    provider,
+    options,
+    "ibs-cbs-tax-situation-codes",
+    `${path}.CST`,
+    classification.CST,
+  );
+  reference(
+    collector,
+    provider,
+    options,
+    "ibs-cbs-tax-classification-codes",
+    `${path}.cClassTrib`,
+    classification.cClassTrib,
+  );
+  if (classification.cCredPres !== undefined) {
+    reference(
+      collector,
+      provider,
+      options,
+      "ibs-cbs-presumed-credit-codes",
+      `${path}.cCredPres`,
+      classification.cCredPres,
+    );
+  }
+  if (classification.gTribRegular !== undefined) {
+    reference(
+      collector,
+      provider,
+      options,
+      "ibs-cbs-tax-situation-codes",
+      `${path}.gTribRegular.CSTReg`,
+      classification.gTribRegular.CSTReg,
+    );
+    reference(
+      collector,
+      provider,
+      options,
+      "ibs-cbs-tax-classification-codes",
+      `${path}.gTribRegular.cClassTribReg`,
+      classification.gTribRegular.cClassTribReg,
+    );
+  }
+}
+
+function reference(
+  collector: IssueCollector,
+  provider: DpsReferenceDataProvider,
+  options: DpsReferenceDataValidationOptions,
+  dataSet: DpsReferenceDataSetId,
+  path: string,
+  value: string,
+): void {
+  const codeSet = provider.getCodeSet?.(dataSet) ?? provider.codeSets?.[dataSet];
+  if (codeSet === undefined) {
+    if ((options.missingCodeSet ?? "issue") === "issue") {
+      unavailableReferenceData(collector, dataSet, path, value);
+    }
+    return;
+  }
+
+  const known = lookupReferenceCode(codeSet, value);
+  if (known === undefined) {
+    unavailableReferenceData(collector, dataSet, path, value, codeSet.source);
+  } else if (!known) {
+    unknownReferenceCode(collector, dataSet, path, value, codeSet.source);
+  }
+}
+
+function lookupReferenceCode(codeSet: DpsReferenceCodeSet, value: string): boolean | undefined {
+  if (codeSet.lookup !== undefined) {
+    const lookupResult = referenceLookupFound(codeSet.lookup(value));
+    if (lookupResult !== undefined) {
+      return lookupResult;
+    }
+  }
+  if (codeSet.codes === undefined) {
+    return undefined;
+  }
+  return codeSet.codes.some((entry) => referenceEntryMatches(entry, value));
+}
+
+function referenceLookupFound(result: DpsReferenceLookupResult): boolean | undefined {
+  if (result === undefined) {
+    return undefined;
+  }
+  if (typeof result === "boolean") {
+    return result;
+  }
+  if (typeof result === "string") {
+    return true;
+  }
+  if ("found" in result) {
+    return result.found;
+  }
+  return true;
+}
+
+function referenceEntryMatches(entry: string | DpsReferenceCodeRecord, value: string): boolean {
+  return typeof entry === "string"
+    ? entry === value
+    : entry.code === value || entry.aliases?.includes(value) === true;
+}
+
+function unavailableReferenceData(
+  collector: IssueCollector,
+  dataSet: DpsReferenceDataSetId,
+  path: string,
+  value: string,
+  source?: ValidationSource,
+): void {
+  const definition = getDpsReferenceDataSetDefinition(dataSet);
+  collector.add({
+    path,
+    code: "reference-data.unavailable",
+    category: "reference-data",
+    message: `${definition.label} reference data is unavailable for code ${value}`,
+    source:
+      source ??
+      ({
+        document: definition.authoritativeSource,
+        version: "not supplied",
+        section: dataSet,
+      } satisfies ValidationSource),
+  });
+}
+
+function unknownReferenceCode(
+  collector: IssueCollector,
+  dataSet: DpsReferenceDataSetId,
+  path: string,
+  value: string,
+  source: ValidationSource,
+): void {
+  const definition = getDpsReferenceDataSetDefinition(dataSet);
+  collector.add({
+    path,
+    code: "reference-data.unknown-code",
+    category: "reference-data",
+    message: `${value} is not present in ${definition.label}`,
+    source,
+  });
 }
 
 function validateMunicipalParameters(

@@ -16,6 +16,20 @@ export {
   validateFacet,
 } from "./facets.js";
 export {
+  DPS_REFERENCE_DATA_FIELD_COVERAGE,
+  DPS_REFERENCE_DATA_SETS,
+  type DpsReferenceCodeRecord,
+  type DpsReferenceCodeSet,
+  type DpsReferenceDataFieldCoverage,
+  type DpsReferenceDataProvider,
+  type DpsReferenceDataSetDefinition,
+  type DpsReferenceDataSetId,
+  type DpsReferenceDataValidationOptions,
+  type DpsReferenceLookupMatch,
+  type DpsReferenceLookupResult,
+  getDpsReferenceDataSetDefinition,
+} from "./reference-data.js";
+export {
   getNationalDpsRule,
   NATIONAL_DPS_RULES,
   type NationalDpsRule,
@@ -27,6 +41,7 @@ export {
   type ValidationResult,
   validateDps,
   validateDpsWithMunicipalParameters,
+  validateDpsWithReferenceData,
 } from "./semantic-validation.js";
 export { serializeDps } from "./serialize.js";
 export { isValidCnpj, isValidCpf } from "./tax-id.js";

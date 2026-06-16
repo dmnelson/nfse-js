@@ -9,7 +9,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `Address` | type | `Address` | [`src/core/types.ts:66`](../src/core/types.ts#L66) |
-| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:168`](../src/core/semantic-validation.ts#L168) |
+| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:194`](../src/core/semantic-validation.ts#L194) |
 | `buildDpsId` | function | `(options: BuildDpsIdOptions): string` | [`src/core/dps-id.ts:17`](../src/core/dps-id.ts#L17) |
 | `BuildDpsIdOptions` | interface | `BuildDpsIdOptions` | [`src/core/dps-id.ts:4`](../src/core/dps-id.ts#L4) |
 | `ComplementaryServiceInformation` | interface | `ComplementaryServiceInformation` | [`src/core/types.ts:206`](../src/core/types.ts#L206) |
@@ -35,17 +35,28 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `Discounts` | interface | `Discounts` | [`src/core/types.ts:228`](../src/core/types.ts#L228) |
 | `DomesticAddress` | interface | `DomesticAddress` | [`src/core/types.ts:48`](../src/core/types.ts#L48) |
 | `DomesticAddressDetails` | interface | `DomesticAddressDetails` | [`src/core/types.ts:36`](../src/core/types.ts#L36) |
+| `DPS_REFERENCE_DATA_FIELD_COVERAGE` | constant | `readonly [DpsReferenceDataFieldCoverage, DpsReferenceDataFieldCoverage, DpsReferenceDataFieldCoverage, ... 19 more ..., DpsReferenceDataFieldCoverage]` | [`src/core/reference-data.ts:113`](../src/core/reference-data.ts#L113) |
+| `DPS_REFERENCE_DATA_SETS` | constant | `readonly [{ readonly id: "location-codes"; readonly label: "IBGE municipality and National NFS-e special-locality codes"; readonly authoritativeSource: "IBGE municipality table plus National NFS-e special-locality table"; }, ... 7 more ..., { ...; }]` | [`src/core/reference-data.ts:20`](../src/core/reference-data.ts#L20) |
 | `DPS_XSD_FACETS` | constant | `{ readonly TSIdDPS: { readonly type: "TSIdDPS"; readonly pattern: RegExp; readonly maxLength: 45; readonly sourceLine: 44; }; readonly TSData: { readonly type: "TSData"; readonly pattern: RegExp; readonly sourceLine: 131; }; ... 29 more ...; readonly TSChaveNFe: { ...; }; }` | [`src/core/facets.ts:9`](../src/core/facets.ts#L9) |
 | `DpsDocument` | interface | `DpsDocument` | [`src/core/types.ts:564`](../src/core/types.ts#L564) |
 | `DpsFacetName` | type | `"TSDec15V2" \| "TSDec3V2" \| "TSDec2V2" \| "TSDec1V2" \| "TSIdDPS" \| "TSData" \| "TSDateTimeUTC" \| "TSSerieDPS" \| "TSNumDPS" \| "TSCNPJ" \| "TSCPF" \| "TSCAEPF" \| "TSNIF" \| "TSInscMun" \| ... 17 more ... \| "TSChaveNFe"` | [`src/core/facets.ts:191`](../src/core/facets.ts#L191) |
 | `DpsInfo` | interface | `DpsInfo` | [`src/core/types.ts:543`](../src/core/types.ts#L543) |
 | `DpsInput` | interface | `DpsInput` | [`src/core/types.ts:569`](../src/core/types.ts#L569) |
 | `DpsIssuer` | type | `DpsIssuer` | [`src/core/types.ts:5`](../src/core/types.ts#L5) |
-| `DpsValidationError` | class | `new (issues: readonly ValidationIssue[]): DpsValidationError` | [`src/errors.ts:42`](../src/errors.ts#L42) |
-| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:115`](../src/core/semantic-validation.ts#L115) |
+| `DpsReferenceCodeRecord` | interface | `DpsReferenceCodeRecord` | [`src/core/reference-data.ts:68`](../src/core/reference-data.ts#L68) |
+| `DpsReferenceCodeSet` | interface | `DpsReferenceCodeSet` | [`src/core/reference-data.ts:88`](../src/core/reference-data.ts#L88) |
+| `DpsReferenceDataFieldCoverage` | interface | `DpsReferenceDataFieldCoverage` | [`src/core/reference-data.ts:107`](../src/core/reference-data.ts#L107) |
+| `DpsReferenceDataProvider` | interface | `DpsReferenceDataProvider` | [`src/core/reference-data.ts:94`](../src/core/reference-data.ts#L94) |
+| `DpsReferenceDataSetDefinition` | interface | `DpsReferenceDataSetDefinition` | [`src/core/reference-data.ts:14`](../src/core/reference-data.ts#L14) |
+| `DpsReferenceDataSetId` | type | `DpsReferenceDataSetId` | [`src/core/reference-data.ts:3`](../src/core/reference-data.ts#L3) |
+| `DpsReferenceDataValidationOptions` | interface | `DpsReferenceDataValidationOptions` | [`src/core/reference-data.ts:99`](../src/core/reference-data.ts#L99) |
+| `DpsReferenceLookupMatch` | interface | `DpsReferenceLookupMatch` | [`src/core/reference-data.ts:75`](../src/core/reference-data.ts#L75) |
+| `DpsReferenceLookupResult` | type | `DpsReferenceLookupResult` | [`src/core/reference-data.ts:81`](../src/core/reference-data.ts#L81) |
+| `DpsValidationError` | class | `new (issues: readonly ValidationIssue[]): DpsValidationError` | [`src/errors.ts:46`](../src/errors.ts#L46) |
+| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:125`](../src/core/semantic-validation.ts#L125) |
 | `Environment` | type | `Environment` | [`src/core/types.ts:4`](../src/core/types.ts#L4) |
 | `EventActivity` | type | `EventActivity` | [`src/core/types.ts:173`](../src/core/types.ts#L173) |
-| `EventValidationError` | class | `new (issues: readonly ValidationIssue[]): EventValidationError` | [`src/errors.ts:50`](../src/errors.ts#L50) |
+| `EventValidationError` | class | `new (issues: readonly ValidationIssue[]): EventValidationError` | [`src/errors.ts:54`](../src/errors.ts#L54) |
 | `FacetFailure` | interface | `FacetFailure` | [`src/core/facets.ts:193`](../src/core/facets.ts#L193) |
 | `FederalTax` | interface | `FederalTax` | [`src/core/types.ts:369`](../src/core/types.ts#L369) |
 | `FederalTaxId` | type | `FederalTaxId` | [`src/core/types.ts:25`](../src/core/types.ts#L25) |
@@ -57,6 +68,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ForeignTradeProviderSupport` | type | `ForeignTradeProviderSupport` | [`src/core/types.ts:107`](../src/core/types.ts#L107) |
 | `ForeignTradeRelationship` | type | `ForeignTradeRelationship` | [`src/core/types.ts:106`](../src/core/types.ts#L106) |
 | `ForeignTradeServiceMode` | type | `ForeignTradeServiceMode` | [`src/core/types.ts:105`](../src/core/types.ts#L105) |
+| `getDpsReferenceDataSetDefinition` | function | `(id: DpsReferenceDataSetId): DpsReferenceDataSetDefinition` | [`src/core/reference-data.ts:145`](../src/core/reference-data.ts#L145) |
 | `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:318`](../src/core/rules.ts#L318) |
 | `IbsCbs` | interface | `IbsCbs` | [`src/core/types.ts:530`](../src/core/types.ts#L530) |
 | `IbsCbsDeferral` | interface | `IbsCbsDeferral` | [`src/core/types.ts:503`](../src/core/types.ts#L503) |
@@ -93,12 +105,12 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ReferencedNfseList` | interface | `ReferencedNfseList` | [`src/core/types.ts:433`](../src/core/types.ts#L433) |
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
-| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
-| `SefinResponseParseError` | class | `new (code: SefinResponseParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): SefinResponseParseError` | [`src/errors.ts:88`](../src/errors.ts#L88) |
-| `SefinResponseParseErrorCode` | type | `SefinResponseParseErrorCode` | [`src/errors.ts:81`](../src/errors.ts#L81) |
-| `SefinTransportError` | class | `new (code: SefinTransportErrorCode, message: string, context?: SefinTransportErrorContext, options?: ErrorOptions \| undefined): SefinTransportError` | [`src/errors.ts:138`](../src/errors.ts#L138) |
-| `SefinTransportErrorCode` | type | `SefinTransportErrorCode` | [`src/errors.ts:123`](../src/errors.ts#L123) |
-| `SefinTransportErrorContext` | interface | `SefinTransportErrorContext` | [`src/errors.ts:132`](../src/errors.ts#L132) |
+| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
+| `SefinResponseParseError` | class | `new (code: SefinResponseParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): SefinResponseParseError` | [`src/errors.ts:92`](../src/errors.ts#L92) |
+| `SefinResponseParseErrorCode` | type | `SefinResponseParseErrorCode` | [`src/errors.ts:85`](../src/errors.ts#L85) |
+| `SefinTransportError` | class | `new (code: SefinTransportErrorCode, message: string, context?: SefinTransportErrorContext, options?: ErrorOptions \| undefined): SefinTransportError` | [`src/errors.ts:142`](../src/errors.ts#L142) |
+| `SefinTransportErrorCode` | type | `SefinTransportErrorCode` | [`src/errors.ts:127`](../src/errors.ts#L127) |
+| `SefinTransportErrorContext` | interface | `SefinTransportErrorContext` | [`src/errors.ts:136`](../src/errors.ts#L136) |
 | `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:40`](../src/core/serialize.ts#L40) |
 | `SerializeDpsOptions` | interface | `SerializeDpsOptions` | [`src/core/types.ts:576`](../src/core/types.ts#L576) |
 | `Service` | interface | `Service` | [`src/core/types.ts:214`](../src/core/types.ts#L214) |
@@ -118,8 +130,9 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `TotalTax` | type | `TotalTax` | [`src/core/types.ts:388`](../src/core/types.ts#L388) |
 | `TotalTaxAmounts` | interface | `TotalTaxAmounts` | [`src/core/types.ts:376`](../src/core/types.ts#L376) |
 | `TotalTaxPercentages` | interface | `TotalTaxPercentages` | [`src/core/types.ts:382`](../src/core/types.ts#L382) |
-| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
-| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:149`](../src/core/semantic-validation.ts#L149) |
+| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:144`](../src/core/semantic-validation.ts#L144) |
+| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:164`](../src/core/semantic-validation.ts#L164) |
+| `validateDpsWithReferenceData` | function | `(dps: DpsDocument, referenceData: DpsReferenceDataProvider, options?: Omit<DpsValidationOptions, "referenceData">): ValidationResult` | [`src/core/semantic-validation.ts:186`](../src/core/semantic-validation.ts#L186) |
 | `validateDpsXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:51`](../src/validation/xsd.ts#L51) |
 | `validateEventRequestXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:65`](../src/validation/xsd.ts#L65) |
 | `validateEventXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:72`](../src/validation/xsd.ts#L72) |
@@ -127,25 +140,25 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `validateNfseXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:58`](../src/validation/xsd.ts#L58) |
 | `validateXml` | function | `(xml: string, schema: NationalNfseSchema, options?: XsdValidationOptions): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:17`](../src/validation/xsd.ts#L17) |
 | `ValidationCategory` | type | `ValidationCategory` | [`src/errors.ts:18`](../src/errors.ts#L18) |
-| `ValidationIssue` | interface | `ValidationIssue` | [`src/errors.ts:33`](../src/errors.ts#L33) |
-| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:110`](../src/core/semantic-validation.ts#L110) |
-| `ValidationSource` | interface | `ValidationSource` | [`src/errors.ts:25`](../src/errors.ts#L25) |
+| `ValidationIssue` | interface | `ValidationIssue` | [`src/errors.ts:37`](../src/errors.ts#L37) |
+| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
+| `ValidationSource` | interface | `ValidationSource` | [`src/errors.ts:26`](../src/errors.ts#L26) |
 | `Values` | interface | `Values` | [`src/core/types.ts:420`](../src/core/types.ts#L420) |
-| `XmlParseError` | class | `new (code: XmlParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): XmlParseError` | [`src/errors.ts:70`](../src/errors.ts#L70) |
-| `XmlParseErrorCode` | type | `XmlParseErrorCode` | [`src/errors.ts:62`](../src/errors.ts#L62) |
-| `XmlSignatureError` | class | `new (code: XmlSignatureErrorCode, message: string, options?: ErrorOptions \| undefined): XmlSignatureError` | [`src/errors.ts:113`](../src/errors.ts#L113) |
-| `XmlSignatureErrorCode` | type | `XmlSignatureErrorCode` | [`src/errors.ts:99`](../src/errors.ts#L99) |
-| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:154`](../src/errors.ts#L154) |
+| `XmlParseError` | class | `new (code: XmlParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): XmlParseError` | [`src/errors.ts:74`](../src/errors.ts#L74) |
+| `XmlParseErrorCode` | type | `XmlParseErrorCode` | [`src/errors.ts:66`](../src/errors.ts#L66) |
+| `XmlSignatureError` | class | `new (code: XmlSignatureErrorCode, message: string, options?: ErrorOptions \| undefined): XmlSignatureError` | [`src/errors.ts:117`](../src/errors.ts#L117) |
+| `XmlSignatureErrorCode` | type | `XmlSignatureErrorCode` | [`src/errors.ts:103`](../src/errors.ts#L103) |
+| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:158`](../src/errors.ts#L158) |
 | `XsdValidationOptions` | interface | `XsdValidationOptions` | [`src/validation/xsd.ts:13`](../src/validation/xsd.ts#L13) |
 | `XsdValidationResult` | interface | `XsdValidationResult` | [`src/validation/xsd.ts:8`](../src/validation/xsd.ts#L8) |
-| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:149`](../src/errors.ts#L149) |
+| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:153`](../src/errors.ts#L153) |
 
 ## `nfse-js/core`
 
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `Address` | type | `Address` | [`src/core/types.ts:66`](../src/core/types.ts#L66) |
-| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:168`](../src/core/semantic-validation.ts#L168) |
+| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:194`](../src/core/semantic-validation.ts#L194) |
 | `buildDpsId` | function | `(options: BuildDpsIdOptions): string` | [`src/core/dps-id.ts:17`](../src/core/dps-id.ts#L17) |
 | `BuildDpsIdOptions` | interface | `BuildDpsIdOptions` | [`src/core/dps-id.ts:4`](../src/core/dps-id.ts#L4) |
 | `ComplementaryServiceInformation` | interface | `ComplementaryServiceInformation` | [`src/core/types.ts:206`](../src/core/types.ts#L206) |
@@ -171,13 +184,24 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `Discounts` | interface | `Discounts` | [`src/core/types.ts:228`](../src/core/types.ts#L228) |
 | `DomesticAddress` | interface | `DomesticAddress` | [`src/core/types.ts:48`](../src/core/types.ts#L48) |
 | `DomesticAddressDetails` | interface | `DomesticAddressDetails` | [`src/core/types.ts:36`](../src/core/types.ts#L36) |
+| `DPS_REFERENCE_DATA_FIELD_COVERAGE` | constant | `readonly [DpsReferenceDataFieldCoverage, DpsReferenceDataFieldCoverage, DpsReferenceDataFieldCoverage, ... 19 more ..., DpsReferenceDataFieldCoverage]` | [`src/core/reference-data.ts:113`](../src/core/reference-data.ts#L113) |
+| `DPS_REFERENCE_DATA_SETS` | constant | `readonly [{ readonly id: "location-codes"; readonly label: "IBGE municipality and National NFS-e special-locality codes"; readonly authoritativeSource: "IBGE municipality table plus National NFS-e special-locality table"; }, ... 7 more ..., { ...; }]` | [`src/core/reference-data.ts:20`](../src/core/reference-data.ts#L20) |
 | `DPS_XSD_FACETS` | constant | `{ readonly TSIdDPS: { readonly type: "TSIdDPS"; readonly pattern: RegExp; readonly maxLength: 45; readonly sourceLine: 44; }; readonly TSData: { readonly type: "TSData"; readonly pattern: RegExp; readonly sourceLine: 131; }; ... 29 more ...; readonly TSChaveNFe: { ...; }; }` | [`src/core/facets.ts:9`](../src/core/facets.ts#L9) |
 | `DpsDocument` | interface | `DpsDocument` | [`src/core/types.ts:564`](../src/core/types.ts#L564) |
 | `DpsFacetName` | type | `"TSDec15V2" \| "TSDec3V2" \| "TSDec2V2" \| "TSDec1V2" \| "TSIdDPS" \| "TSData" \| "TSDateTimeUTC" \| "TSSerieDPS" \| "TSNumDPS" \| "TSCNPJ" \| "TSCPF" \| "TSCAEPF" \| "TSNIF" \| "TSInscMun" \| ... 17 more ... \| "TSChaveNFe"` | [`src/core/facets.ts:191`](../src/core/facets.ts#L191) |
 | `DpsInfo` | interface | `DpsInfo` | [`src/core/types.ts:543`](../src/core/types.ts#L543) |
 | `DpsInput` | interface | `DpsInput` | [`src/core/types.ts:569`](../src/core/types.ts#L569) |
 | `DpsIssuer` | type | `DpsIssuer` | [`src/core/types.ts:5`](../src/core/types.ts#L5) |
-| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:115`](../src/core/semantic-validation.ts#L115) |
+| `DpsReferenceCodeRecord` | interface | `DpsReferenceCodeRecord` | [`src/core/reference-data.ts:68`](../src/core/reference-data.ts#L68) |
+| `DpsReferenceCodeSet` | interface | `DpsReferenceCodeSet` | [`src/core/reference-data.ts:88`](../src/core/reference-data.ts#L88) |
+| `DpsReferenceDataFieldCoverage` | interface | `DpsReferenceDataFieldCoverage` | [`src/core/reference-data.ts:107`](../src/core/reference-data.ts#L107) |
+| `DpsReferenceDataProvider` | interface | `DpsReferenceDataProvider` | [`src/core/reference-data.ts:94`](../src/core/reference-data.ts#L94) |
+| `DpsReferenceDataSetDefinition` | interface | `DpsReferenceDataSetDefinition` | [`src/core/reference-data.ts:14`](../src/core/reference-data.ts#L14) |
+| `DpsReferenceDataSetId` | type | `DpsReferenceDataSetId` | [`src/core/reference-data.ts:3`](../src/core/reference-data.ts#L3) |
+| `DpsReferenceDataValidationOptions` | interface | `DpsReferenceDataValidationOptions` | [`src/core/reference-data.ts:99`](../src/core/reference-data.ts#L99) |
+| `DpsReferenceLookupMatch` | interface | `DpsReferenceLookupMatch` | [`src/core/reference-data.ts:75`](../src/core/reference-data.ts#L75) |
+| `DpsReferenceLookupResult` | type | `DpsReferenceLookupResult` | [`src/core/reference-data.ts:81`](../src/core/reference-data.ts#L81) |
+| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:125`](../src/core/semantic-validation.ts#L125) |
 | `Environment` | type | `Environment` | [`src/core/types.ts:4`](../src/core/types.ts#L4) |
 | `EventActivity` | type | `EventActivity` | [`src/core/types.ts:173`](../src/core/types.ts#L173) |
 | `FacetFailure` | interface | `FacetFailure` | [`src/core/facets.ts:193`](../src/core/facets.ts#L193) |
@@ -191,6 +215,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ForeignTradeProviderSupport` | type | `ForeignTradeProviderSupport` | [`src/core/types.ts:107`](../src/core/types.ts#L107) |
 | `ForeignTradeRelationship` | type | `ForeignTradeRelationship` | [`src/core/types.ts:106`](../src/core/types.ts#L106) |
 | `ForeignTradeServiceMode` | type | `ForeignTradeServiceMode` | [`src/core/types.ts:105`](../src/core/types.ts#L105) |
+| `getDpsReferenceDataSetDefinition` | function | `(id: DpsReferenceDataSetId): DpsReferenceDataSetDefinition` | [`src/core/reference-data.ts:145`](../src/core/reference-data.ts#L145) |
 | `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:318`](../src/core/rules.ts#L318) |
 | `IbsCbs` | interface | `IbsCbs` | [`src/core/types.ts:530`](../src/core/types.ts#L530) |
 | `IbsCbsDeferral` | interface | `IbsCbsDeferral` | [`src/core/types.ts:503`](../src/core/types.ts#L503) |
@@ -225,7 +250,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ReferencedNfseList` | interface | `ReferencedNfseList` | [`src/core/types.ts:433`](../src/core/types.ts#L433) |
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
-| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
+| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
 | `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:40`](../src/core/serialize.ts#L40) |
 | `SerializeDpsOptions` | interface | `SerializeDpsOptions` | [`src/core/types.ts:576`](../src/core/types.ts#L576) |
 | `Service` | interface | `Service` | [`src/core/types.ts:214`](../src/core/types.ts#L214) |
@@ -245,10 +270,11 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `TotalTax` | type | `TotalTax` | [`src/core/types.ts:388`](../src/core/types.ts#L388) |
 | `TotalTaxAmounts` | interface | `TotalTaxAmounts` | [`src/core/types.ts:376`](../src/core/types.ts#L376) |
 | `TotalTaxPercentages` | interface | `TotalTaxPercentages` | [`src/core/types.ts:382`](../src/core/types.ts#L382) |
-| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
-| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:149`](../src/core/semantic-validation.ts#L149) |
+| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:144`](../src/core/semantic-validation.ts#L144) |
+| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:164`](../src/core/semantic-validation.ts#L164) |
+| `validateDpsWithReferenceData` | function | `(dps: DpsDocument, referenceData: DpsReferenceDataProvider, options?: Omit<DpsValidationOptions, "referenceData">): ValidationResult` | [`src/core/semantic-validation.ts:186`](../src/core/semantic-validation.ts#L186) |
 | `validateFacet` | function | `(facetName: "TSDec15V2" \| "TSDec3V2" \| "TSDec2V2" \| "TSDec1V2" \| "TSIdDPS" \| "TSData" \| "TSDateTimeUTC" \| "TSSerieDPS" \| "TSNumDPS" \| "TSCNPJ" \| "TSCPF" \| "TSCAEPF" \| "TSNIF" \| "TSInscMun" \| ... 17 more ... \| "TSChaveNFe", value: string): FacetFailure \| undefined` | [`src/core/facets.ts:198`](../src/core/facets.ts#L198) |
-| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:110`](../src/core/semantic-validation.ts#L110) |
+| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
 | `Values` | interface | `Values` | [`src/core/types.ts:420`](../src/core/types.ts#L420) |
 
 ## `nfse-js/events`
@@ -404,10 +430,10 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `validateEventXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:72`](../src/validation/xsd.ts#L72) |
 | `validateNfseXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:58`](../src/validation/xsd.ts#L58) |
 | `validateXml` | function | `(xml: string, schema: NationalNfseSchema, options?: XsdValidationOptions): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:17`](../src/validation/xsd.ts#L17) |
-| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:154`](../src/errors.ts#L154) |
+| `XsdValidationError` | class | `new (violations: readonly XsdViolation[]): XsdValidationError` | [`src/errors.ts:158`](../src/errors.ts#L158) |
 | `XsdValidationOptions` | interface | `XsdValidationOptions` | [`src/validation/xsd.ts:13`](../src/validation/xsd.ts#L13) |
 | `XsdValidationResult` | interface | `XsdValidationResult` | [`src/validation/xsd.ts:8`](../src/validation/xsd.ts#L8) |
-| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:149`](../src/errors.ts#L149) |
+| `XsdViolation` | interface | `XsdViolation` | [`src/errors.ts:153`](../src/errors.ts#L153) |
 
 ## `nfse-js/schemas`
 

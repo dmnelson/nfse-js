@@ -50,9 +50,10 @@ collection before attempting another registration.
 ## Validation categories
 
 `ValidationIssue.category` distinguishes `format`, `schema`, `business`,
-`municipal-parameter`, and `remote`. A local success does not imply remote
-acceptance; rules requiring taxpayer authorization, prior event state, or
-current municipal configuration remain remote or parameter-dependent.
+`reference-data`, `municipal-parameter`, and `remote`. A local success does
+not imply remote acceptance; rules requiring taxpayer authorization, prior
+event state, or current municipal configuration remain remote or
+parameter-dependent.
 
 Local validation is also not yet exhaustive for every modeled XSD field or
 every locally decidable business rule. Use `validateDpsXml` for structural XSD
