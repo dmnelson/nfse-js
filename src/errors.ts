@@ -19,6 +19,7 @@ export type ValidationCategory =
   | "format"
   | "schema"
   | "business"
+  | "reference-data"
   | "municipal-parameter"
   | "remote";
 
@@ -28,6 +29,9 @@ export interface ValidationSource {
   readonly section?: string;
   readonly row?: number;
   readonly url?: string;
+  readonly identifier?: string;
+  readonly hash?: string;
+  readonly retrievedAt?: string;
 }
 
 export interface ValidationIssue {

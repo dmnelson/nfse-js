@@ -7,6 +7,7 @@ Use these guides with the generated [API export reference](API.md):
 - [Errors and recovery](errors.md)
 - [Lifecycle events](events.md)
 - [Municipal parameters](parameters.md)
+- [Reference data validation](reference-data.md)
 - [Benchmarks](benchmarks.md)
 - [Release process](releases.md)
 

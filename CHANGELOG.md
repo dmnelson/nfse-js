@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added injectable reference-data validation for generally applicable DPS code
+  fields, with source metadata, alias-aware records, missing-dataset reporting,
+  and no network or bundled-table fallback.
 - Completed source-linked semantic validation for provider-issued
   foreign-service exports, including customer identity and address, NBS,
   foreign-trade, and result-country dependencies.

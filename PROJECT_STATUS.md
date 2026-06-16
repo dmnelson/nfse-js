@@ -392,14 +392,15 @@ The pure validator intentionally does not decide rules that depend on:
   or document existence;
 - municipal service, rate, withholding, benefit, or deduction configuration
   that has not been supplied to `validateDpsWithMunicipalParameters`;
-- current IBS/CBS calculator tables and classification indicators;
+- current IBS/CBS calculator outputs and policy decisions;
 - authoritative IBGE, ISO, BACEN, NBS, and operation-code table membership
-  beyond the XSD shape;
+  that has not been supplied to `validateDpsWithReferenceData` or
+  `validateDps({ referenceData })`;
 - NFS-e access-key check digits where the official algorithm is not present in
   the bundled XSD or current contributor API manual.
 
-These failures belong to municipal-parameter or remote validation rather than
-being guessed by local code.
+These failures belong to reference-data, municipal-parameter, or remote
+validation rather than being guessed by local code.
 
 ### Generated and future fields use lossless raw trees
 
@@ -553,12 +554,14 @@ Exit criteria:
 - [ ] Complete all locally decidable cross-field National business rules from
   manuals and technical notes. A documented subset is implemented.
 - [x] Assign official rule/rejection codes where documented.
-- [x] Distinguish format, schema, business, municipal-parameter, and remote
-  errors.
+- [x] Distinguish format, schema, business, reference-data,
+  municipal-parameter, and remote errors.
 - [x] Support collecting all issues and fail-fast operation.
 - [x] Keep validation deterministic and free of network calls.
 - [x] Add a separate validation layer that accepts resolved municipal
   parameters.
+- [x] Add an injectable reference-data validation layer for generally
+  applicable DPS code tables.
 
 Exit criteria:
 
@@ -732,15 +735,11 @@ definition.
 Publication state is owned by the npm registry and GitHub Releases rather than
 this roadmap. The remaining engineering priorities are:
 
-1. complete the locally decidable semantic rules for the foreign-service
-   export profile and retain positive and negative end-to-end fixtures;
-2. add injectable authoritative reference-data validation for all generally
-   applicable National DPS code tables;
-3. confirm the XMLDSig profile and independently verify a generated fixture;
-4. capture protected evidence plus sanitized or synthetic contract fixtures
+1. confirm the XMLDSig profile and independently verify a generated fixture;
+2. capture protected evidence plus sanitized or synthetic contract fixtures
    for accepted and rejected restricted-production issuance;
-5. capture event and municipal-parameter fixtures from the active Swagger;
-6. keep release, coverage, benchmark, audit, and clean-installation gates
+3. capture event and municipal-parameter fixtures from the active Swagger;
+4. keep release, coverage, benchmark, audit, and clean-installation gates
    passing as those capabilities are added.
 
 ## Working Commands

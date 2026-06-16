@@ -21,7 +21,7 @@
     "xsdType": "TCCServ",
     "typescript": "ServiceCode",
     "serializer": "serializeService",
-    "validation": "service-code fields formatted; export NBS dependency validated",
+    "validation": "service-code fields formatted; export NBS dependency and supplied reference-data membership validated",
     "fixtures": [
       "specialized groups",
       "foreign service export with NIF",
@@ -32,7 +32,7 @@
     "xsdType": "TCComExterior",
     "typescript": "ForeignTrade",
     "serializer": "serializeForeignTrade",
-    "validation": "enumerations encoded; currency, amount, declaration facets, and profile dependencies validated",
+    "validation": "enumerations encoded; currency, amount, declaration facets, profile dependencies, and supplied currency reference-data membership validated",
     "fixtures": [
       "specialized groups",
       "foreign service export with NIF",
@@ -57,14 +57,14 @@
     "xsdType": "TCDocOutNFSe",
     "typescript": "MunicipalNfseReference",
     "serializer": "serializeDeductionDocument",
-    "validation": "field facets pending",
+    "validation": "municipality reference-data membership supported; other field facets pending",
     "fixtures": ["specialized groups"]
   },
   {
     "xsdType": "TCEnderExt",
     "typescript": "ForeignAddressDetails",
     "serializer": "serializeAddress",
-    "validation": "field facets pending",
+    "validation": "country reference-data membership supported; remaining field facets pending",
     "fixtures": [
       "specialized groups",
       "foreign service export with NIF",
@@ -82,7 +82,7 @@
     "xsdType": "TCEnderNac",
     "typescript": "DomesticAddressDetails",
     "serializer": "serializeAddress",
-    "validation": "provider municipality and CEP formats only",
+    "validation": "provider municipality and CEP formats; supplied municipality reference-data membership supported",
     "fixtures": ["specialized groups"]
   },
   {
@@ -96,7 +96,7 @@
     "xsdType": "TCEndereco",
     "typescript": "Address",
     "serializer": "serializeAddress",
-    "validation": "address choice encoded; selected domestic and foreign-customer dependencies validated",
+    "validation": "address choice encoded; selected dependencies and supplied location/country reference-data membership validated",
     "fixtures": [
       "specialized groups",
       "foreign service export with NIF",
@@ -203,7 +203,7 @@
     "xsdType": "TCLocPrest",
     "typescript": "ServiceLocation",
     "serializer": "serializeService",
-    "validation": "choice encoded; municipality/country format validated",
+    "validation": "choice encoded; municipality/country format and supplied reference-data membership validated",
     "fixtures": [
       "common",
       "specialized groups",
@@ -215,14 +215,14 @@
     "xsdType": "TCRTCInfoDest",
     "typescript": "IbsCbsDestination",
     "serializer": "serializeIbsCbsDestination",
-    "validation": "identity choice encoded; field facets pending",
+    "validation": "identity choice encoded; address reference-data membership supported; field facets pending",
     "fixtures": ["specialized groups"]
   },
   {
     "xsdType": "TCRTCInfoIBSCBS",
     "typescript": "IbsCbs",
     "serializer": "serializeIbsCbs",
-    "validation": "enumerations and nested choices encoded; business rules pending",
+    "validation": "enumerations and nested choices encoded; operation-code reference-data membership supported; business rules pending",
     "fixtures": ["specialized groups", "IBS/CBS property address"]
   },
   {
@@ -257,14 +257,14 @@
     "xsdType": "TCRTCInfoTributosSitClas",
     "typescript": "IbsCbsTaxClassification",
     "serializer": "serializeIbsCbs",
-    "validation": "nested structure typed; code facets pending",
+    "validation": "nested structure typed; code facets and supplied reference-data membership validated",
     "fixtures": ["specialized groups", "IBS/CBS property address"]
   },
   {
     "xsdType": "TCRTCInfoTributosTribRegular",
     "typescript": "IbsCbsRegularTaxation",
     "serializer": "serializeIbsCbs",
-    "validation": "code facets pending",
+    "validation": "code facets and supplied reference-data membership validated",
     "fixtures": ["specialized groups"]
   },
   {
@@ -292,7 +292,7 @@
     "xsdType": "TCRTCListaDocFiscalOutro",
     "typescript": "OtherFiscalDocumentReference",
     "serializer": "serializeReimbursementDocument",
-    "validation": "field facets pending",
+    "validation": "municipality reference-data membership supported; remaining field facets pending",
     "fixtures": ["specialized groups"]
   },
   {
@@ -320,7 +320,7 @@
     "xsdType": "TCServ",
     "typescript": "Service",
     "serializer": "serializeService",
-    "validation": "structure typed; foreign-service profile dependencies validated; other group rules pending",
+    "validation": "structure typed; foreign-service profile dependencies and supplied reference-data membership validated; other group rules pending",
     "fixtures": ["all schema coverage fixtures"]
   },
   {
@@ -341,7 +341,7 @@
     "xsdType": "TCTribMunicipal",
     "typescript": "MunicipalTax",
     "serializer": "serializeMunicipalTax",
-    "validation": "enumerations encoded; selected export result-country and withholding rules validated",
+    "validation": "enumerations encoded; selected export result-country, country reference-data, and withholding rules validated",
     "fixtures": ["all schema coverage fixtures"]
   },
   {

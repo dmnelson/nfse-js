@@ -23,7 +23,7 @@ DPS and, when it accepts the submission, produces the NFS-e.
 | DPS serialization | Complete for the modeled v1.01 structure | Named coverage fixtures serialize deterministically and validate against the bundled XSD |
 | XSD structural validation | Available for DPS, NFS-e, and events | Proves conformance to the bundled schema structure, not acceptance by SEFIN |
 | Local semantic validation | Partial deterministic coverage | Implements documented facets and locally decidable National rules tracked in the coverage manifest |
-| Authoritative code-table validation | Not yet implemented | Lexically valid ISO, IBGE, BACEN, service, NBS, and IBS/CBS codes are not currently checked for table membership |
+| Authoritative code-table validation | Available with supplied provider | Checks generally applicable ISO, IBGE/National location, BACEN, service, NBS, and IBS/CBS code membership without fetching or bundling tables |
 | Signing and transport | Implemented with synthetic tests | XMLDSig defaults, active wrappers, and response shapes still require live confirmation |
 | Restricted-production evidence | Not yet captured | No sanitized accepted and rejected issuance evidence is retained |
 
@@ -121,10 +121,13 @@ Fiscal decimal fields have XSD-specific constructors: `decimal15v2`,
 ```ts
 import {
   validateDps,
+  validateDpsWithReferenceData,
   validateDpsWithMunicipalParameters,
 } from "nfse-js/core";
 
 const result = validateDps(dps);
+
+const referenceResult = validateDpsWithReferenceData(dps, referenceData);
 
 const municipalResult = validateDpsWithMunicipalParameters(dps, {
   municipality: "3550308",
@@ -141,12 +144,16 @@ the official v1.01 Annex I. Issues include a stable category, official
 rejection code where documented, and source metadata. Use
 `validateDps(dps, { mode: "fail-fast" })` to stop at the first issue.
 
-Municipal validation accepts already-resolved parameters and performs no
-network calls. Rules that require SEFIN, CNC, municipal parameter, or IBS/CBS
-calculator state are intentionally not guessed by the pure validator.
-Authoritative code-table membership is also outside the current validator; a
-lexically valid country, currency, service, NBS, or IBS/CBS code may still be
-unknown to the applicable official dataset.
+Reference-data validation accepts caller-supplied authoritative datasets and
+performs no network calls or bundled-snapshot fallback. It distinguishes a
+confirmed unknown code from an unavailable dataset and reports source metadata
+for audit. See [Reference data validation](docs/reference-data.md) for the
+provider contract and covered fields.
+
+Municipal validation accepts already-resolved parameters and also performs no
+network calls. Rules that require SEFIN, CNC, municipal parameter, taxpayer
+state, or IBS/CBS calculator state are intentionally not guessed by the pure
+validator.
 
 ## Validate against the XSD
 
