@@ -365,9 +365,9 @@ formats. Municipal configuration is still relevant to National NFS-e, but it
 is data obtained from National APIs rather than a separate DPS layout.
 
 Remaining work includes completing locally decidable semantic validation,
-adding authoritative code-table validation, capturing restricted-production
-conformance evidence, independently verifying XMLDSig interoperability, and
-exercising releases in real consumer applications.
+capturing restricted-production conformance evidence, independently verifying
+XMLDSig interoperability, and exercising releases in real consumer
+applications.
 
 ## Production readiness
 
