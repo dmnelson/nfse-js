@@ -9,7 +9,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `Address` | type | `Address` | [`src/core/types.ts:66`](../src/core/types.ts#L66) |
-| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:127`](../src/core/semantic-validation.ts#L127) |
+| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:168`](../src/core/semantic-validation.ts#L168) |
 | `buildDpsId` | function | `(options: BuildDpsIdOptions): string` | [`src/core/dps-id.ts:17`](../src/core/dps-id.ts#L17) |
 | `BuildDpsIdOptions` | interface | `BuildDpsIdOptions` | [`src/core/dps-id.ts:4`](../src/core/dps-id.ts#L4) |
 | `ComplementaryServiceInformation` | interface | `ComplementaryServiceInformation` | [`src/core/types.ts:206`](../src/core/types.ts#L206) |
@@ -42,7 +42,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `DpsInput` | interface | `DpsInput` | [`src/core/types.ts:569`](../src/core/types.ts#L569) |
 | `DpsIssuer` | type | `DpsIssuer` | [`src/core/types.ts:5`](../src/core/types.ts#L5) |
 | `DpsValidationError` | class | `new (issues: readonly ValidationIssue[]): DpsValidationError` | [`src/errors.ts:42`](../src/errors.ts#L42) |
-| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:74`](../src/core/semantic-validation.ts#L74) |
+| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:115`](../src/core/semantic-validation.ts#L115) |
 | `Environment` | type | `Environment` | [`src/core/types.ts:4`](../src/core/types.ts#L4) |
 | `EventActivity` | type | `EventActivity` | [`src/core/types.ts:173`](../src/core/types.ts#L173) |
 | `EventValidationError` | class | `new (issues: readonly ValidationIssue[]): EventValidationError` | [`src/errors.ts:50`](../src/errors.ts#L50) |
@@ -57,7 +57,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ForeignTradeProviderSupport` | type | `ForeignTradeProviderSupport` | [`src/core/types.ts:107`](../src/core/types.ts#L107) |
 | `ForeignTradeRelationship` | type | `ForeignTradeRelationship` | [`src/core/types.ts:106`](../src/core/types.ts#L106) |
 | `ForeignTradeServiceMode` | type | `ForeignTradeServiceMode` | [`src/core/types.ts:105`](../src/core/types.ts#L105) |
-| `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:271`](../src/core/rules.ts#L271) |
+| `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:318`](../src/core/rules.ts#L318) |
 | `IbsCbs` | interface | `IbsCbs` | [`src/core/types.ts:530`](../src/core/types.ts#L530) |
 | `IbsCbsDeferral` | interface | `IbsCbsDeferral` | [`src/core/types.ts:503`](../src/core/types.ts#L503) |
 | `IbsCbsDestination` | type | `IbsCbsDestination` | [`src/core/types.ts:437`](../src/core/types.ts#L437) |
@@ -76,7 +76,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `MunicipalBenefit` | type | `MunicipalBenefit` | [`src/core/types.ts:332`](../src/core/types.ts#L332) |
 | `MunicipalNfseReference` | interface | `MunicipalNfseReference` | [`src/core/types.ts:233`](../src/core/types.ts#L233) |
 | `MunicipalTax` | interface | `MunicipalTax` | [`src/core/types.ts:349`](../src/core/types.ts#L349) |
-| `NATIONAL_DPS_RULES` | constant | `readonly [NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, ... 62 more ..., NationalDpsRule]` | [`src/core/rules.ts:28`](../src/core/rules.ts#L28) |
+| `NATIONAL_DPS_RULES` | constant | `readonly [NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, ... 74 more ..., NationalDpsRule]` | [`src/core/rules.ts:28`](../src/core/rules.ts#L28) |
 | `NATIONAL_NFSE_NAMESPACE` | constant | `"http://www.sped.fazenda.gov.br/nfse"` | [`src/core/types.ts:1`](../src/core/types.ts#L1) |
 | `NATIONAL_NFSE_VERSION` | constant | `"1.01"` | [`src/core/types.ts:2`](../src/core/types.ts#L2) |
 | `NationalDpsRule` | interface | `NationalDpsRule` | [`src/core/rules.ts:6`](../src/core/rules.ts#L6) |
@@ -93,7 +93,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ReferencedNfseList` | interface | `ReferencedNfseList` | [`src/core/types.ts:433`](../src/core/types.ts#L433) |
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
-| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:79`](../src/core/semantic-validation.ts#L79) |
+| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
 | `SefinResponseParseError` | class | `new (code: SefinResponseParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): SefinResponseParseError` | [`src/errors.ts:88`](../src/errors.ts#L88) |
 | `SefinResponseParseErrorCode` | type | `SefinResponseParseErrorCode` | [`src/errors.ts:81`](../src/errors.ts#L81) |
 | `SefinTransportError` | class | `new (code: SefinTransportErrorCode, message: string, context?: SefinTransportErrorContext, options?: ErrorOptions \| undefined): SefinTransportError` | [`src/errors.ts:138`](../src/errors.ts#L138) |
@@ -118,8 +118,8 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `TotalTax` | type | `TotalTax` | [`src/core/types.ts:388`](../src/core/types.ts#L388) |
 | `TotalTaxAmounts` | interface | `TotalTaxAmounts` | [`src/core/types.ts:376`](../src/core/types.ts#L376) |
 | `TotalTaxPercentages` | interface | `TotalTaxPercentages` | [`src/core/types.ts:382`](../src/core/types.ts#L382) |
-| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:91`](../src/core/semantic-validation.ts#L91) |
-| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:108`](../src/core/semantic-validation.ts#L108) |
+| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
+| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:149`](../src/core/semantic-validation.ts#L149) |
 | `validateDpsXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:51`](../src/validation/xsd.ts#L51) |
 | `validateEventRequestXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:65`](../src/validation/xsd.ts#L65) |
 | `validateEventXml` | function | `(xml: string, options?: XsdValidationOptions \| undefined): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:72`](../src/validation/xsd.ts#L72) |
@@ -128,7 +128,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `validateXml` | function | `(xml: string, schema: NationalNfseSchema, options?: XsdValidationOptions): Promise<XsdValidationResult>` | [`src/validation/xsd.ts:17`](../src/validation/xsd.ts#L17) |
 | `ValidationCategory` | type | `ValidationCategory` | [`src/errors.ts:18`](../src/errors.ts#L18) |
 | `ValidationIssue` | interface | `ValidationIssue` | [`src/errors.ts:33`](../src/errors.ts#L33) |
-| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:69`](../src/core/semantic-validation.ts#L69) |
+| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:110`](../src/core/semantic-validation.ts#L110) |
 | `ValidationSource` | interface | `ValidationSource` | [`src/errors.ts:25`](../src/errors.ts#L25) |
 | `Values` | interface | `Values` | [`src/core/types.ts:420`](../src/core/types.ts#L420) |
 | `XmlParseError` | class | `new (code: XmlParseErrorCode, path: string, message: string, options?: ErrorOptions \| undefined): XmlParseError` | [`src/errors.ts:70`](../src/errors.ts#L70) |
@@ -145,7 +145,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | Export | Kind | Signature or type | Declaration |
 | --- | --- | --- | --- |
 | `Address` | type | `Address` | [`src/core/types.ts:66`](../src/core/types.ts#L66) |
-| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:127`](../src/core/semantic-validation.ts#L127) |
+| `assertValidDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions \| undefined): void` | [`src/core/semantic-validation.ts:168`](../src/core/semantic-validation.ts#L168) |
 | `buildDpsId` | function | `(options: BuildDpsIdOptions): string` | [`src/core/dps-id.ts:17`](../src/core/dps-id.ts#L17) |
 | `BuildDpsIdOptions` | interface | `BuildDpsIdOptions` | [`src/core/dps-id.ts:4`](../src/core/dps-id.ts#L4) |
 | `ComplementaryServiceInformation` | interface | `ComplementaryServiceInformation` | [`src/core/types.ts:206`](../src/core/types.ts#L206) |
@@ -177,7 +177,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `DpsInfo` | interface | `DpsInfo` | [`src/core/types.ts:543`](../src/core/types.ts#L543) |
 | `DpsInput` | interface | `DpsInput` | [`src/core/types.ts:569`](../src/core/types.ts#L569) |
 | `DpsIssuer` | type | `DpsIssuer` | [`src/core/types.ts:5`](../src/core/types.ts#L5) |
-| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:74`](../src/core/semantic-validation.ts#L74) |
+| `DpsValidationOptions` | interface | `DpsValidationOptions` | [`src/core/semantic-validation.ts:115`](../src/core/semantic-validation.ts#L115) |
 | `Environment` | type | `Environment` | [`src/core/types.ts:4`](../src/core/types.ts#L4) |
 | `EventActivity` | type | `EventActivity` | [`src/core/types.ts:173`](../src/core/types.ts#L173) |
 | `FacetFailure` | interface | `FacetFailure` | [`src/core/facets.ts:193`](../src/core/facets.ts#L193) |
@@ -191,7 +191,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ForeignTradeProviderSupport` | type | `ForeignTradeProviderSupport` | [`src/core/types.ts:107`](../src/core/types.ts#L107) |
 | `ForeignTradeRelationship` | type | `ForeignTradeRelationship` | [`src/core/types.ts:106`](../src/core/types.ts#L106) |
 | `ForeignTradeServiceMode` | type | `ForeignTradeServiceMode` | [`src/core/types.ts:105`](../src/core/types.ts#L105) |
-| `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:271`](../src/core/rules.ts#L271) |
+| `getNationalDpsRule` | function | `(code: string): NationalDpsRule` | [`src/core/rules.ts:318`](../src/core/rules.ts#L318) |
 | `IbsCbs` | interface | `IbsCbs` | [`src/core/types.ts:530`](../src/core/types.ts#L530) |
 | `IbsCbsDeferral` | interface | `IbsCbsDeferral` | [`src/core/types.ts:503`](../src/core/types.ts#L503) |
 | `IbsCbsDestination` | type | `IbsCbsDestination` | [`src/core/types.ts:437`](../src/core/types.ts#L437) |
@@ -209,7 +209,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `MunicipalBenefit` | type | `MunicipalBenefit` | [`src/core/types.ts:332`](../src/core/types.ts#L332) |
 | `MunicipalNfseReference` | interface | `MunicipalNfseReference` | [`src/core/types.ts:233`](../src/core/types.ts#L233) |
 | `MunicipalTax` | interface | `MunicipalTax` | [`src/core/types.ts:349`](../src/core/types.ts#L349) |
-| `NATIONAL_DPS_RULES` | constant | `readonly [NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, ... 62 more ..., NationalDpsRule]` | [`src/core/rules.ts:28`](../src/core/rules.ts#L28) |
+| `NATIONAL_DPS_RULES` | constant | `readonly [NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, NationalDpsRule, ... 74 more ..., NationalDpsRule]` | [`src/core/rules.ts:28`](../src/core/rules.ts#L28) |
 | `NATIONAL_NFSE_NAMESPACE` | constant | `"http://www.sped.fazenda.gov.br/nfse"` | [`src/core/types.ts:1`](../src/core/types.ts#L1) |
 | `NATIONAL_NFSE_VERSION` | constant | `"1.01"` | [`src/core/types.ts:2`](../src/core/types.ts#L2) |
 | `NationalDpsRule` | interface | `NationalDpsRule` | [`src/core/rules.ts:6`](../src/core/rules.ts#L6) |
@@ -225,7 +225,7 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `ReferencedNfseList` | interface | `ReferencedNfseList` | [`src/core/types.ts:433`](../src/core/types.ts#L433) |
 | `ReimbursementDocument` | type | `ReimbursementDocument` | [`src/core/types.ts:489`](../src/core/types.ts#L489) |
 | `ReimbursementDocumentReference` | type | `ReimbursementDocumentReference` | [`src/core/types.ts:468`](../src/core/types.ts#L468) |
-| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:79`](../src/core/semantic-validation.ts#L79) |
+| `ResolvedMunicipalParameters` | interface | `ResolvedMunicipalParameters` | [`src/core/semantic-validation.ts:120`](../src/core/semantic-validation.ts#L120) |
 | `serializeDps` | function | `(input: DpsDocument \| DpsInput, options?: SerializeDpsOptions): string` | [`src/core/serialize.ts:40`](../src/core/serialize.ts#L40) |
 | `SerializeDpsOptions` | interface | `SerializeDpsOptions` | [`src/core/types.ts:576`](../src/core/types.ts#L576) |
 | `Service` | interface | `Service` | [`src/core/types.ts:214`](../src/core/types.ts#L214) |
@@ -245,10 +245,10 @@ declaration. Installed packages include the complete TypeScript declarations.
 | `TotalTax` | type | `TotalTax` | [`src/core/types.ts:388`](../src/core/types.ts#L388) |
 | `TotalTaxAmounts` | interface | `TotalTaxAmounts` | [`src/core/types.ts:376`](../src/core/types.ts#L376) |
 | `TotalTaxPercentages` | interface | `TotalTaxPercentages` | [`src/core/types.ts:382`](../src/core/types.ts#L382) |
-| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:91`](../src/core/semantic-validation.ts#L91) |
-| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:108`](../src/core/semantic-validation.ts#L108) |
+| `validateDps` | function | `(dps: DpsDocument, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:132`](../src/core/semantic-validation.ts#L132) |
+| `validateDpsWithMunicipalParameters` | function | `(dps: DpsDocument, parameters: ResolvedMunicipalParameters, options?: DpsValidationOptions): ValidationResult` | [`src/core/semantic-validation.ts:149`](../src/core/semantic-validation.ts#L149) |
 | `validateFacet` | function | `(facetName: "TSDec15V2" \| "TSDec3V2" \| "TSDec2V2" \| "TSDec1V2" \| "TSIdDPS" \| "TSData" \| "TSDateTimeUTC" \| "TSSerieDPS" \| "TSNumDPS" \| "TSCNPJ" \| "TSCPF" \| "TSCAEPF" \| "TSNIF" \| "TSInscMun" \| ... 17 more ... \| "TSChaveNFe", value: string): FacetFailure \| undefined` | [`src/core/facets.ts:198`](../src/core/facets.ts#L198) |
-| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:69`](../src/core/semantic-validation.ts#L69) |
+| `ValidationResult` | interface | `ValidationResult` | [`src/core/semantic-validation.ts:110`](../src/core/semantic-validation.ts#L110) |
 | `Values` | interface | `Values` | [`src/core/types.ts:420`](../src/core/types.ts#L420) |
 
 ## `nfse-js/events`
